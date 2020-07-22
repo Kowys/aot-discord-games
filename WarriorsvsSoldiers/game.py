@@ -58,6 +58,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.server = None
         self.game_host = None
         self.gametype = 'Ranked'
+        self.gamespeed = 'Normal'
         self.players = [] # each player is a list of two elements: the player object and the player's role (str)
         self.message_box = []
         self.newroles = []
@@ -80,7 +81,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.walls_destroyed = 0
         self.wall_secured = False
 
-    def host(self, player, server, ranked):
+    def host(self, player, server, fast, ranked):
         self.server = server
         wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
         player_data = wb['Player records']
@@ -92,8 +93,12 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         if self.status == 'waiting for players':
             return '**' + self.game_host.name + '** is already the host!'
         elif self.status == 'waiting for game' or self.status == 'game ended':
+            self.gametype = 'Ranked'
             if ranked == False:
                 self.gametype = 'Casual'
+            self.gamespeed = 'Normal'
+            if fast == True:
+                self.gamespeed = 'Fast'
             self.game_host = player
             self.status = 'waiting for players'
             self.players = [[player, None]]
@@ -468,13 +473,42 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         else:
             return 'There is no open lobby at the moment!'
 
-    def randomize_roles(self):
-        self.newroles = []
-        rolelist = ['queen', 'ackerman', 'mike', 'scout', 'warchief', 'false king', 'ymir', 'spy']
-        for role in rolelist:
-            to_add = random.randint(0, 1)
-            if to_add:
-                self.addrole(role, self.game_host, randomroles=True)
+    def toggle_gametype(self, player, gametype):
+        if self.status == 'waiting for players':
+            if player == self.game_host or player.id == 238808836075421697:
+                if gametype == 'fast':
+                    if self.gamespeed == 'Fast':
+                        return 'The game speed is already set to **Fast**!'
+                    else:
+                        self.gamespeed = 'Fast'
+                        return 'The game speed has been set to **Fast**!'
+
+                elif gametype == 'normal':
+                    if self.gamespeed == 'Normal':
+                        return 'The game speed is already set to **Normal**!'
+                    else:
+                        self.gamespeed = 'Normal'
+                        return 'The game speed has been set to **Normal**!'
+                
+                elif gametype == 'casual':
+                    if self.gametype == 'Casual':
+                        return 'The game is already in **Casual** mode!'
+                    else:
+                        self.gametype = 'Casual'
+                        return '**Casual** mode has been enabled!'
+                    
+                elif gametype == 'ranked':
+                    if self.gametype == 'Ranked':
+                        return 'The game is already in **Ranked** mode!'
+                    else:
+                        self.gametype = 'Ranked'
+                        return '**Ranked** mode has been enabled!'
+                
+            else:
+                return 'Only the host can change the game type!'
+        else:
+            return 'There is no open lobby at the moment!'
+
 
     def display_lobby(self):
         players_in_lobby = ''
@@ -485,7 +519,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 players_in_lobby = players_in_lobby + '**' + person[0].mention + '**\n'
 
         lobby = discord.Embed(title = 'Current lobby', colour=0x0013B4)
-        lobby.add_field(name = 'Game Type', value = '**' + self.gametype + '**')
+        lobby.add_field(name = 'Game Type', value = '**' + self.gamespeed + ' ' + self.gametype + '**')
         lobby.add_field(name = 'Advantage', value = '⚖️ **Perfectly balanced!** ⚖️' if self.calculate_advantage() == '**None**' else self.calculate_advantage())
         lobby.add_field(name = '**' + str(len(self.players)) + '** player' + ('s' if len(self.players) > 1 else '') + ' in lobby', value = players_in_lobby, inline = False)
         lobby.add_field(name = 'Random Roles', value = '🎲' if self.randomroles else '⬛', inline=False)
@@ -515,6 +549,14 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             pathscheck = '📢' if self.paths else '◼'
             role_msg = ymirblessingcheck + ' **Ymir\'s Blessing** ' + ymirblessingcheck + '\n\n' + pathscheck + ' **Paths** ' + pathscheck
             return role_msg
+
+    def randomize_roles(self):
+        self.newroles = []
+        rolelist = ['queen', 'ackerman', 'mike', 'scout', 'warchief', 'false king', 'ymir', 'spy']
+        for role in rolelist:
+            to_add = random.randint(0, 1)
+            if to_add:
+                self.addrole(role, self.game_host, randomroles=True)
 
     def start(self, player):
         if self.status == 'waiting for players':
@@ -598,6 +640,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
             self.game_host = None
             self.gametype = 'Ranked'
+            self.gamespeed = 'Normal'
             self.players = []
             self.message_box = []
             self.newroles = []
@@ -2017,7 +2060,7 @@ The Paths ability allows players to make an announcement anonymously to everyone
 They will then be able to send a single message to the game channel without revealing their role or identity.'
 
         if command_query:
-            commands_dict = {'host':'Creates a new lobby with you as the host. Add \'casual\' to the command to host an unranked game.',
+            commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
                             'join':'Joins an existing lobby.',
                             'leave':'Leave your current lobby',
                             'kick':'Removes a player from the lobby (Only the host can kick)',
@@ -2026,6 +2069,10 @@ They will then be able to send a single message to the game channel without reve
                             'add':'Adds the specified optional role to the game. (E.g. ~add queen)',
                             'remove':'Removes the specified optional role from the game. (E.g. ~add queen)',
                             'randomroles': 'Toggles randomization of optional roles when starting a game.',
+                            'fast': 'Toggles fast mode on, with reduced timer durations for all phases.',
+                            'normal': 'Toggles normal mode on, with standard timer durations for all phases.',
+                            'casual': 'Toggles casual mode on. SR or badges will not be awarded at the end of a game.',
+                            'ranked': 'Toggles ranked mode on, with SR and badges being awarded as usual.',
                             'players':'If game hasn\'t started yet: Brings up the current list of players in the lobby.\n\
 If game has started: Brings up the current list of players, arranged in order of their position in the queue to be Commander.',
                             'next':'Starts the next expedition. Used by the host after the previous expedition has ended.',
@@ -2070,6 +2117,10 @@ and status of the Walls, the results of previous expeditions and information on 
 ~add <role>\n\
 ~remove <role>\n\
 ~randomroles\n\
+~fast\n\
+~normal\n\
+~casual\n\
+~ranked\n\
 ~players\n\
 ~tutorial\n\
 ~profile <@person>\n\
