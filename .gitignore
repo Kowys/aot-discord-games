@@ -120,5 +120,3 @@ package-lock.json
 
 *.tflite
 *.xlsx
-
-secrets.py
