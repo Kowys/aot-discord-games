@@ -1939,10 +1939,25 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         return game_stats
 
-    def get_leaderboard(self, server, page=1):
+    def get_leaderboard(self, server, page=1, player=None):
         # Returns the names of the top players, with 10 per page, in an embed
         wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
         player_data = wb['Player records']
+
+        if player:
+            for row in player_data:
+                present = False
+                if row[0].value == str(player.id):
+                    present = True
+                    break   
+            if present == False:
+                # Add player data into player records
+                player_sr = 1500
+                player_data.append([str(player.id), 1500] + 30 * [0])
+                stats = {'wins': 0, 'total': 0, 'soldier wins': 0, 'soldier games': 0, 'warrior wins': 0, 'warrior games': 0, 'win as soldier': 0, 'played as soldier': 0, 'win as warrior': 0, 'played as warrior': 0, 
+                'win as coord': 0, 'played as coord': 0, 'win as queen': 0, 'played as queen': 0, 'win as warchief': 0, 'played as warchief': 0, 'win as ymir': 0, 'played as ymir':0, 'win as false king':0, 
+                'played as false king': 0, 'win as ackerman': 0, 'played as ackerman': 0, 'win as mike': 0, 'played as mike': 0, 'win as scout': 0, 'played as scout': 0, 'win as spy': 0, 'played as spy': 0}
+                wb.save("WarriorsvsSoldiers/database.xlsx")
         
         player_rankings = {} # {player id: sr, ...}
         # Put all players into a dictionary
@@ -1967,8 +1982,18 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         if page_no < 1:
             page_no = 1
 
+        # Get page_no of player rank
+        if player:
+            rank = 0
+            for person in server_players:
+                rank += 1
+                if person[0] == player.mention:
+                    break
+            page_no = math.ceil(rank / 10)
+
         # Normalize to number of server users
-        page_no = min(math.ceil(len(server_players) / 10), page_no)
+        num_pages = math.ceil(len(server_players) / 10)
+        page_no = min(num_pages, page_no)
 
         # Put names into embed
         all_names = ''
@@ -1989,9 +2014,9 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             if rank <= 10:
                 all_sr += '🔹 ' + str(int(round(server_players[rank-1][1], 0))) + ' 🔹' + '\n'
             else:
-                all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ '+ str(int(round(server_players[rank-1][1], 0))) + '\n'
+                all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
 
-        leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = 'Page ' + str(page_no), colour=0x0013B4)
+        leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = 'Page ' + str(page_no) + '/' + str(num_pages), colour=0x0013B4)
         # leaderboard.set_thumbnail(url = 'https://i.imgur.com/RZBR3Hb.png')
 
         leaderboard.add_field(name = 'Player', value = all_names)
@@ -2069,7 +2094,8 @@ They will then be able to send a single message to the game channel without reve
                             'add':'Adds the specified optional role to the game. (E.g. ~add queen)',
                             'remove':'Removes the specified optional role from the game. (E.g. ~add queen)',
                             'randomroles': 'Toggles randomization of optional roles when starting a game.',
-                            'fast': 'Toggles fast mode on, with reduced timer durations for all phases.',
+                            'fast': 'Toggles fast mode on, with reduced timer durations for all phases.\n\n\
+Voting: 1 min -> 30 secs\nExpedition selection: 5 min -> 2 min\nKidnap: 10 min -> 2 min',
                             'normal': 'Toggles normal mode on, with standard timer durations for all phases.',
                             'casual': 'Toggles casual mode on. SR or badges will not be awarded at the end of a game.',
                             'ranked': 'Toggles ranked mode on, with SR and badges being awarded as usual.',

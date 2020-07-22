@@ -748,9 +748,12 @@ class Game():
                 messagebox = message.content.split(' ')
                 if len(messagebox) == 1:
                     leaderboard = self.state.get_leaderboard(message.guild)
+                elif message.mentions:
+                    player_profile = message.mentions[0]
+                    leaderboard = self.state.get_leaderboard(message.guild, player=player_profile)
                 else:
                     page_no = messagebox[1]
-                    leaderboard = self.state.get_leaderboard(message.guild, page_no)
+                    leaderboard = self.state.get_leaderboard(message.guild, page=page_no)
                 await message.channel.send(embed=leaderboard)
 
             if message.content.startswith('~stats') or message.content.startswith('~gamestats'):
