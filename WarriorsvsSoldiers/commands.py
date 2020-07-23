@@ -119,15 +119,9 @@ class Game():
                                 await self.state.game_channel.send(decision_intro)
 
                                 for person in self.state.expedition_squad:
-                                    if person in list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))):
-                                        decision_msg = 'Do you allow the expedition to succeed?\n\nType \'**y**\' to let the expedition succeed.\n\nType \'**n**\' to sabotage the expedition and destroy the Wall.'
-                                        await person.dm_channel.send(decision_msg)
-                                    else:
-                                        decision_msg = 'Type \'**y**\' to participate in the expedition.'
-                                        # If person is an Ackerman
-                                        if person in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'ackerman', self.state.players)))) and self.state.wall_secured == False:
-                                            decision_msg += '\n\nType \'**s**\' to secure the Walls.'
-                                        await person.dm_channel.send(decision_msg)
+                                    decision_msg = self.state.get_decision_msg(person)
+                                    await person.dm_channel.send(embed=decision_msg)
+
                                 self.state.status = 'expedition decision'
 
                             else:
@@ -168,13 +162,17 @@ class Game():
                     if message.author not in list(map(lambda x: x[0], self.state.expedition_result)):
                         if response.startswith('y'):
                             self.state.expedition_result.append([message.author, 'yes'])
-                            await message.author.dm_channel.send('Response recorded!')
+                            if message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))):
+                                embed_colour = 0xFFF700
+                            else:
+                                embed_colour = 0x2EFF00
+                            await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=embed_colour))
 
                         elif response.startswith('n'):
                             # Warriors only
                             if message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))):
                                 self.state.expedition_result.append([message.author, 'no'])
-                                await message.author.dm_channel.send('Response recorded!')
+                                await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=0xFFF700))
                             else:
                                 await message.author.dm_channel.send('Only a Warrior may sabotage the expedition!')
 
@@ -184,7 +182,7 @@ class Game():
                                 if self.state.wall_secured == False:
                                     self.state.wall_secured = True
                                     self.state.expedition_result.append([message.author, 'secure'])
-                                    await message.author.dm_channel.send('Response recorded!')
+                                    await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=0x2EFF00))
                                 else:
                                     await message.author.dm_channel.send('You have already used your ability to secure the Walls!')
                             else:
@@ -574,7 +572,7 @@ class Game():
                         for warrior in list(filter(lambda x: x in self.state.expedition_squad, list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))))):
                             ackerman_name = list(filter(lambda x: x[1] == 'ackerman', self.state.players))[
                                 0][0].name
-                            await warrior.dm_channel.send('The Ackerman, **' + ackerman_name + '**, has prevented you from destroying the Walls!')
+                            await warrior.dm_channel.send(embed=discord.Embed(description='🛡 The Ackerman, **' + ackerman_name + '**, has prevented you from destroying the Walls!', colour=0x00C9FF))
 
                     if expedition_success == True:
                         result_msg = self.state.expedition_success_update()
@@ -944,6 +942,7 @@ of the Coordinate.'
 
                         # Go decision phase if vote passes, or back to selection phase otherwise
                         if len(list(filter(lambda x: x[1] == 'yes', self.state.expedition_approval))) > 0.5 * len(self.state.expedition_approval):
+                            self.state.expedition_approval = []
                             await self.state.game_channel.send('The proposal has passed!')
 
                             expedition_msg = '--**Expedition #' + \
@@ -956,16 +955,9 @@ of the Coordinate.'
                             await self.state.game_channel.send(decision_intro)
 
                             for person in self.state.expedition_squad:
-                                if person in list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))):
-                                    decision_msg = 'Do you allow the expedition to succeed?\n\nType \'**y**\' to let the expedition succeed.\n\nType \'**n**\' to sabotage the expedition and destroy the Wall.'
-                                    await person.dm_channel.send(decision_msg)
-                                else:
-                                    decision_msg = 'Type \'**y**\' to participate in the expedition.'
-                                    # If person is an Ackerman
-                                    if person in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'ackerman', self.state.players)))) and self.state.wall_secured == False:
-                                        decision_msg += '\n\nType \'**s**\' to secure the Walls.'
-                                    await person.dm_channel.send(decision_msg)
-                            self.state.expedition_approval = []
+                                decision_msg = self.state.get_decision_msg(person)
+                                await person.dm_channel.send(embed=decision_msg)
+
                             self.state.status = 'expedition decision'
 
                         else:

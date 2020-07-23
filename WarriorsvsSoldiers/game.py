@@ -1055,7 +1055,7 @@ Your fellow Warriors are:\n'
         if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.players)))) and self.votes_flipped == False:
             approval_msg += '🔄 Type `f` to flip the votes.'
 
-        approval_embed = discord.Embed(title = 'Expedition approval', description = approval_msg, colour=0xC0C0C0)
+        approval_embed = discord.Embed(title = 'Expedition Approval', description = approval_msg, colour=0xC0C0C0)
         return approval_embed
 
     def approval_players(self):
@@ -1081,7 +1081,7 @@ Your fellow Warriors are:\n'
                 flip_msg = 'The votes for this expedition will be flipped! You may now cast your vote (pre-flip):\n\n' + \
                     '✅ Type `y` to approve the proposal.\n' + \
                     '❌ Type `n` to reject the proposal.\n'
-                flip_embed = discord.Embed(title = 'Expedition approval', description = flip_msg, colour=0xC0C0C0)
+                flip_embed = discord.Embed(title = 'Expedition Approval', description = flip_msg, colour=0xC0C0C0)
                 return flip_embed
             else:
                 return 'You have already used your ability to flip the votes!'
@@ -1106,6 +1106,23 @@ Your fellow Warriors are:\n'
                 approval_result = approval_result + '**' + player[0].name + '** ❌\n'
         expedition_result = discord.Embed(title = 'Expedition approval result', description = approval_result, colour=0xF9FF41)
         return expedition_result
+
+    def get_decision_msg(self, player):
+        # Warrior
+        if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.warrior_roles, self.players)))):
+            decision_msg = 'Do you allow the expedition to succeed?\n\n' + \
+                '✅ Type `y` to let the expedition succeed.\n' + \
+                '❌ Type `n` to sabotage the expedition and destroy the Wall.'
+            decision_embed = discord.Embed(title = 'Expedition Decision', description = decision_msg, colour=0xFFF700)
+            return decision_embed
+        # Soldier
+        else:
+            decision_msg = '✅ Type `y` to participate in the expedition.\n'
+            # If person is an Ackerman
+            if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'ackerman', self.players)))) and self.wall_secured == False:
+                decision_msg += '🛡 Type `s` to secure the Walls.'
+            decision_embed = discord.Embed(title = 'Expedition Decision', description = decision_msg, colour=0x2EFF00)
+            return decision_embed
 
     def decision_players(self):
         decision_status = str(len(list(filter(lambda x: x in list(map(lambda x:x[0], self.expedition_result)), self.expedition_squad)))) + \
@@ -2094,11 +2111,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                     break   
             if present == False:
                 # Add player data into player records
-                player_sr = 1500
                 player_data.append([str(player.id), 1500] + 30 * [0])
-                stats = {'wins': 0, 'total': 0, 'soldier wins': 0, 'soldier games': 0, 'warrior wins': 0, 'warrior games': 0, 'win as soldier': 0, 'played as soldier': 0, 'win as warrior': 0, 'played as warrior': 0, 
-                'win as coord': 0, 'played as coord': 0, 'win as queen': 0, 'played as queen': 0, 'win as warchief': 0, 'played as warchief': 0, 'win as ymir': 0, 'played as ymir':0, 'win as false king':0, 
-                'played as false king': 0, 'win as ackerman': 0, 'played as ackerman': 0, 'win as mike': 0, 'played as mike': 0, 'win as scout': 0, 'played as scout': 0, 'win as spy': 0, 'played as spy': 0}
                 wb.save("WarriorsvsSoldiers/database.xlsx")
         
         player_rankings = {} # {player id: sr, ...}
