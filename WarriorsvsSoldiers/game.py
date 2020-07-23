@@ -720,7 +720,7 @@ However, doing so also alerts any Warriors on the expedition of your identity as
 
         mike_msg = 'You are **Mike Zacharias**!\n\n\
 Using your incredible sense of smell, you have the ability to sniff out Titans in expeditions.\n\n\
-During the approval phase of each expedition, you will be told how many Titans the expedition team contains, if any. Both Warriors and the Coordinate are considered Titans.\n\n\
+During the approval phase of every expedition you are in, you will be told how many Titans the expedition team contains, if any. Both Warriors and the Coordinate are considered Titans.\n\n\
 Your task is to aid the Soldiers discreetly without giving away this information to the Warriors.'
 
         scout_msg = 'You are the **Scout**!\n\n\
@@ -1032,6 +1032,32 @@ Your fellow Warriors are:\n'
         self.message_box = []
         return '--**Expedition #' + str(self.cur_expedition) + ': Approval phase**--'
 
+    def get_expedition_approval_msg(self, player):
+        approval_msg = 'The proposed expedition team consists of the following members:\n'
+
+        for member in self.expedition_squad:
+            approval_msg += '**' + member.name + '**\n'
+
+        # Warn Mike if there are titans inside
+        if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'mike', self.players)))) and player in self.expedition_squad:
+            detectable_titans = self.warrior_roles + ['coordinate']
+            num_titans = len(list(filter(lambda x: x in list(map(lambda z: z[0], list(filter(lambda y: y[1] in detectable_titans, self.players)))),
+                                            self.expedition_squad)))
+            if num_titans >= 1:
+                approval_msg += '\n❗You smell **%s** Titan%s in this expedition!❗\n' % (
+                    str(num_titans), 's' if num_titans >= 2 else '')
+
+        approval_msg += '\nDo you approve of this expedition team proposal?\n' + \
+            '✅ Type `y` to approve the proposal.\n' + \
+            '❌ Type `n` to reject the proposal.\n'
+
+        # Add flipping option for Spy
+        if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.players)))) and self.votes_flipped == False:
+            approval_msg += '🔄 Type `f` to flip the votes.'
+
+        approval_embed = discord.Embed(title = 'Expedition approval', description = approval_msg, colour=0xC0C0C0)
+        return approval_embed
+
     def approval_players(self):
         approval_status = ''
         for player in list(map(lambda x:x[0], self.players)):
@@ -1046,6 +1072,21 @@ Your fellow Warriors are:\n'
         for player in list(map(lambda x:x[0], self.players)):
             if player not in list(map(lambda x:x[0], self.expedition_approval)):
                 self.expedition_approval.append([player, 'yes'])
+
+    def get_flip_msg(self, player):
+        if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.players)))):
+            if self.votes_flipped == False:
+                self.votes_flipped = True
+                self.flipping_votes = True
+                flip_msg = 'The votes for this expedition will be flipped! You may now cast your vote (pre-flip):\n\n' + \
+                    '✅ Type `y` to approve the proposal.\n' + \
+                    '❌ Type `n` to reject the proposal.\n'
+                flip_embed = discord.Embed(title = 'Expedition approval', description = flip_msg, colour=0xC0C0C0)
+                return flip_embed
+            else:
+                return 'You have already used your ability to flip the votes!'
+        else:
+            return 'Only a Spy may flip the votes!'
 
     def flip_votes(self):
         for player in self.expedition_approval:

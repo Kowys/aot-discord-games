@@ -65,23 +65,19 @@ class Game():
                 if message.author not in list(map(lambda x: x[0], self.state.expedition_approval)):
                     if response.startswith('y'):
                         self.state.expedition_approval.append([message.author, 'yes'])
-                        await message.author.dm_channel.send('Response recorded!')
+                        await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=0xC0C0C0))
 
                     elif response.startswith('n'):
                         self.state.expedition_approval.append([message.author, 'no'])
-                        await message.author.dm_channel.send('Response recorded!')
+                        await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=0xC0C0C0))
 
                     elif response.startswith('f'):
                         # Spy only
-                        if message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.state.players)))):
-                            if self.state.votes_flipped == False:
-                                self.state.votes_flipped = True
-                                self.state.flipping_votes = True
-                                await message.author.dm_channel.send('The votes for this expedition will be flipped! You may now cast your vote (y/n).')
-                            else:
-                                await message.author.dm_channel.send('You have already used your ability to flip the votes!')
+                        flip_msg = self.state.get_flip_msg(message.author)
+                        if type(flip_msg) == str:
+                            await message.author.dm_channel.send(flip_msg)
                         else:
-                            await message.author.dm_channel.send('Only a Spy may flip the votes!')
+                            await message.author.dm_channel.send(embed=flip_msg) 
 
                     if not response.startswith('f'):
                         expedition_approval_status = self.state.approval_players()
@@ -554,23 +550,8 @@ class Game():
                                 for player in list(map(lambda x: x[0], self.state.players)):
                                     if not player.dm_channel:
                                         await player.create_dm()
-                                    # Warn Mike if there are titans inside
-                                    if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'mike', self.state.players)))) and player in self.state.expedition_squad:
-                                        detectable_titans = self.state.warrior_roles + ['coordinate']
-                                        num_titans = len(list(filter(lambda x: x in list(map(lambda z: z[0], list(filter(lambda y: y[1] in detectable_titans, self.state.players)))),
-                                                                     self.state.expedition_squad)))
-                                        if num_titans >= 1:
-                                            dangerous_warning = '❗You smell **%s** Titan%s in this expedition!❗' % (
-                                                str(num_titans), 's' if num_titans >= 2 else '')
-                                            await player.dm_channel.send(dangerous_warning)
-
-                                    approval_query = 'Do you approve of this expedition team proposal?\n\n' + \
-                                        'Type \'**y**\' to approve the proposal, \'**n**\' to reject the proposal.'
-
-                                    if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.state.players)))) and self.state.votes_flipped == False:
-                                        approval_query += ' Type \'**f**\' to flip the votes.'
-
-                                    await player.dm_channel.send(approval_query)
+                                    approval_msg = self.state.get_expedition_approval_msg(player)
+                                    await player.dm_channel.send(embed=approval_msg)
                         else:
                             await message.channel.send('Please pick someone for the expedition team!')
                     else:
