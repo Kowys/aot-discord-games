@@ -34,7 +34,7 @@ class Game():
                 preface_msg = 'The **Paths Holder** says:\n📢 '
                 player_msg = message.content
 
-                await message.author.dm_channel.send('Your message has been sent!')
+                await message.author.dm_channel.send(embed=discord.Embed(description='Your message has been sent!', colour=0x4B4B4B))
                 await self.state.game_channel.send(announcement_msg)
                 await asyncio.sleep(2)
 
@@ -458,7 +458,7 @@ class Game():
                             paths_holder_msg = '📢You are the **Paths Holder**!📢\n\nType in the message you wish to send to the world now.'
                             if not self.state.paths_holders[0].dm_channel:
                                 await self.state.paths_holders[0].create_dm()
-                            await self.state.paths_holders[0].dm_channel.send(paths_holder_msg)
+                            await self.state.paths_holders[0].dm_channel.send(embed=discord.Embed(description=paths_holder_msg, colour=0x4B4B4B))
 
                         else:
                             self.state.status = 'expedition selection'
