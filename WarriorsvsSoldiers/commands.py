@@ -23,7 +23,7 @@ class Game():
             # Check your own role
             if response.startswith('~role'):
                 player_role = self.state.get_player_role(message.author)
-                await message.author.dm_channel.send(player_role)
+                await message.author.dm_channel.send(embed=player_role)
 
             # Paths phase
             if self.state.status == 'paths announcement' and message.author == self.state.paths_holders[0]:
@@ -369,7 +369,7 @@ class Game():
                         if not player[0].dm_channel:
                             await player[0].create_dm()
                         role_msg = self.state.get_role_msg(player)
-                        await player[0].dm_channel.send(role_msg)
+                        await player[0].dm_channel.send(embed=role_msg)
                     await asyncio.sleep(1)
                     await message.channel.send(self.state.roles_assigned_msg)
 
@@ -392,7 +392,7 @@ class Game():
             # Check your own role
             if message.content == '~role':
                 player_role = self.state.get_player_role(message.author)
-                await message.author.dm_channel.send(player_role)
+                await message.author.dm_channel.send(embed=player_role)
 
             # Check roles currently in the game
             if message.content.startswith('~roles'):
@@ -868,11 +868,23 @@ class Game():
 
             # Testing command
             if message.content.startswith('~test') and message.author.id == 238808836075421697:
-                status = discord.Embed(title='Current Game Information', description= 'Number of players:', colour=0xF9FF41)
-                basement_progress = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ \u2001\u2001\u2001✅\n\u2001\u2001\u2001\u2001\u20012⃣\n\u2001\u2001\u2001\u2001\u20013⃣🏁'
-                wall_status = '￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ \u200A\u200A\u2000🏚💥🏚\n\u2001\u2000\u2000🏚💥🏚\n\u2001\u2000\u2000🏰🇸🏰'
-                status.add_field(name = 'Progress towards Basement', value = basement_progress, inline = True)
-                status.add_field(name = 'Status of the Walls', value = wall_status, inline = True)
+                role_msg = 'You are a **Soldier**!\n\n\
+As a member of the Survey Corps, you have been tasked with the responsibility of finding the secrets to the world \
+by reaching the basement.\n\n\
+Your task is to find out who the traitors within the military are, reach the basement before they destroy all 3 Walls, and help protect the identity \
+of the Coordinate.'
+                status = discord.Embed(title='🛡 Soldier 🛡', description=role_msg, colour=0x00C9FF)
+                status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png')
+
+#                 role_msg = 'You are a **Warrior**!\n\n\
+# You are a Titan shifter who has infiltrated the Walls and are now working undercover to undermine the military\'s efforts. Working with your \
+# fellow Warriors, you seek to destroy the Walls and wipe out humanity. \n\n\
+# Your task is to conceal your identity from the Soldiers, and persuade them to allow you into their expeditions. At the same time, you need to identify the Coordinate within the ranks of the Soldiers.\n\n\
+# Your fellow Warriors are:\n\
+# **Warrior 1**\n\
+# **Warrior 2**'
+#                 status = discord.Embed(title='⚔ Warrior ⚔', description=role_msg, colour=0xB23E00)
+#                 status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png')
                 await message.channel.send(embed=status)
 
 

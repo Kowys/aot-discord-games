@@ -256,7 +256,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
     def add_with_role_count_check(self, role):
         soldier_dict = {'queen': '👼**Queen**👼',
                         'ackerman': '💂**Ackerman**💂',
-                        'mike': '<:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961>',
+                        'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>',
                         'scout': '🏇**Scout**🏇'}
 
         warrior_dict = {'warchief': '🦹‍♂️**Warchief**🦹‍♂️',
@@ -334,7 +334,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                     if role not in self.newroles:
                         return self.add_with_role_count_check('mike')
                     else:
-                        return '<:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961> is already in the game!'
+                        return '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416> is already in the game!'
 
                 elif role == 'scout':
                     if role not in self.newroles:
@@ -413,9 +413,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                     role = 'mike'
                     if role in self.newroles:
                         self.newroles.remove('mike')
-                        return '<:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961> has been removed from the game!'
+                        return '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416> has been removed from the game!'
                     else:
-                        return '<:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961> is not in the game!'
+                        return '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416> is not in the game!'
 
                 elif role == 'scout':
                     if role in self.newroles:
@@ -535,7 +535,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             mikecheck = '✅' if 'mike' in self.newroles else '✖'
             scoutcheck = '✅' if 'scout' in self.newroles else '✖'
             role_msg = queencheck + ' 👼**Queen**👼\n\n' + ackermancheck + ' 💂**Ackerman**💂\n\n' + \
-                mikecheck + ' <:aotSmirk2:455223780957224961> **Mike Zacharias** <:aotSmirk2:455223780957224961>\n\n' + scoutcheck + ' 🏇**Scout**🏇'
+                mikecheck + ' <:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n' + scoutcheck + ' 🏇**Scout**🏇'
             return role_msg
         elif team == 'warrior':
             warchiefcheck = '✅' if 'warchief' in self.newroles else '✖'
@@ -669,25 +669,26 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             return 'Only the host of the current game, **' + self.game_host.name + '**, can reset the game!'
 
     def get_role_msg(self, player_lst):
-        soldier_msg = 'You are a 🛡**Soldier**🛡!\n\n\
+        soldier_msg = 'You are a **Soldier**!\n\n\
 As a member of the Survey Corps, you have been tasked with the responsibility of finding the secrets to the world \
 by reaching the basement.\n\n\
 Your task is to find out who the traitors within the military are, reach the basement before they destroy all 3 Walls, and help protect the identity \
 of the Coordinate.'
 
-        warrior_msg = 'You are a ⚔**Warrior**⚔!\n\n\
+        warrior_msg = 'You are a **Warrior**!\n\n\
 You are a Titan shifter who has infiltrated the Walls and are now working undercover to undermine the military\'s efforts. Working with your \
 fellow Warriors, you seek to destroy the Walls and wipe out humanity. \n\n\
-Your task is to conceal your identity from the Soldiers, and persuade them to allow you into their expeditions. At the same time, you need to try and identify the Coordinate within the ranks of the soldiers. \
-If the Soldiers reach the basement before you destroy all the Walls, you can still achieve victory by kidnapping the Coordinate and bringing them to your hometown.\n\n\
+Your task is to conceal your identity from the Soldiers, and persuade them to allow you into their expeditions. At the same time, you need to try and identify the Coordinate within the ranks of the Soldiers.\n\n\
 Your fellow Warriors are:\n'
         for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
             if warrior == player_lst or warrior[1] == 'ymir':
                 continue
             else:
                 warrior_msg = warrior_msg + '**' + warrior[0].name + '**\n'
+        if 'ymir' in self.newroles:
+            warrior_msg = warrior_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
-        coordinate_msg = 'You are the 🗺**Coordinate**🗺!\n\n\
+        coordinate_msg = 'You are the **Coordinate**!\n\n\
 You possess the special ability to sense Titan powers, which allows you to know who the Warriors are. However, due to the powers you possess, \
 you are also their prime target, and so you must endeavour to remain hidden while aiding the Soldiers as much as you can. \n\n\
 Your task is to help the Soldiers achieve victory using your knowledge of the Warriors\' identities, while keeping your identity as the Coordinate a secret from the Warriors.\n\n\
@@ -697,8 +698,10 @@ The Warriors are:\n'
                 continue
             else:
                 coordinate_msg = coordinate_msg + '**' + warrior[0].name + '**\n'
+        if 'warchief' in self.newroles:
+            coordinate_msg = coordinate_msg + '\n❗*The identity of the **Warchief** is hidden from you*.'
 
-        queen_msg = 'You are the 👼**Queen**👼!\n\n\
+        queen_msg = 'You are the **Queen**!\n\n\
 As Queen of the Walls, you possess the ability to sense the Coordinate\'s powers. Use this knowledge wisely to help the Soldiers achieve victory.\n\n\
 Your task is to protect the Coordinate by using your knowledge of their identity to deceive the Warriors into thinking you are the Coordinate.\n\n'
         if 'false king' not in self.newroles:
@@ -710,22 +713,21 @@ Your task is to protect the Coordinate by using your knowledge of their identity
             for role in coord_list:
                 queen_msg = queen_msg + '**' + list(filter(lambda x:x[1] == role, self.players))[0][0].name + '**\n'
 
-        ackerman_msg = 'You are the 💂**Ackerman**💂!\n\n\
+        ackerman_msg = 'You are the **Ackerman**!\n\n\
 As one of humanity\'s strongest soldiers, you have been tasked with the responsibility of protecting the Walls.\n\n\
-Your task is the same as the Soldiers: to find out who the traitors within the military are, reach the basement before they destroy all 3 Walls, and help protect the identity \
-of the Coordinate.\n\n\
-In addition, you also have the ability to **secure** the Walls on one expedition if you\'re in it. This prevents any Warriors on the expedition from destroying it. However, doing so also \
-alerts any Warriors on the expedition of your identity as the Ackerman, making it easier for them to identity the Coordinate. Use this ability wisely.'
+You have the ability to **secure** the Walls on one expedition if you\'re in it. This prevents any Warriors on the expedition from destroying it.\n\n\
+However, doing so also alerts any Warriors on the expedition of your identity as the Ackerman, making it easier for them to identity the Coordinate. Use this ability wisely.'
 
-        mike_msg = 'You are <:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961>!\n\n\
-As humanity\'s 2nd strongest soldier, you have the ability to use your incredible sense of smell to sniff out Titans in expeditions.\n\n\
-During the approval phase of each expedition, you will be told how many Titans the expedition team contains, if any. Both Warriors and the Coordinate are considered Titans.'
+        mike_msg = 'You are **Mike Zacharias**!\n\n\
+Using your incredible sense of smell, you have the ability to sniff out Titans in expeditions.\n\n\
+During the approval phase of each expedition, you will be told how many Titans the expedition team contains, if any. Both Warriors and the Coordinate are considered Titans.\n\n\
+Your task is to aid the Soldiers discreetly without giving away this information to the Warriors.'
 
-        scout_msg = 'You are the 🏇**Scout**🏇!\n\n\
+        scout_msg = 'You are the **Scout**!\n\n\
 As the guide of the expedition, you will fire a signal flare in any expedition that you are in, alerting all to your presence.\n\n\
 Your task is to guide the Soldiers to pick the correct team for expeditions, while also hiding your identity from the Warriors to help protect the Coordinate.'
 
-        warchief_msg = 'You are the 🦹‍♂️**Warchief**🦹‍♂️!\n\n\
+        warchief_msg = 'You are the **Warchief**!\n\n\
 As the leader of the Warriors, you have the unique ability of concealing your Titan powers from the Coordinate. Use this extra layer of anonymity to infiltrate deep into the Soldiers\' \
 ranks and ensure the Warriors emerge victorious.\n\n\
 Your task is the same as your fellow Warriors: Destroy the Walls by getting into expeditions, and try to identify the Coordinate.\n\n\
@@ -735,13 +737,15 @@ Your fellow Warriors are:\n'
                 continue
             else:
                 warchief_msg = warchief_msg + '**' + warrior[0].name + '**\n'
+        if 'ymir' in self.newroles:
+            warchief_msg = warchief_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
-        ymir_msg = 'You are 🤷‍♀️**Ymir**🤷‍♀️!\n\n\
+        ymir_msg = 'You are **Ymir**!\n\n\
 While you are on the Warriors\' side, you do not know of their identities, nor do they know of yours. To achieve success, be sure to keep a close watch \
 for potential comrades during expeditions.\n\n\
 Your task is to identify your fellow Warriors, and work with them to destroy the Walls.'
 
-        falseking_msg = 'You are the 🕴**False King**🕴!\n\n\
+        falseking_msg = 'You are the **False King**!\n\n\
 You appear as the Coordinate to the Queen, in addition to the real Coordinate. Use this ability to confuse her by acting as the Coordinate, to \
 help turn the tide in the Warriors\' favor.\n\n\
 Your task is the same as your fellow Warriors: Destroy the Walls by getting into expeditions, and try to identify the Coordinate.\n\n\
@@ -751,8 +755,10 @@ Your fellow Warriors are:\n'
                 continue
             else:
                 falseking_msg = falseking_msg + '**' + warrior[0].name + '**\n'
+        if 'ymir' in self.newroles:
+            falseking_msg = falseking_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
-        spy_msg = 'You are the 🕵️‍♀️**Spy**🕵️‍♀️!\n\n\
+        spy_msg = 'You are the **Spy**!\n\n\
 As the Warriors\' most skilled infiltrator, you have the ability to flip the votes during the approval phase of an expedition once.\n\n\
 Your task is to help swing the expeditions in the Warriors\' favor at the right time, to achieve your goal of destroying the Walls.\n\n\
 Your fellow Warriors are:\n'
@@ -761,6 +767,8 @@ Your fellow Warriors are:\n'
                 continue
             else:
                 spy_msg = spy_msg + '**' + warrior[0].name + '**\n'
+        if 'ymir' in self.newroles:
+            spy_msg = spy_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
         player_role = player_lst[1]
         role_msgs = {
@@ -776,15 +784,56 @@ Your fellow Warriors are:\n'
             'false king': falseking_msg,
             'spy': spy_msg
         }
-        return role_msgs[player_role]
+        allegiances = {
+            'soldier': 'soldier', 
+            'warrior': 'warrior', 
+            'coordinate': 'soldier',
+            'queen': 'soldier', 
+            'ackerman': 'soldier',
+            'mike': 'soldier',
+            'scout': 'soldier',
+            'warchief': 'warrior', 
+            'ymir': 'warrior', 
+            'false king': 'warrior',
+            'spy': 'warrior'
+        }
+
+        allegiance = allegiances[player_role]
+        role_msg = role_msgs[player_role]
+
+        titles = {
+            'soldier': '🛡 Soldier 🛡',
+            'warrior': '⚔ Warrior ⚔',
+            'coordinate': '🗺 Coordinate 🗺',
+            'queen': '👼 Queen 👼',
+            'ackerman': '💂 Ackerman 💂',
+            'mike': '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>',
+            'scout': '🏇 Scout 🏇',
+            'warchief': '🦹‍♂️ Warchief 🦹‍♂️',
+            'ymir': '🤷‍♀️ Ymir 🤷‍♀️',
+            'false king': '🕴 False King 🕴',
+            'spy': '🕵️‍♀️ Spy 🕵️‍♀️'
+        }
+        thumbnails = {
+            'soldier': 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png', 
+            'warrior': 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png'
+        }
+        allegiance_colours = {
+            'soldier': 0x00C9FF,
+            'warrior': 0xB23E00
+        }
+
+        role_embed = discord.Embed(title=titles[player_role], description=role_msg, colour=allegiance_colours[allegiance])
+        role_embed.set_thumbnail(url=thumbnails[allegiance])
+        return role_embed
 
     def get_player_role(self, player = None):
-        # Lists all roles currently in the game
         if player == None:
             # Game hasn't started yet
             if self.status == 'waiting for players' or self.status == 'waiting for game' or self.status.startswith('game ended'):
+                # Lists all roles available in the game
                 soldier_roles = '\n'.join(['🛡**Soldier**🛡', '🗺**Coordinate**🗺', '👼**Queen**👼', '💂**Ackerman**💂', 
-                '<:aotSmirk2:455223780957224961> **Mike Zacharias** <:aotSmirk2:455223780957224961>', '🏇**Scout**🏇'])
+                '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>', '🏇**Scout**🏇'])
                 warrior_roles = '\n'.join(['⚔**Warrior**⚔', '🦹‍♂️**Warchief**🦹‍♂️', '🕴**False King**🕴', '🤷‍♀️**Ymir**🤷‍♀️', '🕵️‍♀️**Spy**🕵️‍♀️'])
                 
                 list_of_roles = discord.Embed(title = 'List of roles available', description = 'Type ~help <role> for more information about a role.', colour=0x0013B4)
@@ -792,6 +841,7 @@ Your fellow Warriors are:\n'
                 list_of_roles.add_field(name = 'Warrior roles', value = warrior_roles, inline = True)
                 return list_of_roles
             else:
+                # Lists all roles currently in the game
                 all_roles = [player[1] for player in self.players]
 
                 def role_ordering(role_name):
@@ -801,7 +851,7 @@ Your fellow Warriors are:\n'
                 all_roles.sort(key = role_ordering)
                 display_roles = ''
                 display_role_map = {'soldier': '🛡**Soldier**🛡', 'queen': '👼**Queen**👼', 'ackerman': '💂**Ackerman**💂', 
-                'mike': '<:aotSmirk2:455223780957224961> **Mike Zacharias** <:aotSmirk2:455223780957224961>', 'scout': '🏇**Scout**🏇', 'coordinate': '🗺**Coordinate**🗺', 
+                'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>', 'scout': '🏇**Scout**🏇', 'coordinate': '🗺**Coordinate**🗺', 
                 'warrior': '⚔**Warrior**⚔', 'warchief': '🦹‍♂️**Warchief**🦹‍♂️', 'false king': '🕴**False King**🕴', 'ymir': '🤷‍♀️**Ymir**🤷‍♀️', 'spy': '🕵️‍♀️**Spy**🕵️‍♀️'}
                 for role in all_roles:
                     display_roles += display_role_map[role] + '\n'
@@ -809,8 +859,8 @@ Your fellow Warriors are:\n'
                 list_of_roles = discord.Embed(title = 'Current list of roles in game', description = display_roles, colour=0xF9FF41)
                 return list_of_roles
 
-        # DM player their role
         else:
+            # DM player their role
             if player not in list(map(lambda x: x[0], self.players)):
                 return 'You are not in a game!'
             elif self.status == 'waiting for players':
@@ -818,23 +868,27 @@ Your fellow Warriors are:\n'
             else:
                 player_role = list(filter(lambda x: player == x[0], self.players))[0][1]
 
-                soldier_msg = 'You are a 🛡**Soldier**🛡!'
+                soldier_msg = 'You are a **Soldier**!'
 
-                warrior_msg = 'You are a ⚔**Warrior**⚔!\n\nYour fellow Warriors are:\n'
+                warrior_msg = 'You are a **Warrior**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
                     if warrior[0] == player or warrior[1] == 'ymir':
                         continue
                     else:
                         warrior_msg = warrior_msg + '**' + warrior[0].name + '**\n'
+                if 'ymir' in self.newroles:
+                    warrior_msg = warrior_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
-                warchief_msg = 'You are the 🦹‍♂️**Warchief**🦹‍♂️!\n\nYour fellow Warriors are:\n'
+                warchief_msg = 'You are the **Warchief**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
                     if warrior[0] == player or warrior[1] == 'ymir':
                         continue
                     else:
                         warchief_msg = warchief_msg + '**' + warrior[0].name + '**\n'
+                if 'ymir' in self.newroles:
+                    warchief_msg = warchief_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
-                queen_msg = 'You are the 👼**Queen**👼!\n\n'
+                queen_msg = 'You are the **Queen**!\n\n'
                 if 'false king' not in self.newroles:
                     queen_msg = queen_msg + 'The Coordinate is:\n**' + list(filter(lambda x:x[1] == 'coordinate', self.players))[0][0].name + '**'
                 else:
@@ -844,34 +898,40 @@ Your fellow Warriors are:\n'
                     for role in coord_list:
                         queen_msg = queen_msg + '**' + list(filter(lambda x:x[1] == role, self.players))[0][0].name + '**\n'
 
-                ackerman_msg = 'You are the 💂**Ackerman**💂!'
+                ackerman_msg = 'You are the **Ackerman**!'
 
-                mike_msg = 'You are <:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961>!'
+                mike_msg = 'You are **Mike Zacharias**!'
 
-                scout_msg = 'You are the 🏇**Scout**🏇!'
+                scout_msg = 'You are the **Scout**!'
                 
-                coordinate_msg = 'You are the 🗺**Coordinate**🗺!\n\nThe Warriors are:\n'
+                coordinate_msg = 'You are the **Coordinate**!\n\nThe Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
                     if warrior[1] == 'warchief':
                         continue
                     else:
                         coordinate_msg = coordinate_msg + '**' + warrior[0].name + '**\n'
+                if 'warchief' in self.newroles:
+                    coordinate_msg = coordinate_msg + '\n❗*The identity of the **Warchief** is hidden from you*.'
 
-                ymir_msg = 'You are 🤷‍♀️**Ymir**🤷‍♀️!'
+                ymir_msg = 'You are **Ymir**!'
 
-                falseking_msg = 'You are the 🕴**False King**🕴!\n\nYour fellow Warriors are:\n'
+                falseking_msg = 'You are the **False King**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
                     if warrior[0] == player or warrior[1] == 'ymir':
                         continue
                     else:
                         falseking_msg = falseking_msg + '**' + warrior[0].name + '**\n'
+                if 'ymir' in self.newroles:
+                    falseking_msg = falseking_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
-                spy_msg = 'You are the 🕵️‍♀️**Spy**🕵️‍♀️!\n\nYour fellow Warriors are:\n'
+                spy_msg = 'You are the **Spy**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
                     if warrior[0] == player or warrior[1] == 'ymir':
                         continue
                     else:
                         spy_msg = spy_msg + '**' + warrior[0].name + '**\n'
+                if 'ymir' in self.newroles:
+                    spy_msg = spy_msg + '\n❗*You do not know **Ymir\'s** identity.*'
 
                 role_msgs = {
                     'soldier': soldier_msg, 
@@ -886,7 +946,48 @@ Your fellow Warriors are:\n'
                     'false king': falseking_msg,
                     'spy': spy_msg
                 }
-                return role_msgs[player_role]
+                allegiances = {
+                    'soldier': 'soldier', 
+                    'warrior': 'warrior', 
+                    'coordinate': 'soldier',
+                    'queen': 'soldier', 
+                    'ackerman': 'soldier',
+                    'mike': 'soldier',
+                    'scout': 'soldier',
+                    'warchief': 'warrior', 
+                    'ymir': 'warrior', 
+                    'false king': 'warrior',
+                    'spy': 'warrior'
+                }
+
+                allegiance = allegiances[player_role]
+                role_msg = role_msgs[player_role]
+
+                titles = {
+                    'soldier': '🛡 Soldier 🛡',
+                    'warrior': '⚔ Warrior ⚔',
+                    'coordinate': '🗺 Coordinate 🗺',
+                    'queen': '👼 Queen 👼',
+                    'ackerman': '💂 Ackerman 💂',
+                    'mike': '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>',
+                    'scout': '🏇 Scout 🏇',
+                    'warchief': '🦹‍♂️ Warchief 🦹‍♂️',
+                    'ymir': '🤷‍♀️ Ymir 🤷‍♀️',
+                    'false king': '🕴 False King 🕴',
+                    'spy': '🕵️‍♀️ Spy 🕵️‍♀️'
+                }
+                thumbnails = {
+                    'soldier': 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png', 
+                    'warrior': 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png'
+                }
+                allegiance_colours = {
+                    'soldier': 0x00C9FF,
+                    'warrior': 0xB23E00
+                }
+
+                role_embed = discord.Embed(title=titles[player_role], description=role_msg, colour=allegiance_colours[allegiance])
+                role_embed.set_thumbnail(url=thumbnails[allegiance])
+                return role_embed
 
     def pick(self, player):
         if player in list(map(lambda x: x[0], self.players)):
@@ -1131,7 +1232,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         if 'ackerman' in self.newroles:
             summary.add_field(name = '💂Ackerman💂', value = list(filter(lambda x:x[1] == 'ackerman', self.players))[0][0].name)
         if 'mike' in self.newroles:
-            summary.add_field(name = '<:aotSmirk2:455223780957224961> Mike Zacharias <:aotSmirk2:455223780957224961>', value = list(filter(lambda x:x[1] == 'mike', self.players))[0][0].name)    
+            summary.add_field(name = '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>', value = list(filter(lambda x:x[1] == 'mike', self.players))[0][0].name)    
         if 'scout' in self.newroles:
             summary.add_field(name = '🏇Scout🏇', value = list(filter(lambda x:x[1] == 'scout', self.players))[0][0].name)
         if 'warchief' in self.newroles:
@@ -1923,7 +2024,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             mike_stats += '\nWins: ' + str(mike_wins)
             if mike_wins > 0:
                 mike_stats += ' (' + str(round(100 * mike_wins / mike_games, 1)) + '%)'
-            game_stats.add_field(name = '<:aotSmirk2:455223780957224961>Mike Zacharias <:aotSmirk2:455223780957224961>', value = mike_stats)
+            game_stats.add_field(name = '<:aotSmirk:571740978377916416>Mike Zacharias <:aotSmirk:571740978377916416>', value = mike_stats)
 
             scout_stats = 'Games: ' + str(scout_games)
             scout_stats += '\nWins: ' + str(scout_wins)
@@ -2048,8 +2149,8 @@ The Ackerman has the ability to secure the Walls in **one** expedition that they
 alerts any Warriors in the expedition of the Ackerman\'s identity, making it easier for them to identity the Coordinate.\n\n\
 **Tip**: Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, reducing the chances \
 of the Warriors kidnapping the Coordinate at the end.'
-        mike_info = '<:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961>\n\n\
-Humanity\'s 2nd strongest soldier **Mike Zacharias** has the incredible ability to sniff out Titans in expeditions <:aotSmirk2:455223780957224961>. \
+        mike_info = '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n\
+Humanity\'s 2nd strongest soldier **Mike Zacharias** has the incredible ability to sniff out Titans in expeditions <:aotSmirk:571740978377916416>. \
 During the approval phase of all the expeditions that he is in, Mike will be told how many Titans the expedition contains, if any. Both Warriors and the Coordinate are considered Titans.\n\n\
 **Tip**: The knowledge of how many Titans are in an expedition can be very valuable to both Soldiers and Warriors. Be careful what you do with that information. \
 Prove yourself worthy of the title of humanity\'s 2nd strongest soldier!'
@@ -2255,8 +2356,8 @@ of the Warriors kidnapping the Coordinate at the end.'
 
         elif num == 7:
             tutorial7 = '**Optional Soldier Roles (2)**\n\n\
-<:aotSmirk2:455223780957224961>**Mike Zacharias** <:aotSmirk2:455223780957224961>\n\n\
-Humanity\'s 2nd strongest soldier **Mike Zacharias** has the incredible ability to sniff out Titans in expeditions <:aotSmirk2:455223780957224961>. \
+<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n\
+Humanity\'s 2nd strongest soldier **Mike Zacharias** has the incredible ability to sniff out Titans in expeditions <:aotSmirk:571740978377916416>. \
 During the approval phase of all the expeditions that he is in, Mike will be told how many Titans the expedition contains, if any. Both Warriors and the Coordinate are considered Titans.\n\n\
 Tip: The knowledge of how many Titans are in an expedition can be very valuable to both Soldiers and Warriors. Be careful what you do with that information. \
 Prove yourself worthy of the title of humanity\'s 2nd strongest soldier!\n\n\
