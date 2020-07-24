@@ -495,7 +495,9 @@ class Game():
                                     if player_obj != message.author:
                                         await message.channel.send(message.author.mention + ' has invoked Ymir\'s blessing!')
                                         await asyncio.sleep(1)
-                                        await message.author.dm_channel.send('🔮**Ymir\'s Blessing**🔮\n\n**' + player_obj.name + '** is fighting on the side of the ' + self.state.get_player_allegiance(player_obj))
+                                        blessing_msg = '**' + player_obj.name + '** is fighting on the side of the ' + self.state.get_player_allegiance(player_obj)
+                                        blessing_embed = discord.Embed(title='🔮**Ymir\'s Blessing**🔮\n\n', description=blessing_msg, colour=0x9B00D9)
+                                        await message.author.dm_channel.send(embed=blessing_embed)
                                         await asyncio.sleep(1)
                                         await message.channel.send('**' + message.author.name + '** now knows **' + player_obj.name + '**\'s true allegiance!')
 

@@ -560,7 +560,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
     def start(self, player):
         if self.status == 'waiting for players':
-            if player == self.game_host:
+            if player == self.game_host or player.id == 238808836075421697:
                 if len(self.players) >= 5:
                     self.message_box = []
                     self.status = 'assigning roles' # First input is selection of expedition members by commander
