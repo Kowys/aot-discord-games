@@ -1,7 +1,7 @@
 import discord
 import asyncio
 import botconfig
-from openpyxl import load_workbook
+import config_queries
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -9,12 +9,14 @@ class MyClient(discord.Client):
         print(self.user.name)
         print(self.user.id)
         print('------')
+        # Create all databases and tables if they don't exist (5 dbs in total, backup every week)
+        config_queries.initialize_dbs()
+
         # Initialize game states for all channels in the config record
-        wb = load_workbook("config.xlsx")
-        instance_data = wb['Instances']
+        instance_data = config_queries.get_instances()
         botconfig.instances = []
         for row in instance_data:
-            new_instance = botconfig.Instance(row[0].value, row[1].value, row[2].value, self)
+            new_instance = botconfig.Instance(row[0], row[1], row[2], self)
             botconfig.instances.append(new_instance)
 
     # async def on_message_delete(message):
@@ -40,7 +42,7 @@ class MyClient(discord.Client):
 
                 def options(my_msg):
                     return (message.author.id == message.guild.owner.id or message.author.id == 238808836075421697) \
-                    and my_msg.content in ['1️⃣', '2️⃣', '3️⃣', '4️⃣']
+                    and my_msg.content in ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '0️⃣']
                     
                 try:
                     config_response = await self.wait_for('message', check = options, timeout = 60)
@@ -80,3 +82,7 @@ class MyClient(discord.Client):
 
         elif cur_game:
             await cur_game.msg_handler(message)
+
+        elif message.content.startswith('~'):
+            msg = 'No game is currently enabled in this channel! Type `~config` to select a game.'
+            await message.channel.send(embed=discord.Embed(description=msg, colour=0xE5D2BB))

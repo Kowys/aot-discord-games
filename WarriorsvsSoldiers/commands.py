@@ -483,7 +483,7 @@ class Game():
                             await message.channel.send(commander_msg2)
 
                 elif message.author != self.state.game_host:
-                    await message.channel.send('Only the host, **' + self.state.game_host.name + '**, can start or redo the expedition!')
+                    await message.channel.send('Only the host, **' + self.state.game_host.name + '**, can start the expedition!')
 
             if message.content.startswith('~check'):
                 if self.state.status == 'ymir\'s blessing':

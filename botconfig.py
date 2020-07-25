@@ -1,10 +1,10 @@
 import discord
 import asyncio
+import config_queries
 import ChooseYourAdventure.commands
 import Jaegermore.commands
 import WarriorsvsSoldiers.commands
 import AttackonWikia.commands
-from openpyxl import load_workbook
 
 # Each instance contains server ID, channel ID, and client as attributes
 instances = []
@@ -44,63 +44,55 @@ def get_cur_game(message):
             except:
                 continue
         else:
-            if instance.channel_id == str(message.channel.id):
+            if instance.channel_id == message.channel.id:
                 return instance
 
     return None
 
 def get_config_msg(cur_game):
     config_msg = 'Which game would you like to enable for this channel?'
-    if cur_game:
-        config_msg += '\n(Current game: ' + cur_game.game_name + ')'
+    config_msg += '\n(Current game: ' + (cur_game.game_name if cur_game else 'None') + ')'
     config_msg += '\n\n:one: Choose Your Adventure\n\n\
 :two: Jaegermore\n\n\
 :three: Warriors vs Soldiers\n\n\
-:four: Attack on Wikia'
+:four: Attack on Wikia\n\n\
+:zero: None'
     return config_msg
 
 def config_bot(config_msg, client):
     # Configures bot for the channel and return embed message
     if config_msg == None:
-        return discord.Embed(title = 'Config has timed out after 60 seconds. Type `~config` to start again.', colour=0xE5D2BB)
+        return discord.Embed(description = 'Config has timed out after 60 seconds. Type `~config` to start again.', colour=0xE5D2BB)
     else:
         options = {
             '1️⃣':'Choose Your Adventure', 
             '2️⃣':'Jaegermore', 
             '3️⃣':'Warriors vs Soldiers', 
-            '4️⃣':'Attack on Wikia'
+            '4️⃣':'Attack on Wikia',
+            '0️⃣':'None'
         }
         chosen_game = options[config_msg.content]
 
-        # Swap game if found in instances, otherwise append to it
-        # For excel sheet
-        wb = load_workbook("config.xlsx")
-        instance_data = wb['Instances']
-        i = 0
+        # Update DB
+        config_queries.update_config(config_msg.guild.id, config_msg.channel.id, chosen_game)
+
+        # Update instances
         inside = False
-        for row in instance_data:
-            i += 1
-            if row[0].value == 'Server IDs':
-                continue
-            if row[1].value == str(config_msg.channel.id):
-                instance_data['C' + str(i)] = chosen_game
+        for instance in instances:
+            if instance.channel_id == config_msg.channel.id:
+                if chosen_game == 'None':
+                    instances.remove(instance)
+                else:
+                    instance.game = instance.create_game(chosen_game)
+                    instance.game_name = chosen_game
                 inside = True
                 break
-        if inside == False:
-            instance_data.append([str(config_msg.guild.id), str(config_msg.channel.id), chosen_game])
-        
-        wb.save("config.xlsx")
+        if inside == False and chosen_game != 'None':
+            instances.append(Instance(config_msg.guild.id, config_msg.channel.id, chosen_game, client))
 
-        # For instances
-        inside2 = False
-        for instance in instances:
-            if instance.channel_id == str(config_msg.channel.id):
-                instance.game = instance.create_game(chosen_game)
-                instance.game_name = chosen_game
-                inside2 = True
-                break
-        if inside2 == False:
-            instances.append(Instance(str(config_msg.guild.id), str(config_msg.channel.id), chosen_game, client))
-
-        config_embed = discord.Embed(title = chosen_game + ' has been enabled for this channel!', colour=0xE5D2BB)
+        if chosen_game == 'None':
+            embed_msg = 'All games have been disabled for this channel!'
+        else:
+            embed_msg = chosen_game + ' has been enabled for this channel!'
+        config_embed = discord.Embed(title = embed_msg, colour=0xE5D2BB)
         return config_embed
