@@ -57,6 +57,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.game_channel = None
         self.server = None
         self.game_host = None
+        self.reset_confirmation = False
         self.gametype = 'Ranked'
         self.gamespeed = 'Normal'
         self.players = [] # each player is a list of two elements: the player object and the player's role (str)
@@ -100,6 +101,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             if fast == True:
                 self.gamespeed = 'Fast'
             self.game_host = player
+            self.reset_confirmation = False
             self.status = 'waiting for players'
             self.players = [[player, None]]
             self.newroles = []
@@ -636,9 +638,15 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
     def reset(self, player):
         if (player == self.game_host or player.id == 238808836075421697) or (self.game_host == None) or (self.status == 'waiting for players') or (self.status.startswith('game ended')):
+            if not ((self.game_host == None) or (self.status == 'waiting for players') or (self.status.startswith('game ended'))) and \
+                (player == self.game_host or player.id == 238808836075421697) and self.reset_confirmation == False:
+                self.reset_confirmation = True
+                return player.mention + ', are you sure you want to reset the game? Type `~reset` again to confirm.'
+
             self.status = "waiting for game"
 
             self.game_host = None
+            self.reset_confirmation = False
             self.gametype = 'Ranked'
             self.gamespeed = 'Normal'
             self.players = []
@@ -1098,6 +1106,7 @@ Your fellow Warriors are:\n'
         self.flipping_votes = False
 
     def get_approval_result(self):
+        self.reset_confirmation = False
         approval_result = ''
         for player in self.expedition_approval:
             if player[1] == 'yes':
