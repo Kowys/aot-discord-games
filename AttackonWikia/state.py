@@ -1,9 +1,9 @@
 import discord
-from AttackonWikia import fetchURL
 import time
 import random
 import math
-from openpyxl import load_workbook
+import sqlite3
+from AttackonWikia import fetchURL
 
 class State():
     def __init__(self):
@@ -24,13 +24,20 @@ class State():
         self.wrong_letter = False
 
         # Constants
-        self.intro_msg = discord.Embed(title = 'Game Reset!', description = 'Type **`~new`** to start a new puzzle.\nType **`~help`** to see the list of available commands.', colour = 0xC0C0C0)
+        self.intro_msg = discord.Embed(title = 'Game Reset!', description = 'Type `~new` to start a new puzzle.\n' + \
+            'Type `~hangman` to start a new hangman game.\n' + \
+            'Type `~image` to guess a new image.\n\n' + \
+            'Type `~help` to see the list of available commands.', colour = 0xC0C0C0)
+        # Appropriate msgs when ending question
+        # Add "Type `~answer` during a question to reveal the correct answer."
 
         self.levelling_system = ([1,0],[2,1],[3,2],[4,3],[5,5],[6,7],[7,10],[8,13],[9,16],[10,20],[11,24],[12,28],[13,32],[14,36],[15,40],[16,45],[17,50],[18,55],[19,60],[20,66],[21,72],[22,78],[23,85],[24,92],[25,100],
         [26,108],[27,116],[28,124],[29,132],[30,141],[31,150],[32,160],[33,170],[34,180],[35,190],[36,200],[37,215],[38,230],[39,245],[40,260],[41,280],[42,300],[43,320],[44,350],[45,380],[46,410],[47,440],
         [48,480],[49,520],[50,560],[51,600],[52,650],[53,700],[54,750],[55,800],[56,875],[57,950],[58,1025],[59,1100],[60,1200],[61,1300],[62,1400],[63,1500],[64,1625],[65,1750],[66,1875],[67,2000],
         [68,2150],[69,2300],[70,2500],[71,2725],[72,2950],[73,3175],[74,3400],[75,3650],[76,3900],[77,4150],[78,4425],[79,4700],[80,5000],[81,5450],[82,5900],[83,6350],[84,6800],[85,7300],[86,7800],
-        [87,8300],[88,8850],[89,9400],[90,10000],[91,10900],[92,11800],[93,12700],[94,13600],[95,14600],[96,15600],[97,16600],[98,17700],[99,18800],[100,20000])
+        [87,8300],[88,8850],[89,9400],[90,10000],[91,10900],[92,11800],[93,12700],[94,13600],[95,14600],[96,15600],[97,16600],[98,17700],[99,18800],[100,20000],
+        [101,21200],[102,21500],[103,22800],[104,24100],[105,24500],[106,25900],[107,27300],[108,28800],[109,30300],[110,31800],
+        [111,33400],[112,35000],[113,36700],[114,38400],[115,40200],[116,42000],[117,43900],[118,45800],[119,47800],[120,50000])
 
         self.one_clue_achievements = {10:'Bronze', 25:'Silver', 80:'Gold', 150:'Platinum', 400:'Diamond', 750:'Master', 1500:'Grandmaster'}
         self.consecutive_days_achievements = {5:'Bronze', 14:'Silver', 30:'Gold', 60:'Platinum', 100:'Diamond', 200:'Master', 365:'Grandmaster'}
@@ -59,39 +66,43 @@ class State():
 
     def get_new_question(self):
         self.game_reset()
-        new_qn_msgs = []
         self.question_set = fetchURL.new_question()
         self.clue_no = 1
         # +1 to record of questions asked
         self.new_question()
-        new_qn_msgs.append('**Clue 1:**')
-        new_qn_msgs.append(self.question_set['clues'][0])
-        new_qn_msgs.append('Type `~clue` for the next hint.')
+        clue_contents = self.question_set['clues'][0] 
+        fixed_clue_contents = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
+        clue_msg = fixed_clue_contents + '\n\n' + 'Type `~clue` for the next hint. Type `~answer` to reveal the answer.'
+        clue_embed = discord.Embed(title = 'Clue 1', description = clue_msg, colour = 0xC0C0C0)
 
-        return new_qn_msgs
+        return clue_embed
 
     def get_clue(self):
-        clue_msgs = []
         if self.question_set == None:
-            clue_msgs.append('No puzzle is currently active!')
+            return 'No puzzle is currently active!'
         elif len(self.question_set) == 2:
-            clue_msgs.append('You can\'t use that in a hangman game!')
+            return 'You can\'t use that in a hangman game!'
         elif 'clues' not in self.question_set:
-            clue_msgs.append('You can\'t use that when guessing the image!')
+            return 'You can\'t use that when guessing the image!'
         elif self.clue_no >= 5:
-            clue_msgs.append('You have used up all the available clues!')
+            return 'You have used up all the available clues!'
         else:
             self.clue_no += 1
-            clue_msgs.append('**Clue ' + str(self.clue_no) + '**:')
-            clue_msgs.append(self.question_set['clues'][self.clue_no - 1])
+            clue_contents = self.question_set['clues'][self.clue_no - 1]
+            fixed_clue_contents = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
+            if self.clue_no < 5:
+                clue_msg = fixed_clue_contents + '\n\n' + 'Type `~clue` for the next hint. Type `~answer` to reveal the answer.'
+            elif self.clue_no == 5:
+                clue_msg = fixed_clue_contents + '\n\n' + 'Type `~answer` to reveal the answer.'
+            clue_embed = discord.Embed(title = 'Clue ' + str(self.clue_no), description = clue_msg, colour = 0xC0C0C0)
 
-        return clue_msgs
+        return clue_embed
 
     def get_new_image(self):
         self.game_reset()
         self.question_set = fetchURL.new_image()
         self.new_image_update()
-        image_embed = discord.Embed(title = 'Guess the image!', colour = 0xC0C0C0)
+        image_embed = discord.Embed(title = 'Guess the image!', description = 'Type `~answer` to reveal the answer.', colour = 0xC0C0C0)
         image_embed.set_image(url = self.question_set['image'])
         return image_embed
 
@@ -146,7 +157,7 @@ class State():
         if letter.upper() in self.letters_guessed:
             self.wrong_letter = True
 
-            description = '🔄 Letter `' + letter.upper() + '` has already been used. You can guess again in 1 second.'
+            description = '🔄 Letter `' + letter.upper() + '` has already been used. Please try again.'
             current_word = self.get_hangman_word()
             hangman_status = self.get_hangman_status()
             hangman_embed = discord.Embed(title = 'Hangman Mode', description = description + '\n' + current_word + '\n\n' + hangman_status, colour = 0xC0C0C0)
@@ -176,7 +187,7 @@ class State():
             self.wrong_answers += 1
 
             if self.wrong_answers < 6:
-                description = '❌ Letter `' + letter.upper() + '` does not exist. You can guess again in 1 second.'
+                description = '❌ Letter `' + letter.upper() + '` does not exist. Please try again.'
             else:
                 description = '❌ Letter `' + letter.upper() + '` does not exist.'
             current_word = self.get_hangman_word()
@@ -201,15 +212,24 @@ class State():
 
     def get_hangman_status(self):
         hangman_dict = {
-            0: '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n|🏡🏡 🏠🏠 🏰🏰',
-            1: '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n|💥🏡 🏠🏠 🏰🏰',
-            2: '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n|💥💥 🏠🏠 🏰🏰',
-            3: '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n|💥💥 💥🏠 🏰🏰',
-            4: '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n|💥💥 💥💥 🏰🏰',
-            5: '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n|💥💥 💥💥 💥🏰',
-            6: '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n|💥💥 💥💥 💥💥'
+            0: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n🏡🏡 🏠🏠 🏰🏰',
+            1: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥🏡 🏠🏠 🏰🏰',
+            2: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 🏠🏠 🏰🏰',
+            3: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥🏠 🏰🏰',
+            4: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 🏰🏰',
+            5: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 💥🏰',
+            6: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 💥💥'
         }
         return hangman_dict[self.wrong_answers]
+
+    def get_end_question_msg(self):
+        if len(self.question_set) == 3:
+            if 'image' in self.question_set:
+                return 'Type `~image` to guess a new image. Type `~help` to see the list of available commands.'
+            else:
+                return 'Type `~new` to start a new puzzle. Type `~help` to see the list of available commands.'
+        elif len(self.question_set) == 2:
+            return 'Type `~hangman` to start a new hangman game. Type `~help` to see the list of available commands.'
 
     def get_answer(self):
         answer_msgs = []
@@ -221,7 +241,8 @@ class State():
             else:
                 answer_msgs.append('The page is **' + self.question_set['title'] + ' !**')
             answer_msgs.append(self.question_set['url'])
-            answer_msgs.append('Type `~new` to start a new puzzle. Type `~answer` to reveal the solution. Type `~help` to see the list of available commands.')
+            end_question_msg = self.get_end_question_msg()
+            answer_msgs.append(end_question_msg)
             self.game_reset()
 
         return answer_msgs
@@ -230,17 +251,19 @@ class State():
         correct_answer_msgs = []
         correct_answer_msgs.append('Correct! The page is **' + self.question_set['title'] + ' !**')
         correct_answer_msgs.append(self.question_set['url'])
-        correct_answer_msgs.append('Type `~new` to start a new puzzle. Type `~answer` to reveal the solution. Type `~help` to see the list of available commands.')
-        
-        # Log result in achievements and sends message if obtained achievement
-        achievements = self.log_achievements(player)
-        for achievement in achievements:
-            correct_answer_msgs.append(achievement)
+
+        end_question_msg = self.get_end_question_msg()
+        correct_answer_msgs.append(end_question_msg)
         
         # Update player records
         level_update = self.update_player_records(player)
         if level_update != None:
             correct_answer_msgs.append(level_update)
+
+        # Log result in achievements and sends message if obtained achievement
+        achievements = self.log_achievements(player)
+        for achievement in achievements:
+            correct_answer_msgs.append(achievement)
 
         # Update dailies
         dailies = self.update_dailies(player)
@@ -274,115 +297,209 @@ class State():
             self.game_channel = msg_channel
 
     def new_question(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
-        game_stats['A2'] = game_stats['A2'].value + 1 
-        wb.save("AttackonWikia/records.xlsx")
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
-    def new_image_update(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
-        game_stats['H2'] = game_stats['H2'].value + 1 
-        wb.save("AttackonWikia/records.xlsx")
+        get_question_query = 'SELECT questions_asked FROM overall'
+        cursor.execute(get_question_query)
+        question_info = cursor.fetchone()
 
-    def new_hangman_question(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
-        game_stats['F2'] = game_stats['F2'].value + 1 
-        wb.save("AttackonWikia/records.xlsx")
+        update_question_query = 'UPDATE overall SET questions_asked = ?'
+        cursor.execute(update_question_query, (question_info[0] + 1,))
+        
+        conn.commit()
+        conn.close()
 
     def correct_question(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
-        game_stats['B2'] = game_stats['B2'].value + 1 
-        wb.save("AttackonWikia/records.xlsx")
-    
-    def correct_image(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
-        game_stats['I2'] = game_stats['I2'].value + 1
-        wb.save("AttackonWikia/records.xlsx")
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_question_query = 'SELECT questions_correct FROM overall'
+        cursor.execute(get_question_query)
+        question_info = cursor.fetchone()
+
+        update_question_query = 'UPDATE overall SET questions_correct = ?'
+        cursor.execute(update_question_query, (question_info[0] + 1,))
+        
+        conn.commit()
+        conn.close()
+
+    def new_hangman_question(self):
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_hangman_query = 'SELECT hangman_games_played FROM overall'
+        cursor.execute(get_hangman_query)
+        hangman_info = cursor.fetchone()
+
+        update_hangman_query = 'UPDATE overall SET hangman_games_played = ?'
+        cursor.execute(update_hangman_query, (hangman_info[0] + 1,))
+        
+        conn.commit()
+        conn.close()
 
     def correct_hangman_question(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
-        game_stats['G2'] = game_stats['G2'].value + 1 
-        wb.save("AttackonWikia/records.xlsx")
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_hangman_query = 'SELECT hangman_games_won FROM overall'
+        cursor.execute(get_hangman_query)
+        hangman_info = cursor.fetchone()
+
+        update_hangman_query = 'UPDATE overall SET hangman_games_won = ?'
+        cursor.execute(update_hangman_query, (hangman_info[0] + 1,))
+        
+        conn.commit()
+        conn.close()
+
+    def new_image_update(self):
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_image_query = 'SELECT images_generated FROM overall'
+        cursor.execute(get_image_query)
+        image_info = cursor.fetchone()
+
+        update_image_query = 'UPDATE overall SET images_generated = ?'
+        cursor.execute(update_image_query, (image_info[0] + 1,))
+        
+        conn.commit()
+        conn.close()
+
+    def correct_image(self):
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_image_query = 'SELECT images_correct FROM overall'
+        cursor.execute(get_image_query)
+        image_info = cursor.fetchone()
+
+        update_image_query = 'UPDATE overall SET images_correct = ?'
+        cursor.execute(update_image_query, (image_info[0] + 1,))
+        
+        conn.commit()
+        conn.close()
 
     def new_challenge_qn(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_challenge_query = 'SELECT questions_asked, challenge_questions, hangman_games_played FROM overall'
+        cursor.execute(get_challenge_query)
+        challenge_info = cursor.fetchone()
+
+        update_challenge_query = 'UPDATE overall SET questions_asked = ?, challenge_questions = ?, hangman_games_played = ?'
         if self.hangman_challenge == False:
-            game_stats['A2'] = game_stats['A2'].value + 1 
+            update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2]]
         else:
-            game_stats['F2'] = game_stats['F2'].value + 1 
-        game_stats['D2'] = game_stats['D2'].value + 1 
-        wb.save("AttackonWikia/records.xlsx")
+            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2] + 1]
+
+        cursor.execute(update_challenge_query, update_challenge_data)
+
+        conn.commit()
+        conn.close()
 
     def correct_challenge_qn(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_challenge_query = 'SELECT questions_correct, challenge_questions_correct, hangman_games_won FROM overall'
+        cursor.execute(get_challenge_query)
+        challenge_info = cursor.fetchone()
+
+        update_challenge_query = 'UPDATE overall SET questions_correct = ?, challenge_questions_correct = ?, hangman_games_won = ?'
         if self.hangman_challenge == False:
-            game_stats['B2'] = game_stats['B2'].value + 1 
+            update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2]]
         else:
-            game_stats['G2'] = game_stats['G2'].value + 1 
-        game_stats['E2'] = game_stats['E2'].value + 1 
-        wb.save("AttackonWikia/records.xlsx")
+            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2] + 1]
+
+        cursor.execute(update_challenge_query, update_challenge_data)
+
+        conn.commit()
+        conn.close()
 
     def finish_challenge(self):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_stats = wb['Overall']
-        game_stats['C2'] = game_stats['C2'].value + 1
-        wb.save("AttackonWikia/records.xlsx")
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        get_challenge_query = 'SELECT challenges_completed FROM overall'
+        cursor.execute(get_challenge_query)
+        challenge_info = cursor.fetchone()
+
+        update_challenge_query = 'UPDATE overall SET challenges_completed = ?'
+        cursor.execute(update_challenge_query, (challenge_info[0] + 1,))
+        
+        conn.commit()
+        conn.close()
 
     def update_player_records(self, user_obj):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        player_stats = wb['Players']
-        inside = False
-        i = 0
-        for row in player_stats:
-            i += 1
-            # Player exists in the records
-            if row[0].value == str(user_obj.id):
-                inside = True
-                # Old player level
-                for level in self.levelling_system:
-                    if player_stats['B' + str(i)].value < level[1]:
-                        break
-                    old_player_level = level[0]
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
-                # +1 to exp and correct answers
-                player_stats['B' + str(i)] = player_stats['B' + str(i)].value + 1
-                if len(self.question_set) == 3:
-                    if 'image' in self.question_set:
-                        player_stats['G' + str(i)] = player_stats['G' + str(i)].value + 1
-                    else:
-                        player_stats['C' + str(i)] = player_stats['C' + str(i)].value + 1
-                elif len(self.question_set) == 2:
-                    player_stats['F' + str(i)] = player_stats['F' + str(i)].value + 1
+        # Extract data
+        get_player_data = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(get_player_data, (user_obj.id,))
+        player_info = cursor.fetchone()
 
-                # New player level
-                for level in self.levelling_system:
-                    if player_stats['B' + str(i)].value < level[1]:
-                        break
-                    new_player_level = level[0]
+        if player_info:
+            # Old player level
+            for level in self.levelling_system:
+                if player_info[1] < level[1]:
+                    break
+                old_player_level = level[0]
 
-                wb.save("AttackonWikia/records.xlsx")
+            # +1 to exp and correct answers
+            update_player_exp = 'UPDATE players SET exp = ? WHERE player = ?'
+            cursor.execute(update_player_exp, (player_info[1] + 1, user_obj.id))
 
-                if new_player_level > old_player_level:
-                    return '🆙 | Congratulations ' + user_obj.mention + '! You have reached level **' + str(new_player_level) + '**!'
-                else:
-                    return None
-
-        if inside == False:
             if len(self.question_set) == 3:
                 if 'image' in self.question_set:
-                    player_stats.append([str(user_obj.id), 1, 0, 0, 0, 0, 1])
+                    # Image
+                    update_player_images = 'UPDATE players SET images_correct = ? WHERE player = ?'
+                    cursor.execute(update_player_images, (player_info[6] + 1, user_obj.id))
                 else:
-                    player_stats.append([str(user_obj.id), 1, 1, 0, 0, 0, 0])
+                    # Regular
+                    update_player_answers = 'UPDATE players SET correct_answers = ? WHERE player = ?'
+                    cursor.execute(update_player_answers, (player_info[2] + 1, user_obj.id))
             elif len(self.question_set) == 2:
-                player_stats.append([str(user_obj.id), 1, 0, 0, 0, 1, 0])
-            wb.save("AttackonWikia/records.xlsx")
+                # Hangman
+                update_player_hangman = 'UPDATE players SET hangman_correct = ? WHERE player = ?'
+                cursor.execute(update_player_hangman, (player_info[5] + 1, user_obj.id))
+
+            # New player level
+            for level in self.levelling_system:
+                if player_info[1] + 1 < level[1]:
+                    break
+                new_player_level = level[0]
+
+            conn.commit()
+            conn.close()
+
+            if new_player_level > old_player_level:
+                return '🆙 | Congratulations ' + user_obj.mention + '! You have reached level **' + str(new_player_level) + '**!'
+            else:
+                return None
+
+        else:
+            insert_player = 'INSERT INTO players VALUES (?,?,?,?,?,?,?)'
+            if len(self.question_set) == 3:
+                if 'image' in self.question_set:
+                    # Image
+                    player_data = [user_obj.id, 1, 0, 0, 0, 0, 1]
+                    cursor.execute(insert_player, player_data)
+                else:
+                    # Regular
+                    player_data = [user_obj.id, 1, 1, 0, 0, 0, 0]
+                    cursor.execute(insert_player, player_data)
+
+            elif len(self.question_set) == 2:
+                # Hangman
+                player_data = [user_obj.id, 1, 0, 0, 0, 1, 0]
+                cursor.execute(insert_player, player_data)
+
+            conn.commit()
+            conn.close()
+
             return '🆙 | Congratulations ' + user_obj.mention + '! You have reached level **2**!'
 
     def get_score(self, num):
@@ -426,252 +543,261 @@ class State():
         winner_index = 0 if self.scores[0] >= 3 else 1
         loser_index = 1 if self.scores[0] >= 3 else 0
         players = [self.players[winner_index], self.players[loser_index]]
-        
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        player_stats = wb['Players']
+
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
         level_updates = []
 
         j = 0
         for player in players:
             j += 1
-            i = 0
-            inside = False
-            for row in player_stats:
-                i += 1
-                if row[0].value == str(player.id):
-                    inside = True
-                    # Old player level
-                    for level in self.levelling_system:
-                        if player_stats['B' + str(i)].value < level[1]:
-                            break
-                        old_player_level = level[0]
-        
-                    # Add to exp and challenge won/completed
-                    if j == 1:
-                        player_stats['B' + str(i)] = player_stats['B' + str(i)].value + 10
-                        player_stats['E' + str(i)] = player_stats['E' + str(i)].value + 1
-                        player_stats['D' + str(i)] = player_stats['D' + str(i)].value + 1
-                    elif j == 2:
-                        player_stats['B' + str(i)] = player_stats['B' + str(i)].value + 5
-                        player_stats['D' + str(i)] = player_stats['D' + str(i)].value + 1
+            # Extract data
+            get_player_data = 'SELECT * FROM players WHERE player = ?'
+            cursor.execute(get_player_data, (player.id,))
+            player_info = cursor.fetchone()
 
-                    # New player level
-                    for level in self.levelling_system:
-                        if player_stats['B' + str(i)].value < level[1]:
-                            break
-                        new_player_level = level[0]
+            if player_info:
+                # Old player level
+                for level in self.levelling_system:
+                    if player_info[1] < level[1]:
+                        break
+                    old_player_level = level[0]
+    
+                # Add to exp and challenge won/completed
+                update_challenge_stats_query = 'UPDATE players SET exp = ?, challenges_played = ?, challenges_won = ? WHERE player = ?'
+                if j == 1:
+                    new_exp = player_info[1] + 10
+                    update_challenge_stats = [new_exp, player_info[3] + 1, player_info[4] + 1, player.id]
+                elif j == 2:
+                    new_exp = player_info[1] + 5
+                    update_challenge_stats = [new_exp, player_info[3] + 1, player_info[4], player.id]
 
-                    wb.save("AttackonWikia/records.xlsx")
+                cursor.execute(update_challenge_stats_query, update_challenge_stats)
+                conn.commit()
 
-                    if new_player_level > old_player_level:
-                        level_updates.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!') 
+                # New player level
+                for level in self.levelling_system:
+                    if new_exp < level[1]:
+                        break
+                    new_player_level = level[0]
 
-                    break
+                if new_player_level > old_player_level:
+                    level_updates.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!') 
 
-            if inside == False:
-                player_stats.append([str(player.id), 5, 0, 0, 0, 0])
+            else:
+                insert_challenge_stats_query = 'INSERT INTO players VALUES (?,?,?,?,?,?,?)'
+                insert_challenge_stats = [player.id, 5, 0, 1, 0, 0, 0]
+                cursor.execute(insert_challenge_stats_query, insert_challenge_stats)
+                conn.commit()
+
                 level_updates.append('🆙 | Congratulations ' + player.mention + '! You have reached level **5**!')
-                wb.save("AttackonWikia/records.xlsx")
+
+        conn.close()
 
         return level_updates
 
-    def update_dailies(self, *player):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        player_dailies = wb['Dailies']
-        player_stats = wb['Players']
+    def update_dailies(self, player=None):
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
         cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
         cur_dailies = []
 
         if player:
-            i = 0
-            inside = False
-            for row in player_dailies:
-                i += 1
-                if row[0].value == str(player[0].id):
-                    inside = True
-                    # B: prev play, C: Standard, D: Hangman, E: Challenge, F: Image
-                    prev_date = player_dailies['B' + str(i)].value
-                    # Still same day
-                    if cur_date == prev_date:
-                        if len(self.question_set) == 3:
-                            # Image question
-                            if 'image' in self.question_set:
-                                player_dailies['F' + str(i)] = player_dailies['F' + str(i)].value + 1
-                            # Normal question
-                            else:
-                                player_dailies['C' + str(i)] = player_dailies['C' + str(i)].value + 1
-        
-                        # Hangman
+            # Extract data
+            get_dailies_query = 'SELECT * FROM dailies WHERE player = ?'
+            cursor.execute(get_dailies_query, (player.id,))
+            dailies_info = cursor.fetchone()
+
+            get_player_data = 'SELECT * FROM players WHERE player = ?'
+            cursor.execute(get_player_data, (player.id,))
+            player_data = cursor.fetchone()
+
+            if dailies_info:
+                prev_date = dailies_info[1]
+                standard_dailies, hangman_dailies, image_dailies = dailies_info[2], dailies_info[3], dailies_info[5]
+                # Still same day
+                if cur_date == prev_date:
+                    if len(self.question_set) == 3:
+                        # Image question
+                        if 'image' in self.question_set:
+                            image_dailies += 1
+                            update_image_dailies = 'UPDATE dailies SET image = ? WHERE player = ?'
+                            cursor.execute(update_image_dailies, (image_dailies, player.id))
+                        # Normal question
                         else:
-                            player_dailies['D' + str(i)] = player_dailies['D' + str(i)].value + 1
-                            
-                        wb.save("AttackonWikia/records.xlsx")
-
-                        # Award daily if reached 10 points
-                        if (len(self.question_set) == 3 and 'image' not in self.question_set and player_dailies['C' + str(i)].value == 10) or \
-                        (len(self.question_set) == 2 and player_dailies['D' + str(i)].value == 10) or \
-                        (len(self.question_set) == 3 and 'image' in self.question_set and player_dailies['F' + str(i)].value == 10):
-                            # Daily reward msg
-                            if len(self.question_set) == 3:
-                                if 'image' in self.question_set:
-                                    daily_reward_msg = '☑ | Congratulations, ' + player[0].mention + ', you have completed the Images daily task! **(+15 Exp)**'
-                                else:
-                                    daily_reward_msg = '☑ | Congratulations, ' + player[0].mention + ', you have completed the standard games daily task! **(+15 Exp)**'
-                            else:
-                                daily_reward_msg = '☑ | Congratulations, ' + player[0].mention + ', you have completed the Hangman daily task! **(+15 Exp)**'
-                            cur_dailies.append(daily_reward_msg)
-
-                            # Add exp to player
-                            j = 0
-                            for row in player_stats:
-                                j += 1
-                                if row[0].value == str(player[0].id):
-                                    # Old player level
-                                    for level in self.levelling_system:
-                                        if player_stats['B' + str(j)].value < level[1]:
-                                            break
-                                        old_player_level = level[0]
-
-                                    # Add exp
-                                    player_stats['B' + str(j)] = player_stats['B' + str(j)].value + 15
-
-                                    # New player level
-                                    for level in self.levelling_system:
-                                        if player_stats['B' + str(j)].value < level[1]:
-                                            break
-                                        new_player_level = level[0]
-
-                                    wb.save("AttackonWikia/records.xlsx")
-
-                                    if new_player_level > old_player_level:
-                                        cur_dailies.append('🆙 | Congratulations ' + player[0].mention + '! You have reached level **' + str(new_player_level) + '**!')
-
-                                    break                    
-                                    
-                    # New day, reset
+                            standard_dailies += 1
+                            update_standard_dailies = 'UPDATE dailies SET standard = ? WHERE player = ?'
+                            cursor.execute(update_standard_dailies, (standard_dailies, player.id))
+                    # Hangman
                     else:
+                        hangman_dailies += 1
+                        update_hangman_dailies = 'UPDATE dailies SET hangman = ? WHERE player = ?'
+                        cursor.execute(update_hangman_dailies, (hangman_dailies, player.id))
+
+                    conn.commit()
+                        
+                    # Award daily if reached 10 points
+                    if (len(self.question_set) == 3 and 'image' not in self.question_set and standard_dailies == 10) or \
+                    (len(self.question_set) == 2 and hangman_dailies == 10) or \
+                    (len(self.question_set) == 3 and 'image' in self.question_set and image_dailies == 10):
+                        # Daily reward msg
                         if len(self.question_set) == 3:
                             if 'image' in self.question_set:
-                                player_dailies['C' + str(i)] = 0
-                                player_dailies['D' + str(i)] = 0
-                                player_dailies['F' + str(i)] = 1
+                                daily_reward_msg = '☑ | Congratulations, ' + player.mention + ', you have completed the Images daily task! **(+15 Exp)**'
                             else:
-                                player_dailies['C' + str(i)] = 1
-                                player_dailies['D' + str(i)] = 0
-                                player_dailies['F' + str(i)] = 0
+                                daily_reward_msg = '☑ | Congratulations, ' + player.mention + ', you have completed the standard games daily task! **(+15 Exp)**'
                         else:
-                            player_dailies['C' + str(i)] = 0
-                            player_dailies['D' + str(i)] = 1
-                            player_dailies['F' + str(i)] = 0
-                        player_dailies['B' + str(i)] = cur_date
-                        player_dailies['E' + str(i)] = 0
-                        wb.save("AttackonWikia/records.xlsx")
+                            daily_reward_msg = '☑ | Congratulations, ' + player.mention + ', you have completed the Hangman daily task! **(+15 Exp)**'
+                        cur_dailies.append(daily_reward_msg)
 
-            if inside == False:
+                        # Add exp to player (Assume player data already exists, from update_player_records method)
+                        player_exp = player_data[1]
+                        # Old player level
+                        for level in self.levelling_system:
+                            if player_exp < level[1]:
+                                break
+                            old_player_level = level[0]
+
+                        # Add exp
+                        player_exp = player_exp + 15
+                        update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                        cursor.execute(update_player_exp_query, (player_exp, player.id))
+                        conn.commit()
+
+                        # New player level
+                        for level in self.levelling_system:
+                            if player_exp < level[1]:
+                                break
+                            new_player_level = level[0]
+
+                        if new_player_level > old_player_level:
+                            cur_dailies.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+
+                # New day, reset
+                else:
+                    reset_dailies_query = 'UPDATE dailies SET last_play = ?, standard = ?, hangman = ?, challenge = ?, image = ? WHERE player = ?'
+                    if len(self.question_set) == 3:
+                        if 'image' in self.question_set:
+                            reset_dailies = [cur_date, 0, 0, 0, 1, player.id]
+                        else:
+                            reset_dailies = [cur_date, 1, 0, 0, 0, player.id]
+                    else:
+                        reset_dailies = [cur_date, 0, 1, 0, 0, player.id]
+
+                    cursor.execute(reset_dailies_query, reset_dailies)
+                    conn.commit()
+
+            else:
+                insert_player_dailies_query = 'INSERT INTO dailies VALUES (?,?,?,?,?,?)'
                 if len(self.question_set) == 3:
                     # Image
                     if 'image' in self.question_set:
-                        player_dailies.append([str(player[0].id), cur_date, 0, 0, 0, 1])
+                        insert_player_dailies = [player.id, cur_date, 0, 0, 0, 1]
                     # Normal question
                     else:
-                        player_dailies.append([str(player[0].id), cur_date, 1, 0, 0, 0])
+                        insert_player_dailies = [player.id, cur_date, 1, 0, 0, 0]
                 # Hangman
                 else:
-                    player_dailies.append([str(player[0].id), cur_date, 0, 1, 0, 0])
-                wb.save("AttackonWikia/records.xlsx")
-                            
+                    insert_player_dailies = [player.id, cur_date, 0, 1, 0, 0]
+
+                cursor.execute(insert_player_dailies_query, insert_player_dailies)
+                conn.commit()
+
         # Challenge completed, both players
         else:
             for player in self.players:
-                i = 0
-                inside = False
-                for row in player_dailies:
-                    i += 1
-                    if row[0].value == str(player.id):
-                        inside = True
-                        # B: prev play, C: Standard, D: Hangman, E: Challenge
-                        prev_date = player_dailies['B' + str(i)].value
-                        # Still same day
-                        if cur_date == prev_date:
-                            player_dailies['E' + str(i)] = player_dailies['E' + str(i)].value + 1
-                            wb.save("AttackonWikia/records.xlsx")
+                # Extract data
+                get_dailies_query = 'SELECT * FROM dailies WHERE player = ?'
+                cursor.execute(get_dailies_query, (player.id,))
+                dailies_info = cursor.fetchone()
 
-                        # New day, reset
-                        else:
-                            player_dailies['B' + str(i)] = cur_date
-                            player_dailies['C' + str(i)] = 0
-                            player_dailies['D' + str(i)] = 0
-                            player_dailies['E' + str(i)] = 1
-                            player_dailies['F' + str(i)] = 0
-                            wb.save("AttackonWikia/records.xlsx")
+                get_player_data = 'SELECT * FROM players WHERE player = ?'
+                cursor.execute(get_player_data, (player.id,))
+                player_data = cursor.fetchone()
 
-                        # Award daily, by default
-                        if player_dailies['E' + str(i)].value == 1:
-                            daily_reward_msg = '☑ | Congratulations, ' + player.mention + ', you have completed the Challenge daily task! **(+25 Exp)**'
-                            cur_dailies.append(daily_reward_msg)
+                if dailies_info:
+                    prev_date = dailies_info[1]
+                    challenge_dailies = dailies_info[4]
+                    # Still same day
+                    if cur_date == prev_date:
+                        challenge_dailies += 1
+                        update_challenge_dailies = 'UPDATE dailies SET challenge = ? WHERE player = ?'
+                        cursor.execute(update_challenge_dailies, (challenge_dailies, player.id))
 
-                            # Add exp to player
-                            j = 0
-                            for row in player_stats:
-                                j += 1
-                                if row[0].value == str(player.id):
-                                    # Old player level
-                                    for level in self.levelling_system:
-                                        if player_stats['B' + str(j)].value < level[1]:
-                                            break
-                                        old_player_level = level[0]
+                    # New day, reset
+                    else:
+                        challenge_dailies = 1
+                        reset_dailies_query = 'UPDATE dailies SET last_play = ?, standard = ?, hangman = ?, challenge = ?, image = ? WHERE player = ?'
+                        reset_dailies = [cur_date, 0, 0, 1, 0, player.id]
+                        cursor.execute(reset_dailies_query, reset_dailies)
+                    
+                    conn.commit()
 
-                                    # Add exp
-                                    player_stats['B' + str(j)] = player_stats['B' + str(j)].value + 25
+                    # Award daily, by default
+                    if challenge_dailies == 1:
+                        daily_reward_msg = '☑ | Congratulations, ' + player.mention + ', you have completed the Challenge daily task! **(+25 Exp)**'
+                        cur_dailies.append(daily_reward_msg)
 
-                                    # New player level
-                                    for level in self.levelling_system:
-                                        if player_stats['B' + str(j)].value < level[1]:
-                                            break
-                                        new_player_level = level[0]
+                        # Add exp to player (Assume player data already exists, from update_player_records method)
+                        player_exp = player_data[1]
+                        # Old player level
+                        for level in self.levelling_system:
+                            if player_exp < level[1]:
+                                break
+                            old_player_level = level[0]
 
-                                    wb.save("AttackonWikia/records.xlsx")
+                        # Add exp
+                        player_exp = player_exp + 25
+                        update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                        cursor.execute(update_player_exp_query, (player_exp, player.id))
+                        conn.commit()
 
-                                    if new_player_level > old_player_level:
-                                        cur_dailies.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+                        # New player level
+                        for level in self.levelling_system:
+                            if player_exp < level[1]:
+                                break
+                            new_player_level = level[0]
 
-                                    break
+                        if new_player_level > old_player_level:
+                            cur_dailies.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
 
-                if inside == False:
-                    player_dailies.append([str(player.id), cur_date, 0, 0, 1, 0])
-                    wb.save("AttackonWikia/records.xlsx")
+                else:
+                    insert_player_dailies_query = 'INSERT INTO dailies VALUES (?,?,?,?,?,?)'
+                    insert_player_dailies = [player.id, cur_date, 0, 0, 1, 0]
+
+                    cursor.execute(insert_player_dailies_query, insert_player_dailies)
+                    conn.commit()
+
                     # Award daily, by default
                     daily_reward_msg = '☑ | Congratulations, ' + player.mention + ', you have completed the Challenge daily task! **(+25 Exp)**'
                     cur_dailies.append(daily_reward_msg)
 
-                    # Add exp to player
-                    j = 0
-                    for row in player_stats:
-                        j += 1
-                        if row[0].value == str(player.id):
-                            # Old player level
-                            for level in self.levelling_system:
-                                if player_stats['B' + str(j)].value < level[1]:
-                                    break
-                                old_player_level = level[0]
-
-                            # Add exp
-                            player_stats['B' + str(j)] = player_stats['B' + str(j)].value + 25
-
-                            # New player level
-                            for level in self.levelling_system:
-                                if player_stats['B' + str(j)].value < level[1]:
-                                    break
-                                new_player_level = level[0]
-
-                            wb.save("AttackonWikia/records.xlsx")
-
-                            if new_player_level > old_player_level:
-                                cur_dailies.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
-
+                    # Add exp to player (Assume player data already exists, from update_player_records method)
+                    player_exp = player_data[1]
+                    # Old player level
+                    for level in self.levelling_system:
+                        if player_exp < level[1]:
                             break
-                
+                        old_player_level = level[0]
+
+                    # Add exp
+                    player_exp = player_exp + 25
+                    update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                    cursor.execute(update_player_exp_query, (player_exp, player.id))
+                    conn.commit()
+
+                    # New player level
+                    for level in self.levelling_system:
+                        if player_exp < level[1]:
+                            break
+                        new_player_level = level[0]
+
+                    if new_player_level > old_player_level:
+                        cur_dailies.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+
+        conn.close()
+
         return cur_dailies
     
     def next_day_check(self, last_date, cur_date):
@@ -689,178 +815,206 @@ class State():
 
     def log_achievements(self, player):
         # Increment achievements progress for questions and returns achievement messages if any
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        achievements = wb['Achievements']
-        player_stats = wb['Players']
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        # Extract data
+        achievements_query = 'SELECT * FROM achievements WHERE player = ?'
+        cursor.execute(achievements_query, (player.id,))
+        player_achievements = cursor.fetchone()
+
+        player_data_query = 'SELECT player, exp FROM players WHERE player = ?'
+        cursor.execute(player_data_query, (player.id,))
+        player_data = cursor.fetchone()
 
         achievement_msgs = []
-        inside = False
-        i = 0
-        for row in achievements:
-            i += 1
-            # Player exists in the records
-            if row[0].value == str(player.id):
-                inside = True
-                # 1 clue
-                if self.clue_no == 1:
-                    achievements['B' + str(i)] = achievements['B' + str(i)].value + 1
-
-                    # If achievement earned, add exp and append achievement msg
-                    if achievements['B' + str(i)].value in self.one_clue_achievements or (achievements['B' + str(i)].value > 1500 and achievements['H' + str(i)].value == 0):
-                        achievement_value = achievements['B' + str(i)].value
-                        if achievements['B' + str(i)].value >= 1500 and achievements['H' + str(i)].value == 0:
-                            achievements['H' + str(i)] = 1
-                            achievement_value = 1500
-
-                        # Achievement msg
-                        one_clue = self.badge_emojis[self.one_clue_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
-                        '! You have obtained ' + ('a ' if 'Master' not in self.one_clue_achievements[achievement_value] else 'the ') + '**' + \
-                        self.one_clue_achievements[achievement_value] + (' of Archives' if 'Master' in self.one_clue_achievements[achievement_value] else '') + \
-                        '** badge for answering **' + str(achievement_value) + '** questions correctly with only 1 clue! **(+' + \
-                        str(self.achievement_rewards[self.one_clue_achievements[achievement_value]]) + ' Exp)**'
-                        
-                        achievement_msgs.append(one_clue)
-
-                        # Add exp to player
-                        j = 0
-                        for row in player_stats:
-                            j += 1
-                            if row[0].value == str(player.id):
-                                # Old player level
-                                for level in self.levelling_system:
-                                    if player_stats['B' + str(j)].value < level[1]:
-                                        break
-                                    old_player_level = level[0]
-
-                                # Add exp
-                                player_stats['B' + str(j)] = player_stats['B' + str(j)].value + self.achievement_rewards[self.one_clue_achievements[achievement_value]]
-
-                                # New player level
-                                for level in self.levelling_system:
-                                    if player_stats['B' + str(j)].value < level[1]:
-                                        break
-                                    new_player_level = level[0]
-
-                                wb.save("AttackonWikia/records.xlsx")
-
-                                if new_player_level > old_player_level:
-                                    achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
-
-                                break
-
-                # Perfect hangman
-                if len(self.question_set) == 2 and self.wrong_answers == 0 and self.challenge == False:
-                    achievements['G' + str(i)] = achievements['G' + str(i)].value + 1
-
-                    # If achievement earned, add exp and append achievement msg
-                    if achievements['G' + str(i)].value in self.hangman_achievements or (achievements['G' + str(i)].value > 1000 and achievements['K' + str(i)].value == 0):
-                        achievement_value = achievements['G' + str(i)].value
-                        if achievements['G' + str(i)].value >= 1000 and achievements['K' + str(i)].value == 0:
-                            achievements['K' + str(i)] = 1
-                            achievement_value = 1000
-
-                        # Achievement msg
-                        one_clue = self.badge_emojis[self.hangman_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
-                        '! You have obtained ' + ('a ' if 'Master' not in self.hangman_achievements[achievement_value] else 'the ') + '**' + \
-                        self.hangman_achievements[achievement_value] + (' of Hangman' if 'Master' in self.hangman_achievements[achievement_value] else '') + \
-                        '** badge for winning **' + str(achievement_value) + '** hangman games without any mistakes! **(+' + \
-                        str(self.achievement_rewards[self.hangman_achievements[achievement_value]]) + ' Exp)**'
-                        
-                        achievement_msgs.append(one_clue)
-
-                        # Add exp to player
-                        j = 0
-                        for row in player_stats:
-                            j += 1
-                            if row[0].value == str(player.id):
-                                # Old player level
-                                for level in self.levelling_system:
-                                    if player_stats['B' + str(j)].value < level[1]:
-                                        break
-                                    old_player_level = level[0]
-
-                                # Add exp
-                                player_stats['B' + str(j)] = player_stats['B' + str(j)].value + self.achievement_rewards[self.hangman_achievements[achievement_value]]
-
-                                # New player level
-                                for level in self.levelling_system:
-                                    if player_stats['B' + str(j)].value < level[1]:
-                                        break
-                                    new_player_level = level[0]
-
-                                wb.save("AttackonWikia/records.xlsx")
-
-                                if new_player_level > old_player_level:
-                                    achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
-
-                                break
-
-                # Consecutive days
+        # 1 clue
+        if self.clue_no == 1:
+            if player_achievements:
+                new_clue_value = player_achievements[1] + 1
+                update_clue_achievements_query = 'UPDATE achievements SET one_clue = ? WHERE player = ?'
+                cursor.execute(update_clue_achievements_query, (new_clue_value, player.id))
+            else:
+                new_clue_value = 1
                 cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-                last_date = achievements['D' + str(i)].value
-                if cur_date != last_date:
-                    # Update newest date
-                    achievements['D' + str(i)] = cur_date
+                insert_clue_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+                insert_clue_achievements_values = [player.id, new_clue_value, 0, cur_date, 1, 1, 0, 0, 0, 0, 0]
+                cursor.execute(insert_clue_achievements_query, insert_clue_achievements_values)
 
-                    # 1 day
-                    if self.next_day_check(last_date, cur_date):
-                        achievements['E' + str(i)] = achievements['E' + str(i)].value + 1
-                        if achievements['E' + str(i)].value > achievements['F' + str(i)].value:
-                            # New max streak
-                            achievements['F' + str(i)] = achievements['E' + str(i)].value
-                        
-                            # If achievement earned, add exp and append achievement msg
-                            if achievements['F' + str(i)].value in self.consecutive_days_achievements or (achievements['F' + str(i)].value > 365 and achievements['J' + str(i)].value == 0):
-                                achievement_value = achievements['F' + str(i)].value
-                                if achievements['F' + str(i)].value >= 365 and achievements['J' + str(i)].value == 0:
-                                    achievements['J' + str(i)] = 1
-                                    achievement_value = 365
+            conn.commit()
 
-                                # Achievement msg
-                                consecutive = self.badge_emojis[self.consecutive_days_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
-                                '! You have obtained a **' + self.consecutive_days_achievements[achievement_value] + '** badge for playing the game every day for **' + \
-                                str(achievement_value) + '** days! **(+' + str(self.achievement_rewards[self.consecutive_days_achievements[achievement_value]]) + ' Exp)**'
-                                
-                                achievement_msgs.append(consecutive)
+            # If achievement earned, add exp and append achievement msg
+            if new_clue_value in self.one_clue_achievements or (new_clue_value > 1500 and player_achievements[7] == 0):
+                achievement_value = new_clue_value
+                if new_clue_value >= 1500 and player_achievements[7] == 0:
+                    update_clue_achievements_query = 'UPDATE achievements SET one_clue_gm = ? WHERE player = ?'
+                    cursor.execute(update_clue_achievements_query, (1, player.id))
+                    conn.commit()
+                    achievement_value = 1500
 
-                                # Add exp to player
-                                j = 0
-                                for row in player_stats:
-                                    j += 1
-                                    if row[0].value == str(player.id):
-                                        # Old player level
-                                        for level in self.levelling_system:
-                                            if player_stats['B' + str(j)].value < level[1]:
-                                                break
-                                            old_player_level = level[0]
+                # Achievement msg
+                one_clue = self.badge_emojis[self.one_clue_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
+                '! You have obtained ' + ('a ' if 'Master' not in self.one_clue_achievements[achievement_value] else 'the ') + '**' + \
+                self.one_clue_achievements[achievement_value] + (' of Archives' if 'Master' in self.one_clue_achievements[achievement_value] else '') + \
+                '** badge for answering **' + str(achievement_value) + '** questions correctly with only 1 clue! **(+' + \
+                str(self.achievement_rewards[self.one_clue_achievements[achievement_value]]) + ' Exp)**'
+                
+                achievement_msgs.append(one_clue)
 
-                                        # Add exp
-                                        player_stats['B' + str(j)] = player_stats['B' + str(j)].value + self.achievement_rewards[self.consecutive_days_achievements[achievement_value]]
+                # Add exp to player (Assume player data already exists, from update_player_records method)
+                player_exp = player_data[1]
+                # Old player level
+                for level in self.levelling_system:
+                    if player_exp < level[1]:
+                        break
+                    old_player_level = level[0]
 
-                                        # New player level
-                                        for level in self.levelling_system:
-                                            if player_stats['B' + str(j)].value < level[1]:
-                                                break
-                                            new_player_level = level[0]
+                # Add exp
+                player_exp = player_exp + self.achievement_rewards[self.one_clue_achievements[achievement_value]]
+                update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                cursor.execute(update_player_exp_query, (player_exp, player.id))
+                conn.commit()
 
-                                        wb.save("AttackonWikia/records.xlsx")
+                # New player level
+                for level in self.levelling_system:
+                    if player_exp < level[1]:
+                        break
+                    new_player_level = level[0]
 
-                                        if new_player_level > old_player_level:
-                                            achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+                if new_player_level > old_player_level:
+                    achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
 
-                                        break
+        # Perfect hangman
+        if len(self.question_set) == 2 and self.wrong_answers == 0 and self.challenge == False:
+            if player_achievements:
+                new_hangman_value = player_achievements[6] + 1
+                update_hangman_achievements_query = 'UPDATE achievements SET perfect_hangman = ? WHERE player = ?'
+                cursor.execute(update_hangman_achievements_query, (new_hangman_value, player.id))
+            else:
+                new_hangman_value = 1
+                cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
+                insert_hangman_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+                insert_hangman_achievements_values = [player.id, 0, 0, cur_date, 1, 1, new_hangman_value, 0, 0, 0, 0]
+                cursor.execute(insert_hangman_achievements_query, insert_hangman_achievements_values)
 
-                    # > 1 day
-                    else:
-                        achievements['E' + str(i)] = 1
-                    
-                wb.save("AttackonWikia/records.xlsx")
-                break
+            conn.commit()
 
-        if inside == False:
+            # If achievement earned, add exp and append achievement msg
+            if new_hangman_value in self.hangman_achievements or (new_hangman_value > 1000 and player_achievements[10] == 0):
+                achievement_value = new_hangman_value
+                if new_hangman_value >= 1000 and player_achievements[10] == 0:
+                    update_hangman_achievements_query = 'UPDATE achievements SET hangman_gm = ? WHERE player = ?'
+                    cursor.execute(update_hangman_achievements_query, (1, player.id))
+                    conn.commit()
+                    achievement_value = 1000
+
+                # Achievement msg
+                hangman_msg = self.badge_emojis[self.hangman_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
+                '! You have obtained ' + ('a ' if 'Master' not in self.hangman_achievements[achievement_value] else 'the ') + '**' + \
+                self.hangman_achievements[achievement_value] + (' of Hangman' if 'Master' in self.hangman_achievements[achievement_value] else '') + \
+                '** badge for winning **' + str(achievement_value) + '** hangman games without any mistakes! **(+' + \
+                str(self.achievement_rewards[self.hangman_achievements[achievement_value]]) + ' Exp)**'
+                
+                achievement_msgs.append(hangman_msg)
+
+                # Add exp to player (Assume player data already exists, from update_player_records method)
+                player_exp = player_data[1]
+                # Old player level
+                for level in self.levelling_system:
+                    if player_exp < level[1]:
+                        break
+                    old_player_level = level[0]
+
+                # Add exp
+                player_exp = player_exp + self.achievement_rewards[self.hangman_achievements[achievement_value]]
+                update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                cursor.execute(update_player_exp_query, (player_exp, player.id))
+                conn.commit()
+
+                # New player level
+                for level in self.levelling_system:
+                    if player_exp < level[1]:
+                        break
+                    new_player_level = level[0]
+
+                if new_player_level > old_player_level:
+                    achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+
+        # Consecutive days
+        if player_achievements:
             cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-            achievements.append([str(player.id), 0, 0, cur_date, 1, 1, 0])
-            wb.save("AttackonWikia/records.xlsx")
+            last_date = player_achievements[3]
+            if cur_date != last_date:
+                # Update newest date
+                update_new_date_query = 'UPDATE achievements SET last_play = ? WHERE player = ?'
+                cursor.execute(update_new_date_query, (cur_date, player.id))
+                conn.commit()
+
+                # 1 day
+                if self.next_day_check(last_date, cur_date):
+                    new_streak_value = player_achievements[4] + 1
+                    update_streak_achievements_query = 'UPDATE achievements SET current_streak = ? WHERE player = ?'
+                    cursor.execute(update_streak_achievements_query, (new_streak_value, player.id))
+                    conn.commit()
+
+                    if new_streak_value > player_achievements[5]:
+                        # New max streak
+                        update_max_streak_achievements_query = 'UPDATE achievements SET max_streak = ? WHERE player = ?'
+                        cursor.execute(update_max_streak_achievements_query, (new_streak_value, player.id))
+                        conn.commit()
+                    
+                        # If achievement earned, add exp and append achievement msg
+                        if new_streak_value in self.consecutive_days_achievements or (new_streak_value > 365 and player_achievements[9] == 0):
+                            achievement_value = new_streak_value
+                            if new_streak_value >= 365 and player_achievements[9] == 0:
+                                update_streak_gm_achievements_query = 'UPDATE achievements SET streak_gm = ? WHERE player = ?'
+                                cursor.execute(update_streak_gm_achievements_query, (1, player.id))
+                                conn.commit()
+                                achievement_value = 365
+
+                            # Achievement msg
+                            consecutive = self.badge_emojis[self.consecutive_days_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
+                            '! You have obtained a **' + self.consecutive_days_achievements[achievement_value] + '** badge for playing the game every day for **' + \
+                            str(achievement_value) + '** days! **(+' + str(self.achievement_rewards[self.consecutive_days_achievements[achievement_value]]) + ' Exp)**'
+                            
+                            achievement_msgs.append(consecutive)
+
+                            # Add exp to player (Assume player data already exists, from update_player_records method)
+                            player_exp = player_data[1]
+                            # Old player level
+                            for level in self.levelling_system:
+                                if player_exp < level[1]:
+                                    break
+                                old_player_level = level[0]
+
+                            # Add exp
+                            player_exp = player_exp + self.achievement_rewards[self.consecutive_days_achievements[achievement_value]]
+                            update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                            cursor.execute(update_player_exp_query, (player_exp, player.id))
+                            conn.commit()
+
+                            # New player level
+                            for level in self.levelling_system:
+                                if player_exp < level[1]:
+                                    break
+                                new_player_level = level[0]
+
+                            if new_player_level > old_player_level:
+                                achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+
+                # > 1 day, reset streak
+                else:
+                    reset_streak_query = 'UPDATE achievements SET last_play = ?, current_streak = 1 WHERE player = ?'
+                    cursor.execute(reset_streak_query, (cur_date, player.id))
+                    conn.commit()
+        else:
+            cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
+            insert_consecutive_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+            insert_consecutive_achievements_values = [player.id, 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0]
+            cursor.execute(insert_consecutive_achievements_query, insert_consecutive_achievements_values)
+            conn.commit()
+        
+        conn.close()
 
         return achievement_msgs
 
@@ -869,93 +1023,96 @@ class State():
         loser_index = 1 if self.scores[0] >= 3 else 0
         players = [self.players[winner_index], self.players[loser_index]]
 
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        achievements = wb['Achievements']
-        player_stats = wb['Players']
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
         achievement_msgs = []
 
         for player in players:
-            i = 0
-            inside = False
-            for row in achievements:
-                i += 1
-                # Player exists in the records
-                if row[0].value == str(player.id):
-                    inside = True
-                    # Challenge played
-                    achievements['C' + str(i)] = achievements['C' + str(i)].value + 1
+            # Extract data
+            get_player_achievements_query = 'SELECT * FROM achievements WHERE player = ?'
+            cursor.execute(get_player_achievements_query, (player.id,))
+            player_achievements = cursor.fetchone()
 
-                    # If achievement earned, add exp and append achievement msg
-                    if achievements['C' + str(i)].value in self.challenge_achievements or (achievements['C' + str(i)].value > 300 and achievements['I' + str(i)].value == 0):
-                        achievement_value = achievements['C' + str(i)].value
-                        if achievements['C' + str(i)].value >= 300 and achievements['I' + str(i)].value == 0:
-                            achievements['I' + str(i)] = 1
-                            achievement_value = 300
+            player_data_query = 'SELECT player, exp FROM players WHERE player = ?'
+            cursor.execute(player_data_query, (player.id,))
+            player_data = cursor.fetchone()
 
-                        # Achievement msg
-                        challenge = self.badge_emojis[self.challenge_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
-                        '! You have obtained ' + ('a ' if 'Master' not in self.challenge_achievements[achievement_value] else 'the ') + '**' + \
-                        self.challenge_achievements[achievement_value] + (' of Challenges' if 'Master' in self.challenge_achievements[achievement_value] else '') + \
-                        '** badge for having played **' + str(achievement_value) + \
-                        '** challenges! **(+' + str(self.achievement_rewards[self.challenge_achievements[achievement_value]]) + ' Exp)**'
-                        
-                        achievement_msgs.append(challenge)
+            if player_achievements:
+                # Update challenge played
+                new_challenge_value = player_achievements[2] + 1
+                update_player_achievements_query = 'UPDATE achievements SET challenges_played = ? WHERE player = ?'
+                cursor.execute(update_player_achievements_query, (new_challenge_value, player.id))
+                conn.commit()
 
-                        # Add exp to player
-                        j = 0
-                        for row in player_stats:
-                            j += 1
-                            if row[0].value == str(player.id):
-                                # Old player level
-                                for level in self.levelling_system:
-                                    if player_stats['B' + str(j)].value < level[1]:
-                                        break
-                                    old_player_level = level[0]
+                # If achievement earned, add exp and append achievement msg
+                if new_challenge_value in self.challenge_achievements or (new_challenge_value > 300 and player_achievements[8] == 0):
+                    achievement_value = new_challenge_value
+                    if new_challenge_value >= 300 and player_achievements[8] == 0:
+                        update_challenge_gm_query = 'UPDATE achievements SET challenges_gm = ? WHERE player = ?'
+                        cursor.execute(update_challenge_gm_query, (1, player.id))
+                        conn.commit()
+                        achievement_value = 300
 
-                                # Add exp
-                                player_stats['B' + str(j)] = player_stats['B' + str(j)].value + self.achievement_rewards[self.challenge_achievements[achievement_value]]
+                    # Achievement msg
+                    challenge = self.badge_emojis[self.challenge_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
+                    '! You have obtained ' + ('a ' if 'Master' not in self.challenge_achievements[achievement_value] else 'the ') + '**' + \
+                    self.challenge_achievements[achievement_value] + (' of Challenges' if 'Master' in self.challenge_achievements[achievement_value] else '') + \
+                    '** badge for having played **' + str(achievement_value) + \
+                    '** challenges! **(+' + str(self.achievement_rewards[self.challenge_achievements[achievement_value]]) + ' Exp)**'
+                    
+                    achievement_msgs.append(challenge)
 
-                                # New player level
-                                for level in self.levelling_system:
-                                    if player_stats['B' + str(j)].value < level[1]:
-                                        break
-                                    new_player_level = level[0]
+                    # Add exp to player (Assume player data already exists, from update_player_records method)
+                    player_exp = player_data[1]
+                    # Old player level
+                    for level in self.levelling_system:
+                        if player_exp < level[1]:
+                            break
+                        old_player_level = level[0]
 
-                                wb.save("AttackonWikia/records.xlsx")
+                    # Add exp
+                    player_exp = player_exp + self.achievement_rewards[self.challenge_achievements[achievement_value]]
+                    update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                    cursor.execute(update_player_exp_query, (player_exp, player.id))
+                    conn.commit()
 
-                                if new_player_level > old_player_level:
-                                    achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+                    # New player level
+                    for level in self.levelling_system:
+                        if player_exp < level[1]:
+                            break
+                        new_player_level = level[0]
 
-                                break
-                        
-                    wb.save("AttackonWikia/records.xlsx")
-                    break
-
-            if inside == False:
+                    if new_player_level > old_player_level:
+                        achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+            else:
                 cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-                achievements.append([str(player.id), 0, 1, cur_date, 1, 1, 0])
-                wb.save("AttackonWikia/records.xlsx")
+                insert_challenge_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+                insert_challenge_achievements_values = [player.id, 0, 1, cur_date, 1, 1, 0, 0, 0, 0, 0]
+                cursor.execute(insert_challenge_achievements_query, insert_challenge_achievements_values)
+                conn.commit()
+
+        conn.close()
 
         return achievement_msgs
 
     def get_profile(self, player, server):
         # Returns profile of player in an embed
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        player_data = wb['Players']
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
         # Extract data
-        inside = False
-        for row in player_data:
-            if row[0].value == str(player.id):
-                player_info = [player.name, row[1].value, row[2].value, row[3].value, row[4].value, row[5].value, row[6].value]
-                inside = True
-                break
-        if inside == False:
-            player_info = [player.name, 0, 0, 0, 0, 0, 0]
-            player_data.append([str(player.id), 0, 0, 0, 0, 0, 0])
-        
-        wb.save("AttackonWikia/records.xlsx")
+        get_player_data = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(get_player_data, (player.id,))
+        player_info = cursor.fetchone()
+
+        if player_info is None:
+            insert_player_data = 'INSERT INTO players VALUES (?,?,?,?,?,?,?)'
+            player_data = [player.id, 0, 0, 0, 0, 0, 0]
+            cursor.execute(insert_player_data, player_data)
+            conn.commit()
+
+            player_info = [player.id, 0, 0, 0, 0, 0, 0]
 
         # Put info into embed
         for level in self.levelling_system:
@@ -965,37 +1122,38 @@ class State():
             player_level = level[0]
 
         player_desc = 'Level: **' + str(player_level) + '**\nExperience Points: **' + str(player_info[1]) + '**'
-        if len(self.levelling_system) > player_level >= 10:
+        if len(self.levelling_system) > player_level:
             player_desc += ' (' + str(next_exp) + ' Exp to next level)'
 
         # Get total players in server
         player_rankings = [] # [[player id, exp], [...], ...]
-        # Put all players into a list
-        for row in player_data:
-            if row[0].value == 'ID':
-                continue
-            else:
-                player_rankings.append([row[0].value, row[1].value])
         
         # Sort by Exp from biggest to smallest
         player_rankings.sort(key = lambda x: x[1], reverse = True)
 
+        # Get player records sorted by exp descending
+        get_players_ranked = 'SELECT player, exp FROM players ORDER BY exp DESC'
+        cursor.execute(get_players_ranked)
+        player_rankings = cursor.fetchall()
+
         # Get players in server
-        server_users = list(map(lambda y: str(y.id), server.members))
+        server_users = [member.id for member in server.members]
         server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
         total_players = len(server_players)
 
         # Get ranking
         i = 1
         for person in server_players:
-            if person[0] == str(player.id):
+            if person[0] == player.id:
                 rank = i
                 break
             else:
                 i += 1
 
+        conn.close()
+
         player_profile = discord.Embed(title = 'Attack on Wikia Profile', description = player_desc, colour = 0xC0C0C0)
-        player_profile.set_author(name = player_info[0], icon_url = player.avatar_url)
+        player_profile.set_author(name = player.name, icon_url = player.avatar_url)
         player_profile.set_thumbnail(url = player.avatar_url)
 
         player_profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
@@ -1005,27 +1163,30 @@ class State():
         player_profile.add_field(name = 'Challenges played', value = str(player_info[3]))
         player_profile.add_field(name = 'Challenges won', value = str(player_info[4]))
         
-
         return player_profile
 
     def get_achievements(self, player):
         # Returns profile of player in an embed
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        achievements = wb['Achievements']
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
         # Extract data
-        inside = False
-        for row in achievements:
-            if row[0].value == str(player.id):
-                badges = [player.name, row[1].value, row[2].value, row[4].value, row[5].value, row[6].value]
-                inside = True
-                break
-        if inside == False:
-            cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-            badges = [player.name, 0, 0, 1, 1, 0]
-            achievements.append([str(player.id), 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0])
+        achievements_query = 'SELECT * FROM achievements WHERE player = ?'
+        cursor.execute(achievements_query, (player.id,))
+        player_info = cursor.fetchone()
 
-        wb.save("AttackonWikia/records.xlsx")
+        if player_info:
+            badges = [player.name, player_info[1], player_info[2], player_info[4], player_info[5], player_info[6]]
+        else:
+            cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
+            insert_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
+            initial_achievements = [player.id, 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0]
+            cursor.execute(insert_achievements_query, initial_achievements)
+            conn.commit()
+
+            badges = [player.name, 0, 0, 1, 1, 0]
+
+        conn.close()
 
         # Put info into embed
         num_badges = 0
@@ -1033,7 +1194,7 @@ class State():
         cur_days = badges[3]
         max_days = badges[4]
         consecutive_badges = ''
-        consecutive_next = str(max_days)
+        consecutive_next = str(cur_days)
         for step in sorted(list(self.consecutive_days_achievements)):
             if max_days < step:
                 consecutive_next = str(cur_days) + '/' + str(step)
@@ -1091,11 +1252,33 @@ class State():
         return player_achievements
 
     def get_dailies(self, player):
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        player_dailies = wb['Dailies']
-        cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-        cur_dailies = []
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
+        # Extract data
+        dailies_query = 'SELECT * FROM dailies WHERE player = ?'
+        cursor.execute(dailies_query, (player.id,))
+        player_dailies = cursor.fetchone()
+
+        cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
+
+        if player_dailies:
+            # B: prev play, C: Standard, D: Hangman, E: Challenge
+            prev_date = player_dailies[1]
+            if cur_date != prev_date:
+                # Reset
+                reset_dailies_query = 'UPDATE dailies SET last_play = ?, standard = ?, hangman = ?, challenge = ?, image = ? WHERE player = ?'
+                cursor.execute(reset_dailies_query, (cur_date, 0, 0, 0, 0, player.id))
+                conn.commit()
+                player_dailies = [player.id, cur_date, 0, 0, 0, 0]
+        else:
+            insert_dailies_query = 'INSERT INTO dailies VALUES (?,?,?,?,?,?)'
+            player_dailies = [player.id, cur_date, 0, 0, 0, 0]
+            cursor.execute(insert_dailies_query, player_dailies)
+            conn.commit()
+
+        conn.close()
+                
         def get_time_remaining(cur_hr, cur_min):
             # 24 hrs - current time
             cur_mins = cur_hr * 60 + cur_min
@@ -1104,133 +1287,117 @@ class State():
             minute = str(rem_min % 60)
             return '[' + hr + 'h ' + minute + 'm]'
 
-        i = 0
-        inside = False
-        for row in player_dailies:
-            i += 1
-            if row[0].value == str(player.id):
-                inside = True
-                # B: prev play, C: Standard, D: Hangman, E: Challenge
-                prev_date = player_dailies['B' + str(i)].value
-                if cur_date != prev_date:
-                    # Reset
-                    player_dailies['B' + str(i)] = cur_date
-                    player_dailies['C' + str(i)] = 0
-                    player_dailies['D' + str(i)] = 0
-                    player_dailies['E' + str(i)] = 0
-                    player_dailies['F' + str(i)] = 0
-                    wb.save("AttackonWikia/records.xlsx")
+        time_remaining = get_time_remaining(time.gmtime().tm_hour, time.gmtime().tm_min)
 
-                time_remaining = get_time_remaining(time.gmtime().tm_hour, time.gmtime().tm_min)
-                if player_dailies['C' + str(i)].value >= 10:
-                    standard_daily = '☑ Complete 10 standard puzzles! **[+15 Exp]**'
-                    standard_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['C' + str(i)].value) + '/10**'
-                else:
-                    standard_daily = '⬛ Complete 10 standard puzzles! **[+15 Exp]**'
-                    standard_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['C' + str(i)].value) + '/10**'
-                    
-                if player_dailies['D' + str(i)].value >= 10:
-                    hangman_daily = '☑ Win 10 Hangman games! **[+15 Exp]**'
-                    hangman_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['D' + str(i)].value) + '/10**'
-                else:
-                    hangman_daily = '⬛ Win 10 Hangman games! **[+15 Exp]**'
-                    hangman_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['D' + str(i)].value) + '/10**'
+        standard_daily = ('☑' if player_dailies[2] >= 10 else '⬛') +  ' Complete 10 standard puzzles! **[+15 Exp]**'
+        standard_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies[2]) + '/10**'
+            
+        hangman_daily = ('☑' if player_dailies[3] >= 10 else '⬛') + ' Win 10 Hangman games! **[+15 Exp]**'
+        hangman_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies[3]) + '/10**'
 
-                if player_dailies['F' + str(i)].value >= 10:
-                    image_daily = '☑ Guess 10 images correctly! **[+15 Exp]**'
-                    image_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['F' + str(i)].value) + '/10**'
-                else:
-                    image_daily = '⬛ Guess 10 images correctly! **[+15 Exp]**'
-                    image_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['F' + str(i)].value) + '/10**'
+        image_daily = ('☑' if player_dailies[5] >= 10 else '⬛') + ' Guess 10 images correctly! **[+15 Exp]**'
+        image_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies[5]) + '/10**'
 
-                if player_dailies['E' + str(i)].value >= 1:
-                    challenge_daily = '☑ Complete a challenge! **[+25 Exp]**'
-                    challenge_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['E' + str(i)].value) + '/1**'
-                else:
-                    challenge_daily = '⬛ Complete a challenge! **[+25 Exp]**'
-                    challenge_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies['E' + str(i)].value) + '/1**'
-
-        if inside == False:
-            player_dailies.append([str(player.id), cur_date, 0, 0, 0, 0])
-            wb.save("AttackonWikia/records.xlsx")
-            time_remaining = get_time_remaining(time.gmtime().tm_hour, time.gmtime().tm_min)
-            standard_daily = '⬛ Complete 10 standard puzzles! **[+15 Exp]**'
-            standard_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **0/10**'
-            hangman_daily = '⬛ Win 10 Hangman games! **[+15 Exp]**'
-            hangman_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **0/10**'
-            image_daily = '⬛ Guess 10 images correctly! **[+15 Exp]**'
-            image_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **0/10**'
-            challenge_daily = '⬛ Complete a challenge! **[+25 Exp]**'
-            challenge_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **0/1**'
+        challenge_daily = ('☑' if player_dailies[4] >= 1 else '⬛') + ' Complete a challenge! **[+25 Exp]**'
+        challenge_daily2 = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ - Progress: **' + str(player_dailies[4]) + '/1**'
 
         cur_dailies = discord.Embed(colour = 0xC0C0C0)
         cur_dailies.set_author(name = 'Today\'s Dailies ' + time_remaining, icon_url = player.avatar_url)
         cur_dailies.set_thumbnail(url = player.avatar_url)
 
-        cur_dailies.add_field(name = standard_daily, value = standard_daily2)
-        cur_dailies.add_field(name = hangman_daily, value = hangman_daily2)
-        cur_dailies.add_field(name = image_daily, value = image_daily2)
-        cur_dailies.add_field(name = challenge_daily, value = challenge_daily2)
+        cur_dailies.add_field(name = standard_daily, value = standard_daily2, inline = False)
+        cur_dailies.add_field(name = hangman_daily, value = hangman_daily2, inline = False)
+        cur_dailies.add_field(name = image_daily, value = image_daily2, inline = False)
+        cur_dailies.add_field(name = challenge_daily, value = challenge_daily2, inline = False)
         return cur_dailies
 
     def get_stats(self):
-        # Returns info of game history in an embed
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        game_data = wb['Overall']
+        # Returns overall game stats in an embed
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        game_data_query = 'SELECT * FROM overall'
+        cursor.execute(game_data_query)
+        game_data = cursor.fetchone()
+
+        total_qns = game_data[0]
+        correct_qns = str(game_data[1])
+        if total_qns > 0:
+            correct_qns += ' (' + str(round(100 * game_data[1] / total_qns, 1)) + '%)'
+
+        hangman_games = game_data[5]
+        hangman_won_games = str(game_data[6])
+        if hangman_games > 0:
+            hangman_won_games += ' (' + str(round(100 * game_data[6] / hangman_games, 1)) + '%)'
+        
+        images_generated = game_data[7]
+        images_correct = str(game_data[8])
+        if images_generated > 0:
+            images_correct += ' (' + str(round(100 * game_data[8] / images_generated, 1)) + '%)'
+
+        challenge_qns = game_data[3]
+        c_correct_qns = str(game_data[4])
+        if challenge_qns > 0:
+            c_correct_qns += ' (' + str(round(100 * game_data[4] / challenge_qns, 1)) + '%)'
+
+        challenges_played = str(game_data[2])
+
+        conn.close()
+        
         game_stats = discord.Embed(title = '📖 Attack on Wikia Stats', colour = 0xC0C0C0)
 
-        total_qns = game_data['A2'].value
-        correct_qns = str(game_data['B2'].value)
-        if total_qns > 0:
-            correct_qns += ' (' + str(round(100 * game_data['B2'].value / total_qns, 1)) + '%)'
-
-        hangman_games = game_data['F2'].value
-        hangman_won_games = str(game_data['G2'].value)
-        if hangman_games > 0:
-            hangman_won_games += ' (' + str(round(100 * game_data['G2'].value / hangman_games, 1)) + '%)'
-        
-        images_generated = game_data['H2'].value
-        images_correct = str(game_data['I2'].value)
-        if images_generated > 0:
-            images_correct += ' (' + str(round(100 * game_data['I2'].value / images_generated, 1)) + '%)'
-
-        challenge_qns = game_data['D2'].value
-        c_correct_qns = str(game_data['E2'].value)
-        if challenge_qns > 0:
-            c_correct_qns += ' (' + str(round(100 * game_data['E2'].value / challenge_qns, 1)) + '%)'
-        
         game_stats.add_field(name = 'Questions asked', value = str(total_qns))
         game_stats.add_field(name = 'Questions answered correctly', value = correct_qns)
+        game_stats.add_field(name = '⠀', value = '⠀')
         game_stats.add_field(name = 'Total Hangman games played', value = str(hangman_games))
         game_stats.add_field(name = 'Total Hangman games won', value = hangman_won_games)
+        game_stats.add_field(name = '⠀', value = '⠀')
         game_stats.add_field(name = 'Number of images generated', value = str(images_generated))
         game_stats.add_field(name = 'Images guessed correctly', value = images_correct)
-        game_stats.add_field(name = 'Challenges played', value = str(game_data['C2'].value), inline = False)
+        game_stats.add_field(name = '⠀', value = '⠀')
+        game_stats.add_field(name = 'Challenges played', value = challenges_played, inline = False)
         game_stats.add_field(name = 'Challenge questions asked', value = str(challenge_qns))
         game_stats.add_field(name = 'Challenge questions answered correctly', value = c_correct_qns)
+        game_stats.add_field(name = '⠀', value = '⠀')
         
         return game_stats
 
-    def get_leaderboard(self, server, page=1):
+    def get_leaderboard(self, server, page=1, player=None):
         # Returns the names of the top players, with 10 per page, in an embed
-        wb = load_workbook("AttackonWikia/records.xlsx")
-        player_data = wb['Players']
-        
-        player_rankings = {} # {player id: sr, ...}
-        # Put all players into a dictionary
-        for line in player_data:
-            player_rankings[line[0].value] = line[1].value
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
 
-        server_users = server.members
+        player_rankings_query = 'SELECT player, exp FROM players'
+        cursor.execute(player_rankings_query)
+        player_rankings = cursor.fetchall()
+
+        if player:
+            player_query = 'SELECT * FROM players WHERE player = ?'
+            cursor.execute(player_query, (player.id,))
+            player_data = cursor.fetchone()
+            if player_data is None:
+                # Add player data into player records
+                insert_player_data = 'INSERT INTO players VALUES (?,?,?,?,?,?,?)'
+                player_data = [player.id, 0, 0, 0, 0, 0, 0]
+                player_rankings.append(player_data)
+                cursor.execute(insert_player_data, player_data)
+                conn.commit()
+
+        player_rankings_map = {}
+        for player_rank in player_rankings:
+            player_rankings_map[player_rank[0]] = player_rank[1]
+
         server_players = []
-        for user in server_users:
-            if str(user.id) in player_rankings:
-                server_players.append([user.mention, player_rankings[str(user.id)]])
-        
+        for user in server.members:
+            if user.id in player_rankings_map:
+                server_players.append([user.mention, player_rankings_map[user.id]])
+
         # Sort by Exp from biggest to smallest
         server_players.sort(key = lambda x: x[1], reverse = True)
 
-        # Top 10x players
+        conn.close()
+        
+        # Sanitize page input
         try: 
             page_no = int(page)
         except:
@@ -1239,8 +1406,17 @@ class State():
         if page_no < 1:
             page_no = 1
 
-        # Normalize to number of server users
-        page_no = min(math.ceil(len(server_players) / 10), page_no)
+        # Get page_no of player rank
+        if player:
+            rank = 0
+            for person in server_players:
+                rank += 1
+                if person[0] == player.mention:
+                    break
+            page_no = math.ceil(rank / 10)
+
+        total_pages = math.ceil(len(server_players) / 10)
+        page_no = min(total_pages, page_no)
         
         # Put names into embed
         all_names = ''
@@ -1261,21 +1437,23 @@ class State():
         leaderboard.add_field(name = 'Max Level', value = str(len(self.levelling_system)), inline = False)
         leaderboard.add_field(name = 'Rank/Name', value = all_names)
         leaderboard.add_field(name = 'Level/Exp', value = all_levels_exp)
+        leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
+
         return leaderboard
 
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Attack on Wikia', colour = 0xC0C0C0)
-        commands_list.add_field(name = '~new', value = 'Starts a new puzzle in normal mode.')
-        commands_list.add_field(name = '~clue', value = 'Use during an active puzzle in normal mode to obtain more information about the wiki page. Maximum of 5 clues per puzzle.')
-        commands_list.add_field(name = '~hangman', value = 'Starts a new Hangman game. Type ~hangman <@person> to challenge someone to a Hangman game.')
-        commands_list.add_field(name = '~image', value = 'Starts image mode.')
-        commands_list.add_field(name = '~answer', value = 'Reveals the answer of an active puzzle or Hangman game')
-        commands_list.add_field(name = '~challenge <@person>', value = 'Sends a challenge to another person, or accepts an incoming challenge.')
-        commands_list.add_field(name = '~reset', value = 'Resets the game.')
-        commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.')
-        commands_list.add_field(name = '~badges <@person>', value = 'Checks the badges a given user has. Use just ~badges to check your own badges.')
-        commands_list.add_field(name = '~dailies', value = 'Checks the progress of your daily rewards.')
-        commands_list.add_field(name = '~gamestats', value = 'Shows the overall game statistics.')
-        commands_list.add_field(name = '~leaderboard/~lb <page>', value = 'Shows the leaderboard, listing the top 10 players on the server. Add a number behind to see subsequent pages (e.g. ~lb 2).')
+        commands_list.add_field(name = '~new', value = 'Starts a new puzzle in normal mode.', inline = False)
+        commands_list.add_field(name = '~clue', value = 'Use during an active puzzle in normal mode to obtain more information about the wiki page. Maximum of 5 clues per puzzle.', inline = False)
+        commands_list.add_field(name = '~hangman <@person>', value = 'Starts a new Hangman game. Type ~hangman <@person> to challenge someone to a Hangman game.', inline = False)
+        commands_list.add_field(name = '~image', value = 'Starts image mode.', inline = False)
+        commands_list.add_field(name = '~answer', value = 'Reveals the answer of an active puzzle.', inline = False)
+        commands_list.add_field(name = '~challenge <@person>', value = 'Sends a challenge to another person, or accepts an incoming challenge.', inline = False)
+        commands_list.add_field(name = '~reset', value = 'Resets the game.', inline = False)
+        commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.', inline = False)
+        commands_list.add_field(name = '~badges <@person>', value = 'Checks the badges a given user has. Use just ~badges to check your own badges.', inline = False)
+        commands_list.add_field(name = '~dailies', value = 'Checks the progress of your daily rewards.', inline = False)
+        commands_list.add_field(name = '~gamestats', value = 'Shows the overall game statistics.', inline = False)
+        commands_list.add_field(name = '~leaderboard/~lb <page> <@person>', value = 'Shows the leaderboard, listing the top 10 players on the server. Add a number behind to see subsequent pages (e.g. ~lb 2).', inline = False)
         return commands_list
