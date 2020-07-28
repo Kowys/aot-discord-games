@@ -4,6 +4,14 @@ def initialize_dbs():
     databases = {
         'config_db.db': [
             ('instances', ['server integer', 'channel integer', 'game text'])
+        ],
+        'AttackonWikia/aow_db.db': [
+            ('players', ['player integer', 'exp integer', 'correct_answers integer', 'challenges_played integer', 'challenges_won integer', 'hangman_correct integer', 'images_correct integer']),
+            ('achievements', ['player integer', 'one_clue integer', 'challenges_played integer', 'last_play text', 'current_streak integer', 'max_streak integer', 'perfect_hangman integer',
+            'one_clue_gm integer', 'challenges_gm integer', 'streak_gm integer', 'hangman_gm integer']),
+            ('dailies', ['player integer', 'last_play text', 'standard integer', 'hangman integer', 'challenge integer', 'image integer']),
+            ('overall', ['questions_asked integer', 'questions_correct integer', 'challenges_completed integer', 'challenge_questions integer', 'challenge_questions_correct integer',
+            'hangman_games_played integer', 'hangman_games_won integer', 'images_generated integer', 'images_correct integer'])
         ]
     }
 
