@@ -83,6 +83,6 @@ class MyClient(discord.Client):
         elif cur_game:
             await cur_game.msg_handler(message)
 
-        elif message.content.startswith('~'):
+        elif message.content.startswith('~') and not '~~' in message.content:
             msg = 'No game is currently enabled in this channel! Type `~config` to select a game.'
             await message.channel.send(embed=discord.Embed(description=msg, colour=0xE5D2BB))
