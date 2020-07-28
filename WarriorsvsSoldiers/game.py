@@ -643,7 +643,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 self.reset_confirmation = True
                 return player.mention + ', are you sure you want to reset the game? Type `~reset` again to confirm.'
 
-            self.status = "waiting for game"
+            self.status = 'waiting for game'
 
             self.game_host = None
             self.reset_confirmation = False
