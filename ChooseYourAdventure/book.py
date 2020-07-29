@@ -32,8 +32,7 @@ victory. You may even save some of your friends who otherwise would be fated to 
         'she has a goal in mind':214,
         'a matching codeword':801}
 
-        self.annie_secrets = {139: 'one', 207: 'two', 128: 'three', 32: 'four', 214: 'five'}
-        self.annie_secrets2 = {139: 'two', 207: 'three', 128: 'four', 32: 'five', 214: 'victory'}
+        self.annie_secrets = {139: 1, 207: 2, 128: 3, 32: 4, 214: 5}
 
         self.all_pages = {1:self.P1, 2:self.P2, 3:self.P3, 4:self.P4, 5:self.P5, 6:self.P6, 7:self.P7, 8:self.P8, 801:self.P801, 8011:self.P8011, 802:self.P802, 9:self.P9, 901:self.P901, 10:self.P10, 
         11:self.P11, 12:self.P12, 13:self.P13, 15:self.P15, 16:self.P16, 17:self.P17, 18:self.P18, 19:self.P19, 20:self.P20, 21:self.P21, 22:self.P22, 23:self.P23, 24:self.P24, 25:self.P25, 

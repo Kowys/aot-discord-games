@@ -1,8 +1,10 @@
 import discord
+import math
+import sqlite3
 from ChooseYourAdventure import book
 from ChooseYourAdventure import book2
 from openpyxl import load_workbook
-import math
+
 
 class Affinities():
     def __init__(self, book):
@@ -101,84 +103,136 @@ class State():
         self.game_channel = None
         
     
-    def check_book(self, player):
-        wb = load_workbook("ChooseYourAdventure/player data.xlsx")
-        player_data = wb['Endings']
-        my_endings = []
-        for line in player_data:
-            if str(player.id) == line[0].value and line[1].value not in my_endings:
-                my_endings.append(line[1].value)
+    # def check_book(self, player):
+    #     wb = load_workbook("ChooseYourAdventure/player data.xlsx")
+    #     player_data = wb['Endings']
+    #     my_endings = []
+    #     for line in player_data:
+    #         if str(player.id) == line[0].value and line[1].value not in my_endings:
+    #             my_endings.append(line[1].value)
 
-        good_endings = ['An Ordinary Moment of Happiness', 'Jean Kirstein of the Survey Corps', 'A Narrow Victory', 'Armin Arlert\'s Dream', 'Captain Levi\'s Recruit', 'Mikasa\'s True Face', 'Nameless Hero', 
-        'Eren Yeager\'s Hand', 'Sasha Blouse\'s Promise', 'The Girl Who Hid Her True Self', 'No Regrets', 'Jean of the Military Police', 'Joining the Garrison']
+    #     good_endings = ['An Ordinary Moment of Happiness', 'Jean Kirstein of the Survey Corps', 'A Narrow Victory', 'Armin Arlert\'s Dream', 'Captain Levi\'s Recruit', 'Mikasa\'s True Face', 'Nameless Hero', 
+    #     'Eren Yeager\'s Hand', 'Sasha Blouse\'s Promise', 'The Girl Who Hid Her True Self', 'No Regrets', 'Jean of the Military Police', 'Joining the Garrison']
 
-        for ending in my_endings:
-            if ending in good_endings:
-                return True
+    #     for ending in my_endings:
+    #         if ending in good_endings:
+    #             return True
 
-        return False
+    #     return False
 
-    def switch_book(self):
-        self.affinities = Affinities(2)
-        self.statuses = Statuses(2)
-        self.flags = Flags(2)
-        self.book = book2.Book(self)
-        self.book_no = 2
+    # def switch_book(self):
+    #     self.affinities = Affinities(2)
+    #     self.statuses = Statuses(2)
+    #     self.flags = Flags(2)
+    #     self.book = book2.Book(self)
+    #     self.book_no = 2
 
     def get_annie_secrets(self, user_obj):
-        wb = load_workbook("ChooseYourAdventure/player data.xlsx")
-        annie_data = wb['Annie progress']
-        my_secrets = ['one']
-        cur_secret = self.book.annie_secrets[self.book.cur_page[0]]
-        for line in annie_data:
-            if str(user_obj.id) == line[0].value and (line[1].value not in my_secrets):
-                my_secrets.append(line[1].value)     
+        conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
+        cursor = conn.cursor()
 
-        if cur_secret not in my_secrets:
-            return 'Nice try, ' + user_obj.mention + ', but you do not have access to this secret yet!'
+        get_annie_query = 'SELECT * FROM annie_progress WHERE player = ?'
+        cursor.execute(get_annie_query, (user_obj.id,))
+        annie_data = cursor.fetchone()
+
+        cur_progress = self.book.annie_secrets[self.book.cur_page[0]]
+
+        if annie_data:
+            annie_progress = annie_data[1]
+            if cur_progress > annie_progress + 1:
+                return 'Nice try, ' + user_obj.mention + ', but you do not have access to this secret yet!'
+            elif cur_progress == annie_progress + 1:
+                # Update annie progress
+                update_annie_query = 'UPDATE annie_progress SET progress = ? WHERE player = ?'
+                update_annie = [cur_progress, user_obj.id]
+                cursor.execute(update_annie_query, update_annie)
+                conn.commit()
+                # Go to secret page and return content
+                return self.book.page_flipper('s')
+            else:
+                # Go to secret page and return content
+                return self.book.page_flipper('s')
         else:
-            # Record secret
-            annie_data.append([str(user_obj.id), self.book.annie_secrets2[self.book.cur_page[0]]])
-            wb.save("ChooseYourAdventure/player data.xlsx")
+            if cur_progress > 1:
+                return 'Nice try, ' + user_obj.mention + ', but you do not have access to this secret yet!'
+            else:
+                # Insert annie progress
+                insert_annie_query = 'INSERT INTO annie_progress VALUES (?,?)'
+                insert_annie = [user_obj.id, 1]
+                cursor.execute(insert_annie_query, insert_annie)
+                conn.commit()
 
-            # Go to secret page and return content
-            msg_content = self.book.page_flipper('s')
-            return msg_content
+                # Go to secret page and return content
+                return self.book.page_flipper('s')
+
+        conn.close()
 
     def log_ending(self, author):
-        wb = load_workbook("ChooseYourAdventure/player data.xlsx")
+        conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
+        cursor = conn.cursor()
 
         # Add ending to game statistics
-        game_data = wb['Global']
+        get_global_query = 'SELECT * FROM global'
+        cursor.execute(get_global_query)
+        global_stats = cursor.fetchall()
+        
         ending = self.book.endings[self.book.cur_page[0]]
-        ending_map = {'Trial of Eren and Mikasa': 15, 'A Soldier\'s Duty': 16, 'An Ordinary Moment of Happiness': 3, 'Failure of the Reclamation Plan': 17, 'Jean Kirstein of the Survey Corps': 4, 
-        'A Narrow Victory': 5, 'Armin Arlert\'s Dream': 6, 'A Regular Soldier': 18, '104th Annihilated at HQ': 19, 'Junior High': 25, 'The Fall of Wall Rose': 20, 
-        'Failure to Reclaim Trost District': 21, 'A Moment\'s Peace': 22, 'Eren Flees': 23, 'Captain Levi\'s Recruit': 7, 'Mikasa\'s True Face': 8, 'Nameless Hero': 9, 'Eren Yeager\'s Hand': 10, 
-        'Sasha Blouse\'s Promise': 11, 'The Girl Who Hid Her True Self': 12, 'The Death of a Merchant': 24, 'No Regrets': 13, 'Jean of the Military Police': 14, 'Joining the Garrison': 2}
+        ending_map = {'Trial of Eren and Mikasa': 14, 'A Soldier\'s Duty': 15, 'An Ordinary Moment of Happiness': 2, 'Failure of the Reclamation Plan': 16, 'Jean Kirstein of the Survey Corps': 3, 
+        'A Narrow Victory': 4, 'Armin Arlert\'s Dream': 5, 'A Regular Soldier': 17, '104th Annihilated at HQ': 18, 'Junior High': 24, 'The Fall of Wall Rose': 19, 
+        'Failure to Reclaim Trost District': 20, 'A Moment\'s Peace': 21, 'Eren Flees': 22, 'Captain Levi\'s Recruit': 6, 'Mikasa\'s True Face': 7, 'Nameless Hero': 8, 'Eren Yeager\'s Hand': 9, 
+        'Sasha Blouse\'s Promise': 10, 'The Girl Who Hid Her True Self': 11, 'The Death of a Merchant': 23, 'No Regrets': 12, 'Jean of the Military Police': 13, 'Joining the Garrison': 1}
 
-        cell = 'B' + str(ending_map[ending])
-        game_data[cell] = game_data[cell].value + 1
-        game_data['B1'] = game_data['B1'].value + 1
-        wb.save("ChooseYourAdventure/player data.xlsx")
+        endings_db_map = {'Joining the Garrison':'joining_the_garrison', 'An Ordinary Moment of Happiness':'an_ordinary_moment_of_happiness', 
+        'Jean Kirstein of the Survey Corps':'jean_kirstein_of_the_survey_corps', 'A Narrow Victory':'a_narrow_victory', 'Armin Arlert\'s Dream':'armin_arlerts_dream',
+        'Captain Levi\'s Recruit':'captain_levis_recruit', 'Mikasa\'s True Face':'mikasas_true_face', 'Nameless Hero':'nameless_hero', 'Eren Yeager\'s Hand':'eren_yeagers_hand', 
+        'Sasha Blouse\'s Promise':'sasha_blouses_promise', 'The Girl Who Hid Her True Self':'the_girl_who_hid_her_true_self', 'No Regrets':'no_regrets', 
+        'Jean of the Military Police':'jean_of_the_military_police', 'Trial of Eren and Mikasa':'trial_of_eren_and_mikasa', 'A Soldier\'s Duty':'a_soldiers_duty', 
+        'Failure of the Reclamation Plan':'failure_of_the_reclamation_plan', 'A Regular Soldier':'a_regular_soldier','104th Annihilated at HQ':'annihilated_at_hq', 
+        'The Fall of Wall Rose':'the_fall_of_wall_rose', 'Failure to Reclaim Trost District':'failure_to_reclaim_trost_district', 'A Moment\'s Peace':'a_moments_peace', 
+        'Eren Flees':'eren_flees', 'The Death of a Merchant':'the_death_of_a_merchant','Junior High':'junior_high'}
+
+        update_index = ending_map[ending]
+        update_global_query = 'UPDATE global SET count = ? WHERE ending = ?'
+        cursor.execute(update_global_query, [global_stats[update_index][1] + 1, ending])
+        conn.commit()
 
         # Logs the ending the player achieved
-        player_data = wb['Endings']
-        former_endings = []
-        for line in player_data:
-            if str(author.id) == line[0].value and ([line[0].value, line[1].value] not in former_endings):
-                former_endings.append([line[0].value, line[1].value])
-        former_ending_count = len(former_endings)
+        get_player_query = 'SELECT * FROM endings WHERE player = ?'
+        cursor.execute(get_player_query, (author.id,))
+        raw_player_endings = cursor.fetchone()
 
-        # Add ending the player got
-        player_data.append([str(author.id), self.book.endings[self.book.cur_page[0]]])
-        wb.save("ChooseYourAdventure/player data.xlsx")
+        if raw_player_endings:
+            player_endings = raw_player_endings[1:]
+            former_ending_count = len(list(filter(lambda x: x > 0, player_endings)))
+
+            # Add ending the player got
+            update_ending = endings_db_map[ending]
+            update_player_query = 'UPDATE endings SET {} = ? WHERE player = ?'.format(update_ending)
+
+            new_ending_value = raw_player_endings[update_index] + 1
+            update_player = [new_ending_value, author.id]
+
+            cursor.execute(update_player_query, update_player)
+
+        else:
+            former_ending_count = 0
+
+            insert_ending_query = 'INSERT INTO endings VALUES ({})'.format(','.join('?' * 25))
+            insert_position = update_index - 1
+            insert_data = [author.id] + [0] * insert_position + [1] + [0] * (25 - 2 - insert_position)
+            cursor.execute(insert_ending_query, insert_data)
+
+        conn.commit()
 
         # Inform player of rank ups
-        my_endings = []
-        for line in player_data:
-            if str(author.id) == line[0].value and ([line[0].value, line[1].value] not in my_endings):
-                my_endings.append([line[0].value, line[1].value])
-        ending_count = len(my_endings)
+        get_player_query = 'SELECT * FROM endings WHERE player = ?'
+        cursor.execute(get_player_query, (author.id,))
+        raw_player_endings = cursor.fetchone()
+        player_endings = raw_player_endings[1:]
+        ending_count = len(list(filter(lambda x: x > 0, player_endings)))
+
+        conn.close()
+
         rank_ups = {1: ['Trainee', 'Recruit'], 2: ['Recruit', 'Private'], 3: ['Private', 'Soldier'], 5: ['Soldier', 'Elite Soldier'], 8: ['Elite Soldier', 'Officer'], 10: ['Officer', 'Team Leader'], 
         13: ['Team Leader', 'Senior Team Leader'], 15: ['Senior Team Leader', 'Squad Leader'], 20: ['Squad Leader', 'Squad Captain'], 24: ['Squad Captain', 'Commander']}
         
@@ -270,15 +324,22 @@ class State():
         return stats_info
 
     def get_profile(self, user_obj):
-        # Retrieve obtained endings from excel sheet
-        wb = load_workbook("ChooseYourAdventure/player data.xlsx")
-        player_data = wb['Endings']
-        my_endings = []
-        for line in player_data:
-            if str(user_obj.id) == line[0].value and line[1].value not in my_endings:
-                my_endings.append(line[1].value)
+        conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
+        cursor = conn.cursor()
 
-        ending_count = len(my_endings)
+        player_endings_query = 'SELECT * FROM endings WHERE player = ?'
+        cursor.execute(player_endings_query, (user_obj.id,))
+        raw_endings = cursor.fetchone()
+        if raw_endings:
+            my_endings = raw_endings[1:]
+            ending_count = len(list(filter(lambda x: x > 0, my_endings)))
+        else:
+            my_endings = [0] * 24
+            ending_count = 0
+            insert_player_query = 'INSERT INTO endings VALUES ({})'.format(','.join('?' * 25))
+            cursor.execute(insert_player_query, [user_obj.id] + my_endings)
+            conn.commit()
+
         # if user_obj.id == '238808836075421697':
         #     my_rank = '**Commander 👑**'
         if ending_count == 0:
@@ -311,6 +372,12 @@ class State():
         progress_info.set_author(name = username, icon_url = user_url)
         progress_info.set_thumbnail(url = user_url)
 
+        endings_index_map = {0:'Joining the Garrison', 1:'An Ordinary Moment of Happiness', 2:'Jean Kirstein of the Survey Corps', 3:'A Narrow Victory', 4:'Armin Arlert\'s Dream',
+        5:'Captain Levi\'s Recruit', 6:'Mikasa\'s True Face', 7:'Nameless Hero', 8:'Eren Yeager\'s Hand', 9:'Sasha Blouse\'s Promise', 10:'The Girl Who Hid Her True Self',
+        11:'No Regrets', 12:'Jean of the Military Police', 13:'Trial of Eren and Mikasa', 14:'A Soldier\'s Duty', 15:'Failure of the Reclamation Plan', 16:'A Regular Soldier',
+        17:'104th Annihilated at HQ', 18:'The Fall of Wall Rose', 19:'Failure to Reclaim Trost District', 20:'A Moment\'s Peace', 21:'Eren Flees', 22:'The Death of a Merchant',
+        23:'Junior High'}
+
         endings = [['An Ordinary Moment of Happiness', 'Jean Kirstein of the Survey Corps', 'A Narrow Victory', 'Armin Arlert\'s Dream', 'Captain Levi\'s Recruit', 'Mikasa\'s True Face', 'Nameless Hero', 
         'Eren Yeager\'s Hand', 'Sasha Blouse\'s Promise', 'The Girl Who Hid Her True Self', 'No Regrets', 'Jean of the Military Police', 'Joining the Garrison'], 
         ['Trial of Eren and Mikasa', 'A Soldier\'s Duty', 'Failure of the Reclamation Plan', 'A Regular Soldier', '104th Annihilated at HQ', 'The Fall of Wall Rose', 'Failure to Reclaim Trost District',
@@ -318,13 +385,17 @@ class State():
         ['Junior High']]
 
         good_endings, bad_endings, secret_endings = '', '', ''
-        for ending in my_endings:
-            if ending in endings[0]:
-                good_endings += ending + '\n'
-            elif ending in endings[1]:
-                bad_endings += ending + '\n'
-            elif ending in endings[2]:
-                secret_endings += ending + '\n'
+        for i in range(len(my_endings)):
+            if my_endings[i] > 0:
+                ending = endings_index_map[i]
+                if ending in endings[0]:
+                    good_endings += ending + '\n'
+                elif ending in endings[1]:
+                    bad_endings += ending + '\n'
+                elif ending in endings[2]:
+                    secret_endings += ending + '\n'
+
+        conn.close()
 
         progress_info.add_field(name = '**Good Endings**', value = '-' if good_endings == '' else good_endings) 
         progress_info.add_field(name = '**Bad Endings**', value = '-' if bad_endings == '' else bad_endings)
@@ -332,31 +403,25 @@ class State():
 
         return progress_info
 
-    def get_leaderboard(self, server, page=1):
-        wb = load_workbook("ChooseYourAdventure/player data.xlsx")
-        player_data = wb['Endings']
-        # {playerid1: [end1, end2, ...], playerid2: [end1, end2, ...], ...}
-        player_endings = {}
-        ending_no = 0
-        for line in player_data:
-            ending_no += 1
-            if line[0].value in player_endings:
-                if line[1].value not in [x[0] for x in player_endings[line[0].value]]:
-                    # New ending, add to all endings, including when the new ending is obtained
-                    player_endings[line[0].value].append([line[1].value, ending_no])
-            else:
-                player_endings[line[0].value] = [[line[1].value, ending_no]]
+    def get_leaderboard(self, server, page=1, player=None):
+        conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
+        cursor = conn.cursor()
 
-        server_users = server.members
-        server_players = []
-        for user in server_users:
-            if str(user.id) in player_endings:
-                server_players.append([user.name, len(player_endings[str(user.id)]), player_endings[str(user.id)][-1][1]])
-        
-        # Sort according to when player obtained their last ending (earlier = smaller number)
-        server_players.sort(key = lambda x: x[2])
+        player_endings_query = 'SELECT * FROM endings'
+        cursor.execute(player_endings_query)
+        all_endings = cursor.fetchall()
+
+        server_users_ids = {member.id: [member.id, member.name] for member in server.members}
+        server_endings = []
+        for row in all_endings:
+            if row[0] in server_users_ids:
+                unique_ending_count = len(list(filter(lambda x: x > 0, row[1:])))
+                server_endings.append([server_users_ids[row[0]][0], server_users_ids[row[0]][1], unique_ending_count])
+
+        conn.close()
+
         # Sort according to ending count
-        server_players.sort(key = lambda x: x[1], reverse = True)
+        server_endings.sort(key = lambda x: x[2], reverse = True)
 
         # Top 10x players
         try: 
@@ -367,13 +432,26 @@ class State():
         if page_no < 1:
             page_no = 1
 
+        # Get page_no of player rank
+        if player:
+            rank = 0
+            for person in server_endings:
+                rank += 1
+                if person[0] == player.id:
+                    break
+            page_no = math.ceil(rank / 10)
+
+        total_pages = math.ceil(len(server_endings) / 10)
+        page_no = min(total_pages, page_no)
+
         # Normalize to number of server users
-        page_no = min(math.ceil(len(server_players) / 10), page_no)
+        page_no = min(math.ceil(len(server_endings) / 10), page_no)
 
-        leaderboard = discord.Embed(title = '🏆 Leaderboard for Choose Your Adventure 🏆', description = 'Page ' + str(page_no), colour=0xE5D2BB)
+        leaderboard = discord.Embed(title = '🏆 Leaderboard for Choose Your Adventure 🏆', colour=0xE5D2BB)
+        leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
 
-        for rank in range((page_no - 1) * 10 + 1, min(len(server_players) + 1, page_no * 10 + 1)):
-            ending_count = server_players[rank-1][1]
+        for rank in range((page_no - 1) * 10 + 1, min(len(server_endings) + 1, page_no * 10 + 1)):
+            ending_count = server_endings[rank-1][2]
             if ending_count == 0:
                 insignia = '🔸'
             elif ending_count == 1:
@@ -396,26 +474,25 @@ class State():
                 insignia = '🌟'
             elif ending_count == 24:
                 insignia = '👑'
-            leaderboard.add_field(name = insignia + ' | #' + str(rank) + '  ' + server_players[rank-1][0], 
-                                  value = '# Endings: ￵**' + str(server_players[rank-1][1]) + '**', inline = False)
+            leaderboard.add_field(name = insignia + ' | #' + str(rank) + '  ' + server_endings[rank-1][1], 
+                                  value = '# Endings: ￵**' + str(server_endings[rank-1][2]) + '**', inline = False)
 
         return leaderboard
 
     def get_gamestats(self):
         # Returns overall game statistics
-        wb = load_workbook("ChooseYourAdventure/player data.xlsx")
-        game_data = wb['Global']
-        game_stats = discord.Embed(title = '🔦 Choose Your Adventure Stats', colour=0xE5D2BB)
-        game_stats.add_field(name = 'Total Number Of Endings Obtained', value = '**' + str(game_data['B1'].value) + '**', inline = False)
+        conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
+        cursor = conn.cursor()
+
+        game_stats_query = 'SELECT * FROM global'
+        cursor.execute(game_stats_query)
+        game_data = cursor.fetchall()
 
         endings_list = []
-        i = 0
         for row in game_data:
-            i += 1
-            if i > 1:
-                endings_list.append([game_data['A' + str(i)].value, game_data['B' + str(i)].value])
-            if i >= 25:
-                break
+            if row[0] == 'Total':
+                continue
+            endings_list.append([row[0], row[1]])
 
         endings_list.sort(key = lambda x: x[1], reverse = True)
 
@@ -423,17 +500,22 @@ class State():
         for ending in endings_list:
             all_endings += ending[0] + ': ' + str(ending[1]) + '\n'
 
+        game_stats = discord.Embed(title = '🔦 Choose Your Adventure Stats', colour=0xE5D2BB)
+        game_stats.add_field(name = 'Total Number Of Endings Obtained', value = '**' + str(game_data[0][1]) + '**', inline = False)
         game_stats.add_field(name = 'Endings', value = all_endings)
+
+        conn.close()
+
         return game_stats
 
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Choose Your Adventure', colour=0xE5D2BB)
-        commands_list.add_field(name = '~start', value = 'Starts a new game.')
-        commands_list.add_field(name = '~intro', value = 'Gives a short introduction to the game.')
-        commands_list.add_field(name = '~reset', value = 'Resets the game.')
-        commands_list.add_field(name = '~stats', value = 'Brings up the Battle Report Card during a game.')
-        commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.')
-        commands_list.add_field(name = '~leaderboard/~lb', value = 'Shows the leaderboard, listing the top 10 players on the server. Add a number behind to see subsequent pages (e.g. ~lb 2).')
-        commands_list.add_field(name = '~gamestats', value = 'Brings up the overall game statistics.')
+        commands_list.add_field(name = '~start', value = 'Starts a new game.', inline = False)
+        commands_list.add_field(name = '~intro', value = 'Gives a short introduction to the game.', inline = False)
+        commands_list.add_field(name = '~reset', value = 'Resets the game.', inline = False)
+        commands_list.add_field(name = '~stats', value = 'Brings up the Battle Report Card during a game.', inline = False)
+        commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.', inline = False)
+        commands_list.add_field(name = '~leaderboard/~lb', value = 'Shows the leaderboard, listing the top 10 players on the server. Add a number behind to see subsequent pages (e.g. ~lb 2).', inline = False)
+        commands_list.add_field(name = '~gamestats', value = 'Brings up the overall game statistics.', inline = False)
         return commands_list

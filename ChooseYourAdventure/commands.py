@@ -63,42 +63,45 @@ class Game():
             await message.channel.send(embed = commands)
         
         # Starts game
-        if message.content.startswith('~start') and (self.state.book.cur_page[0] == 1 or self.state.book.choices[0] == []):
-            self.state.reset_game()
-            self.state.game_channel = message.channel
-            self.state.cur_player_id = message.author.id
+        if message.content.startswith('~start'):
+            if self.state.book.cur_page[0] == 1 or self.state.book.choices[0] == []:
+                self.state.reset_game()
+                self.state.game_channel = message.channel
+                self.state.cur_player_id = message.author.id
 
-            # Book selection
-            # # Access to Book 2, go to book selection
-            # if self.state.check_book(message.author):
-            #     self.state.select_book = True
-            #     await self.client.send_message(message.channel, 'Please select the story you would like to participate in.\n\n' + \
-            #     ':one: Book 1 - Battle for Trost\n\n' + \
-            #     ':two: Book 2 - Hunt for the Female Titan **(Requires at least 1 good ending for Book 1)**')
-                
-            # # No access to Book 2, start Book 1 straight away
-            # else:
-            new_msg = await message.channel.send(self.state.book.P1())
-            for option in self.state.book.choices[0]:
-                await new_msg.add_reaction(self.state.book.EC2[option])
+                # Book selection
+                # # Access to Book 2, go to book selection
+                # if self.state.check_book(message.author):
+                #     self.state.select_book = True
+                #     await self.client.send_message(message.channel, 'Please select the story you would like to participate in.\n\n' + \
+                #     ':one: Book 1 - Battle for Trost\n\n' + \
+                #     ':two: Book 2 - Hunt for the Female Titan **(Requires at least 1 good ending for Book 1)**')
+                    
+                # # No access to Book 2, start Book 1 straight away
+                # else:
+                new_msg = await message.channel.send(self.state.book.P1())
+                for option in self.state.book.choices[0]:
+                    await new_msg.add_reaction(self.state.book.EC2[option])
+            else:
+                await message.channel.send('There is already a game ongoing!')
 
         # Book selection
-        if self.state.select_book == True and message.content in self.state.book.EC:
-            chosen_option = self.state.book.EC[message.content]
-            # Book 1: starts Book 1 as usual 
-            if chosen_option == 1:
-                new_msg = await message.channel.send(self.state.book.P1())
-                for option in self.state.book.choices[0]:
-                    await new_msg.add_reaction(self.state.book.EC2[option])
-                self.state.select_book = False
+        # if self.state.select_book == True and message.content in self.state.book.EC:
+        #     chosen_option = self.state.book.EC[message.content]
+        #     # Book 1: starts Book 1 as usual 
+        #     if chosen_option == 1:
+        #         new_msg = await message.channel.send(self.state.book.P1())
+        #         for option in self.state.book.choices[0]:
+        #             await new_msg.add_reaction(self.state.book.EC2[option])
+        #         self.state.select_book = False
 
-            # Book 2: Changes state for book 2
-            elif chosen_option == 2:
-                self.state.switch_book()
-                new_msg = await message.channel.send(self.state.book.P1())
-                for option in self.state.book.choices[0]:
-                    await new_msg.add_reaction(self.state.book.EC2[option])
-                self.state.select_book = False
+        #     # Book 2: Changes state for book 2
+        #     elif chosen_option == 2:
+        #         self.state.switch_book()
+        #         new_msg = await message.channel.send(self.state.book.P1())
+        #         for option in self.state.book.choices[0]:
+        #             await new_msg.add_reaction(self.state.book.EC2[option])
+        #         self.state.select_book = False
 
         # Reminder to use the emoji to answer
         if (self.state.book.cur_page[0] == 1 or self.state.book.cur_page[0] == 2) and (self.state.book.choices[0] != [] and message.content in ['1','2','3']):
@@ -132,9 +135,12 @@ class Game():
             messagebox = message.content.split(' ')
             if len(messagebox) == 1:
                 leaderboard = self.state.get_leaderboard(message.guild)
+            elif message.mentions:
+                player_profile = message.mentions[0]
+                leaderboard = self.state.get_leaderboard(message.guild, player=player_profile)
             else:
                 page_no = messagebox[1]
-                leaderboard = self.state.get_leaderboard(message.guild, page_no)
+                leaderboard = self.state.get_leaderboard(message.guild, page=page_no)
             await message.channel.send(embed = leaderboard)
 
         # Returns overall game statistics

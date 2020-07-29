@@ -12,6 +12,15 @@ def initialize_dbs():
             ('dailies', ['player integer', 'last_play text', 'standard integer', 'hangman integer', 'challenge integer', 'image integer']),
             ('overall', ['questions_asked integer', 'questions_correct integer', 'challenges_completed integer', 'challenge_questions integer', 'challenge_questions_correct integer',
             'hangman_games_played integer', 'hangman_games_won integer', 'images_generated integer', 'images_correct integer'])
+        ],
+        'ChooseYourAdventure/cya_db.db': [
+            ('endings', ['player integer', 'joining_the_garrison integer', 'an_ordinary_moment_of_happiness integer', 'jean_kirstein_of_the_survey_corps integer', 'a_narrow_victory integer',
+            'armin_arlerts_dream integer', 'captain_levis_recruit integer', 'mikasas_true_face integer', 'nameless_hero integer', 'eren_yeagers_hand integer', 'sasha_blouses_promise integer',
+            'the_girl_who_hid_her_true_self integer', 'no_regrets integer', 'jean_of_the_military_police integer', 'trial_of_eren_and_mikasa integer', 'a_soldiers_duty integer', 
+            'failure_of_the_reclamation_plan integer', 'a_regular_soldier integer', 'annihilated_at_hq integer', 'the_fall_of_wall_rose integer', 'failure_to_reclaim_trost_district integer', 
+            'a_moments_peace integer', 'eren_flees integer', 'the_death_of_a_merchant integer', 'junior_high integer']),
+            ('annie_progress', ['player integer', 'progress integer']),
+            ('global', ['ending text', 'count integer'])
         ]
     }
 
