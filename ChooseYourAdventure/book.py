@@ -4723,7 +4723,7 @@ You clamber out of the building in a panic.\n\n\
 When you look up, you see a massive Titan looming in the dusk.\n\n\
 Fifteen meters. It looks immensely powerful, as though its entire body were covered in armor.\n\n\
 Standing amidst the rubble and the bodies of your companions, all you can do is stare at it.\n\n\
-The last thing you see is the Armored Titan rushing at the inner wall of Trost District to break it down.\n\n\n\
+The last thing you see is the Armored Titan rushing at the inner wall of Trost District to break it down.\n\n\
 **You have obtained \"The Fall of Wall Rose\" Ending.**\n\n\
 **To start over, type `~reset`.**'
             self.choices[0] = []
