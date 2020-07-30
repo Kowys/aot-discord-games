@@ -1,5 +1,6 @@
 import random
 import discord
+import sqlite3
 from Jaegermore import questions
 from openpyxl import load_workbook
 
@@ -41,28 +42,39 @@ class State():
         self.timer = 0
 
     def update_records(self, character):
-        wb = load_workbook("Jaegermore/records.xlsx")
-        player_stats = wb['Players']
-        global_stats = wb['Global']
-        all_pers = {'eren':'B','mikasa':'C','armin':'D','jean':'E','krista':'F','sasha':'G','levi':'H','annie':'I','erwin':'J'}
-        pers_index = all_pers[character]
+        conn = sqlite3.connect('Jaegermore/jaegermore_db.db')
+        cursor = conn.cursor()
 
-        global_stats[pers_index + '2'] = global_stats[pers_index + '2'].value + 1
-        global_stats['K2'] = global_stats['K2'].value + 1
+        # Update global stats
+        global_stats_query = 'SELECT * FROM global'
+        cursor.execute(global_stats_query)
+        global_stats = cursor.fetchone()
+        
+        pers_mappings = {'eren':0, 'mikasa':1, 'armin':2, 'jean':3, 'krista':4, 'sasha':5, 'levi':6, 'annie':7, 'erwin':8}
 
-        inside = False
-        i = 0
-        for row in player_stats:
-            i += 1
-            if row[0].value == str(self.question.curplayer.id):
-                player_stats[pers_index + str(i)] = player_stats[pers_index + str(i)].value + 1
-                wb.save("Jaegermore/records.xlsx")
-                inside = True
-                break
-        if inside == False:
-            player_stats.append([str(self.question.curplayer.id)] + 9 * [0])
-            player_stats[pers_index + str(i+1)] = player_stats[pers_index + str(i+1)].value + 1
-            wb.save("Jaegermore/records.xlsx")
+        update_global_stats_query = 'UPDATE global SET {} = ?, total = ?'.format(character)
+        updated_character = global_stats[pers_mappings[character]] + 1
+        updated_total = global_stats[9] + 1
+        cursor.execute(update_global_stats_query, (updated_character, updated_total))
+        conn.commit()
+
+        # Update player stats
+        player_stats_query = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(player_stats_query, (self.question.curplayer.id,))
+        player_data = cursor.fetchone()
+
+        if player_data:
+            update_player_stats_query = 'UPDATE players SET {} = ? WHERE player = ?'.format(character)
+            updated_player_character = player_data[pers_mappings[character] + 1] + 1
+            cursor.execute(update_player_stats_query, (updated_player_character, self.question.curplayer.id))
+        else:
+            insert_player_stats_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 10))
+            insert_player_stats = [self.question.curplayer.id] + [0] * 9
+            insert_player_stats[pers_mappings[character] + 1] = 1
+            cursor.execute(insert_player_stats_query, insert_player_stats)
+
+        conn.commit()
+        conn.close()
 
     def get_info(self):
         stats_info = discord.Embed(title='Detailed Personality Info for **' + self.question.curplayer.name + '**', colour=0x5CFFE9)
@@ -80,20 +92,23 @@ class State():
         return stats_info
 
     def get_profile(self, player):
-        wb = load_workbook("Jaegermore/records.xlsx")
-        player_stats = wb['Players']
+        conn = sqlite3.connect('Jaegermore/jaegermore_db.db')
+        cursor = conn.cursor()
 
-        inside = False
-        for row in player_stats:
-            if row[0].value == str(player.id):
-                all_personalities = list(map(lambda x: x.value, row[1:10]))
-                inside = True
-                break
-        if inside == False:
-            player_stats.append([str(player.id)] + 9 * [0])
-            all_personalities = 9 * [0]
-        
-        wb.save("Jaegermore/records.xlsx")
+        player_stats_query = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(player_stats_query, (player.id,))
+        player_data = cursor.fetchone()
+
+        if player_data:
+            all_personalities = player_data[1:]
+        else:
+            all_personalities = [0] * 9
+            insert_player_stats_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 10))
+            insert_player_stats = [player.id] + all_personalities
+            cursor.execute(insert_player_stats_query, insert_player_stats)
+            conn.commit()
+
+        conn.close()
 
         pers_mappings = {0:'Eren', 1:'Mikasa', 2:'Armin', 3:'Jean', 4:'Krista', 5:'Sasha', 6:'Levi', 7:'Annie', 8:'Erwin'}
         thumbnail_urls = {'Eren':'https://i.imgur.com/AZgDHsm.png',
@@ -137,14 +152,87 @@ class State():
         
         return profile
 
+    def get_leaderboard(self, server, character=None):
+        conn = sqlite3.connect('Jaegermore/jaegermore_db.db')
+        cursor = conn.cursor()
+
+        all_players_query = 'SELECT * FROM players'
+        cursor.execute(all_players_query)
+        all_players_data = cursor.fetchall()
+
+        # Get server players
+        server_users_ids = {member.id: [member.id, member.name] for member in server.members}
+        server_players_data = []
+        for row in all_players_data:
+            if row[0] in server_users_ids:
+                total_count = sum(row[1:])
+                player_name = server_users_ids[row[0]][1]
+                server_players_data.append([player_name] + list(row[1:]) + [total_count])
+
+        conn.close()
+        
+        # Sort by characters + total
+        highest_rankings = [('Eren', []), ('Mikasa', []), ('Armin', []), ('Jean', []), ('Krista', []), ('Sasha', []), ('Levi', []), ('Annie', []), ('Erwin', []), ('Total', [])]
+        for i, _ in enumerate(highest_rankings):
+            server_players_data.sort(key=lambda row: row[i+1], reverse=True)
+            for j in range(10):
+                rank_info = [server_players_data[j][0], server_players_data[j][i+1]]
+                highest_rankings[i][1].append(rank_info)
+
+        # Display rankings for chosen character
+        character_map = {'eren':0, 'mikasa':1, 'armin':2, 'jean':3, 'krista':4, 'sasha':5, 'levi':6, 'annie':7, 'erwin':8, 'total':9}
+        thumbnail_urls = {'Eren':'https://i.imgur.com/AZgDHsm.png',
+        'Mikasa':'https://i.imgur.com/DrfMlLN.png',
+        'Armin':'https://i.imgur.com/H5SkwLR.jpg',
+        'Jean':'https://i.imgur.com/BJdEBiW.jpg',
+        'Krista':'https://i.imgur.com/fA9Nmdr.jpg',
+        'Sasha':'https://i.imgur.com/8b9BXc7.jpg',
+        'Levi':'https://i.imgur.com/6UoSOTQ.png',
+        'Annie':'https://i.imgur.com/eDVpxFm.jpg',
+        'Erwin':'https://i.imgur.com/MGKlG4x.png',
+        'Total':'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/trophy_1f3c6.png'}
+
+        if character:
+            char_index = character_map[character.lower()]
+            char_rankings = highest_rankings[char_index]
+            player_names = ''
+            char_count = ''
+            for i, player in enumerate(char_rankings[1]):
+                player_names += '#' + str(i+1) + ' ' + player[0] + '\n'
+                char_count += str(player[1]) + '\n'
+
+            leaderboard = discord.Embed(title = 'Leaderboard for Jaegermore (' + char_rankings[0] + ')', colour=0x5CFFE9)
+            if char_index < 9:
+                leaderboard.set_thumbnail(url = thumbnail_urls[char_rankings[0]])
+            leaderboard.add_field(name = 'Player', value = player_names)
+            leaderboard.add_field(name = 'Count', value = char_count)
+
+        else:
+            leaderboard = discord.Embed(title = '👑 Leaderboard for Jaegermore 👑', colour=0x5CFFE9)
+            for character_info in highest_rankings:
+                leaderboard.add_field(name = character_info[0], value = character_info[1][0][0] + '\n' + 'Count: ' + str(character_info[1][0][1]))
+            leaderboard.set_footer(text = 'Add a character name behind the ~lb command to see the leaderboard for each character, e.g. ~lb eren/~lb total.')
+        
+        return leaderboard
+
+
     def get_stats(self):
-        wb = load_workbook("Jaegermore/records.xlsx")
-        global_stats = wb['Global']
+        conn = sqlite3.connect('Jaegermore/jaegermore_db.db')
+        cursor = conn.cursor()
+
+        global_stats_query = 'SELECT * FROM global'
+        cursor.execute(global_stats_query)
+        global_stats = cursor.fetchone()
+
+        pers_mappings = {0:'Eren', 1:'Mikasa', 2:'Armin', 3:'Jean', 4:'Krista', 5:'Sasha', 6:'Levi', 7:'Annie', 8:'Erwin'}
+
         game_stats = discord.Embed(title = '👥 Jaegermore Stats', colour=0x5CFFE9)
-        game_stats.add_field(name = 'Total tests taken', value = str(global_stats['K2'].value), inline = False)
-        mapping = {0:'B', 1:'C', 2:'D', 3:'E', 4:'F', 5:'G', 6:'H', 7:'I', 8:'J'}
+        game_stats.add_field(name = 'Total tests taken', value = str(global_stats[9]), inline = False)
         for i in range(9):
-            game_stats.add_field(name = global_stats[mapping[i] + '1'].value, value = global_stats[mapping[i] + '2'].value, inline = True)
+            game_stats.add_field(name = pers_mappings[i], value = global_stats[i], inline = True)
+
+        conn.close()
+
         return game_stats
 
     def get_commands(self):
@@ -155,5 +243,6 @@ class State():
         commands_list.add_field(name = '~result', value = 'Reveals your personality at the end of the assessment.')
         commands_list.add_field(name = '~stats', value = 'Provides detailed scores obtained for each character at the end of the assessment.')
         commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.')
+        commands_list.add_field(name = '~leaderboard/~lb <personality>', value = 'Brings up the leaderboard, showing the top player(s) for each personality.')
         commands_list.add_field(name = '~gamestats', value = 'Brings up the overall game statistics.')
         return commands_list

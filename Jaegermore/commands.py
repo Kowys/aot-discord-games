@@ -18,7 +18,7 @@ class Game():
                     msg_content = self.state.question.question_handler(chosen_option)
                     await message.channel.send(msg_content)
                 else:
-                    await message.channel.send('Someone else is currently playing the game! Please wait for your turn.')
+                    await message.channel.send('Someone else is currently taking the assessment! Please wait for your turn.')
 
 
         # Resets the game
@@ -31,26 +31,29 @@ class Game():
             await message.channel.send(self.state.question.intro_msg)
 
         # Starts game
-        if message.content.lower().startswith('~start') and (self.state.question.cur_qn[0] == 0 or self.state.question.cur_qn[0] == 'result' or self.state.question.cur_qn[0] == 'result2'):
-            messagebox = message.content.split(' ')
-            if len(messagebox) == 1:
-                self.state.game_reset()
-                self.state.question.curplayer = message.author
-                self.state.game_channel = message.channel
-                self.state.question.num_qns = 10
-                response = 'Beginning assessment for cadet **' + self.state.question.curplayer.name + '**!'
-            elif messagebox[1] == 'full':
-                self.state.game_reset()
-                self.state.question.curplayer = message.author
-                self.state.game_channel = message.channel
-                self.state.question.num_qns = 40
-                response = 'Beginning full assessment for cadet **' + self.state.question.curplayer.name + '**!'
-            
-            await message.channel.send(response)
-            await asyncio.sleep(1)
+        if message.content.lower().startswith('~start'):
+            if (self.state.question.cur_qn[0] == 0 or self.state.question.cur_qn[0] == 'result' or self.state.question.cur_qn[0] == 'result2'):
+                messagebox = message.content.split(' ')
+                if len(messagebox) == 1:
+                    self.state.game_reset()
+                    self.state.question.curplayer = message.author
+                    self.state.game_channel = message.channel
+                    self.state.question.num_qns = 10
+                    response = 'Beginning assessment for cadet **' + self.state.question.curplayer.name + '**!'
+                elif messagebox[1] == 'full':
+                    self.state.game_reset()
+                    self.state.question.curplayer = message.author
+                    self.state.game_channel = message.channel
+                    self.state.question.num_qns = 40
+                    response = 'Beginning full assessment for cadet **' + self.state.question.curplayer.name + '**!'
+                
+                await message.channel.send(response)
+                await asyncio.sleep(1)
 
-            msg_content = self.state.question.question_handler(0)
-            await message.channel.send(msg_content)
+                msg_content = self.state.question.question_handler(0)
+                await message.channel.send(msg_content)
+            else:
+                await message.channel.send('Someone else is currently taking the assessment! Please wait for your turn.')
 
         # Reminder to use the emoji to answer
         if message.content in ['1','2','3','4','5','6'] and self.state.question.curplayer != None and message.author.id == self.state.question.curplayer.id:
@@ -82,6 +85,16 @@ class Game():
                 player_obj = message.mentions[0]
             profile = self.state.get_profile(player_obj)
             await message.channel.send(embed = profile)
+
+        # Shows the leaderboard
+        if message.content.startswith('~leaderboard') or message.content.startswith('~lb'):
+            messagebox = message.content.split(' ')
+            if len(messagebox) == 1:
+                leaderboard = self.state.get_leaderboard(message.guild)
+            else:
+                character = messagebox[1]
+                leaderboard = self.state.get_leaderboard(message.guild, character=character)
+            await message.channel.send(embed = leaderboard)
 
         # Returns overall game statistics
         if message.content.startswith('~gamestats'):

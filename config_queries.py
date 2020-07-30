@@ -21,6 +21,10 @@ def initialize_dbs():
             'a_moments_peace integer', 'eren_flees integer', 'the_death_of_a_merchant integer', 'junior_high integer']),
             ('annie_progress', ['player integer', 'progress integer']),
             ('global', ['ending text', 'count integer'])
+        ],
+        'Jaegermore/jaegermore_db.db': [
+            ('players', ['player integer', 'eren integer', 'mikasa integer', 'armin integer', 'jean integer', 'krista integer', 'sasha integer', 'levi integer', 'annie integer', 'erwin integer']),
+            ('global', ['eren integer', 'mikasa integer', 'armin integer', 'jean integer', 'krista integer', 'sasha integer', 'levi integer', 'annie integer', 'erwin integer', 'total integer'])
         ]
     }
 

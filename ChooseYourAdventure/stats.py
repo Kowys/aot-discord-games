@@ -108,7 +108,7 @@ class State():
     #     player_data = wb['Endings']
     #     my_endings = []
     #     for line in player_data:
-    #         if str(player.id) == line[0].value and line[1].value not in my_endings:
+    #         if player.id == line[0].value and line[1].value not in my_endings:
     #             my_endings.append(line[1].value)
 
     #     good_endings = ['An Ordinary Moment of Happiness', 'Jean Kirstein of the Survey Corps', 'A Narrow Victory', 'Armin Arlert\'s Dream', 'Captain Levi\'s Recruit', 'Mikasa\'s True Face', 'Nameless Hero', 
