@@ -1,7 +1,9 @@
 import discord
 import random
-from openpyxl import load_workbook
 import math
+import sqlite3
+from openpyxl import load_workbook
+
 
 class State():
     def __init__(self):
@@ -83,13 +85,10 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.wall_secured = False
 
     def host(self, player, server, fast, ranked):
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
         self.server = server
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        player_data = wb['Player records']
-        wb = load_workbook("WarriorsvsSoldiers/blacklist.xlsx")
-        blacklist_players = wb['Blacklist']
-        if str(player.id) in [row[0].value for row in blacklist_players]:
-            return 'You have been blacklisted from the game. Shame on you...'
            
         if self.status == 'waiting for players':
             return '**' + self.game_host.name + '** is already the host!'
@@ -127,23 +126,21 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             msg = '**' + player.name + '** has started a new lobby! Type `~join` to join the game!'
 
             # Get total players in server
-            player_rankings = [] # [[player id, sr], [...], ...]
-            # Put all players into a list
-            for row in player_data:
-                if row[0].value == 'ID':
-                    continue
-                else:
-                    player_rankings.append([row[0].value, row[1].value])
+            player_rankings_query = 'SELECT player, rating FROM players'
+            cursor.execute(player_rankings_query)
+            player_rankings = cursor.fetchall()
             
             # Sort by Exp from biggest to smallest
             player_rankings.sort(key = lambda x: x[1], reverse = True)
 
             # Get players in server
-            server_users = list(map(lambda y: str(y.id), server.members))
+            server_users = list(map(lambda y: y.id, server.members))
             server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
 
+            conn.close()
+
             for person in server_players:
-                if person[0] == str(player.id):
+                if person[0] == player.id:
                     msg = '👑 | Humanity\'s strongest soldier ' + msg
                 break
 
@@ -152,14 +149,10 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             return 'The game has already started!'
 
     def join(self, player, server):
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        player_data = wb['Player records']
-        wb = load_workbook("WarriorsvsSoldiers/blacklist.xlsx")
-        blacklist_players = wb['Blacklist']
-        if str(player.id) in [row[0].value for row in blacklist_players]:
-            return 'You have been blacklisted from the game. Shame on you...'
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
 
-        elif self.status == 'waiting for players':
+        if self.status == 'waiting for players':
             if player in list(map(lambda x:x[0], self.players)):
                 return 'You are already in the lobby!'
             elif len(self.players) >= 10:
@@ -167,24 +160,23 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             else:
                 self.players.append([player, None])
                 msg = '**' + player.name + '** has joined the game!'
+
                 # Get total players in server
-                player_rankings = [] # [[player id, sr], [...], ...]
-                # Put all players into a list
-                for row in player_data:
-                    if row[0].value == 'ID':
-                        continue
-                    else:
-                        player_rankings.append([row[0].value, row[1].value])
+                player_rankings_query = 'SELECT player, rating FROM players'
+                cursor.execute(player_rankings_query)
+                player_rankings = cursor.fetchall()
                 
                 # Sort by Exp from biggest to smallest
                 player_rankings.sort(key = lambda x: x[1], reverse = True)
 
                 # Get players in server
-                server_users = list(map(lambda y: str(y.id), server.members))
+                server_users = list(map(lambda y: y.id, server.members))
                 server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
 
+                conn.close()
+
                 for person in server_players:
-                    if person[0] == str(player.id):
+                    if person[0] == player.id:
                         msg = '👑 | Humanity\'s strongest soldier ' + msg
                     break
 
@@ -230,30 +222,6 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             return 'There is no open lobby at the moment!'
         else:
             return 'The game has already started!'
-
-    def ban(self, player):
-        wb = load_workbook("WarriorsvsSoldiers/blacklist.xlsx")
-        blacklist_players = wb['Blacklist']
-        if str(player.id) in [row[0].value for row in blacklist_players]:
-            return '**' + player.name + '** has already been blacklisted from the game!'
-        else:
-            blacklist_players.append([str(player.id)])
-            wb.save("WarriorsvsSoldiers/blacklist.xlsx")
-            return '**' + player.name + '** has been blacklisted from the game!'
-
-    def unban(self, player):
-        wb = load_workbook("WarriorsvsSoldiers/blacklist.xlsx")
-        blacklist_players = wb['Blacklist']
-        if str(player.id) not in [row[0].value for row in blacklist_players]:
-            return '**' + player.name + '** has not been blacklisted from the game!'
-        else:
-            i = 0
-            for row in blacklist_players:
-                i += 1
-                if str(player.id) == row[0].value:
-                    blacklist_players['A'+ str(i)] = 0
-            wb.save("WarriorsvsSoldiers/blacklist.xlsx")
-            return '**' + player.name + '** is no longer blacklisted from the game!'
 
     def add_with_role_count_check(self, role):
         soldier_dict = {'queen': '👼**Queen**👼',
@@ -1340,65 +1308,50 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
     def update_rating(self):
         # Updates rating of all players after game ends, and returns it in an embed. Updates game records as well.
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        player_data = wb['Player records']
-        game_data = wb['Game records']
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
 
         # Update game records
+        get_game_data_query = 'SELECT * FROM global'
+        cursor.execute(get_game_data_query)
+        game_data = cursor.fetchall()
+
         num_players = len(self.players)
-        player_dict = {5:'B', 6:'C', 7:'D', 8:'E', 9:'F', 10:'G'}
         if self.status == 'game ended soldiers':
-            cell = player_dict[num_players] + '2'
-            cell2 = 'H2'
-            cell3 = player_dict[num_players] + '10'
-            cell4 = 'H10'
-            game_data[cell] = game_data[cell].value + 1
-            game_data[cell2] = game_data[cell2].value + 1
-            game_data[cell3] = game_data[cell3].value + 1
-            game_data[cell4] = game_data[cell4].value + 1
+            update_game_data_query = 'UPDATE global SET soldiers = ? WHERE number_of_players = ?'
+            update_game_data = [game_data[num_players - 5][1] + 1, num_players]
+            cursor.execute(update_game_data_query, update_game_data)
             
         elif self.status == 'game ended warriors wall':
-            cell = player_dict[num_players] + '4'
-            cell2 = 'H4'
-            cell3 = player_dict[num_players] + '8'
-            cell4 = player_dict[num_players] + '10'
-            cell5 = 'H8'
-            cell6 = 'H10'
-            game_data[cell] = game_data[cell].value + 1
-            game_data[cell2] = game_data[cell2].value + 1
-            game_data[cell3] = game_data[cell3].value + 1
-            game_data[cell4] = game_data[cell4].value + 1
-            game_data[cell5] = game_data[cell5].value + 1
-            game_data[cell6] = game_data[cell6].value + 1
+            update_game_data_query = 'UPDATE global SET warriors_walls = ? WHERE number_of_players = ?'
+            update_game_data = [game_data[num_players - 5][2] + 1, num_players]
+            cursor.execute(update_game_data_query, update_game_data)
 
         elif self.status == 'game ended warriors coord':
-            cell = player_dict[num_players] + '6'
-            cell2 = 'H6'
-            cell3 = player_dict[num_players] + '8'
-            cell4 = player_dict[num_players] + '10'
-            cell5 = 'H8'
-            cell6 = 'H10'
-            game_data[cell] = game_data[cell].value + 1
-            game_data[cell2] = game_data[cell2].value + 1
-            game_data[cell3] = game_data[cell3].value + 1
-            game_data[cell4] = game_data[cell4].value + 1
-            game_data[cell5] = game_data[cell5].value + 1
-            game_data[cell6] = game_data[cell6].value + 1
+            update_game_data_query = 'UPDATE global SET warriors_kidnap = ? WHERE number_of_players = ?'
+            update_game_data = [game_data[num_players - 5][3] + 1, num_players]
+            cursor.execute(update_game_data_query, update_game_data)
+
+        conn.commit()
 
         # Update player ratings
         ratings = []
         # Obtain original ratings
         for player in self.players:
-            player_id = str(player[0].id)
-            inside = False
-            for row in player_data:
-                if row[0].value == player_id:
-                    ratings.append([player_id, row[1].value, player[1]]) # [id, rating, role]
-                    inside = True
-                    break
-            if inside == False:
-                player_data.append([player_id, 1500] + 30 * [0])
-                ratings.append([player_id, 1500, player[1]])
+            player_data_query = 'SELECT player, rating FROM players WHERE player = ?'
+            cursor.execute(player_data_query, (player[0].id,))
+            player_data = cursor.fetchone()
+
+            # [id, rating, role]
+            if player_data:
+                ratings.append([player_data[0], player_data[1], player[1]]) 
+            else:
+                insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 26))
+                insert_player_data = [player[0].id, 1500] + 24 * [0]
+                cursor.execute(insert_player_data_query, insert_player_data)
+                conn.commit()
+
+                ratings.append([player[0].id, 1500, player[1]])
         
         avg_s = sum(map(lambda y: y[1], (filter(lambda x: x[2] not in self.warrior_roles, ratings)))) / len(list(filter(lambda x: x[2] not in self.warrior_roles, ratings)))
         avg_w = sum(map(lambda y: y[1], (filter(lambda x: x[2] in self.warrior_roles, ratings)))) / len(list(filter(lambda x: x[2] in self.warrior_roles, ratings)))
@@ -1432,106 +1385,35 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
             rating_changes.append([player[0], player[1], new_rating, player[2]])
             
-            i = 0
-            for row in player_data:
-                i += 1
-                if row[0].value == player[0]:
-                    # Update with new rating
-                    player_data['B'+ str(i)] = new_rating
+            # Update rating, win/played stats
+            role_to_column_map = {
+                'soldier': ['soldier_wins', 'soldier_games'],
+                'queen': ['queen_wins', 'queen_games'],
+                'ackerman': ['ackerman_wins', 'ackerman_games'],
+                'mike': ['mike_wins', 'mike_games'],
+                'scout': ['mike_games', 'scout_games'],
+                'coordinate': ['coordinate_wins', 'coordinate_games'],
+                'warrior': ['warrior_wins', 'warrior_games'],
+                'warchief': ['warchief_wins', 'warchief_games'],
+                'ymir': ['ymir_wins', 'ymir_games'],
+                'false king': ['false_king_wins', 'false_king_games'],
+                'spy': ['spy_wins', 'spy_games']
+            }
+            get_player_role_query = 'SELECT {},{} FROM players WHERE player = ?'.format(*role_to_column_map[player[2]])
+            cursor.execute(get_player_role_query, (player[0],))
+            player_role_columns = cursor.fetchone()
 
-                    # Update win/played stats
-                    if player[2] == 'soldier':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['F'+ str(i)] = player_data['F'+ str(i)].value + 1
-                        player_data['J'+ str(i)] = player_data['J'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['E'+ str(i)] = player_data['E'+ str(i)].value + 1
-                            player_data['I'+ str(i)] = player_data['I'+ str(i)].value + 1
-                    elif player[2] == 'queen':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['F'+ str(i)] = player_data['F'+ str(i)].value + 1
-                        player_data['P'+ str(i)] = player_data['P'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['E'+ str(i)] = player_data['E'+ str(i)].value + 1
-                            player_data['O'+ str(i)] = player_data['O'+ str(i)].value + 1
-                    elif player[2] == 'ackerman':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['F'+ str(i)] = player_data['F'+ str(i)].value + 1
-                        player_data['Z'+ str(i)] = player_data['Z'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['E'+ str(i)] = player_data['E'+ str(i)].value + 1
-                            player_data['Y'+ str(i)] = player_data['Y'+ str(i)].value + 1
-                    elif player[2] == 'mike':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['F'+ str(i)] = player_data['F'+ str(i)].value + 1
-                        player_data['AB'+ str(i)] = player_data['AB'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['E'+ str(i)] = player_data['E'+ str(i)].value + 1
-                            player_data['AA'+ str(i)] = player_data['AA'+ str(i)].value + 1
-                    elif player[2] == 'scout':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['F'+ str(i)] = player_data['F'+ str(i)].value + 1
-                        player_data['AD'+ str(i)] = player_data['AD'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['E'+ str(i)] = player_data['E'+ str(i)].value + 1
-                            player_data['AC'+ str(i)] = player_data['AC'+ str(i)].value + 1
-                    elif player[2] == 'coordinate':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['F'+ str(i)] = player_data['F'+ str(i)].value + 1
-                        player_data['N'+ str(i)] = player_data['N'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['E'+ str(i)] = player_data['E'+ str(i)].value + 1
-                            player_data['M'+ str(i)] = player_data['M'+ str(i)].value + 1
-                    elif player[2] == 'warrior':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['H'+ str(i)] = player_data['H'+ str(i)].value + 1
-                        player_data['L'+ str(i)] = player_data['L'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['G'+ str(i)] = player_data['G'+ str(i)].value + 1
-                            player_data['K'+ str(i)] = player_data['K'+ str(i)].value + 1
-                    elif player[2] == 'warchief':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['H'+ str(i)] = player_data['H'+ str(i)].value + 1
-                        player_data['R'+ str(i)] = player_data['R'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['G'+ str(i)] = player_data['G'+ str(i)].value + 1
-                            player_data['Q'+ str(i)] = player_data['Q'+ str(i)].value + 1
-                    elif player[2] == 'ymir':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['H'+ str(i)] = player_data['H'+ str(i)].value + 1
-                        player_data['V'+ str(i)] = player_data['V'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['G'+ str(i)] = player_data['G'+ str(i)].value + 1
-                            player_data['U'+ str(i)] = player_data['U'+ str(i)].value + 1
-                    elif player[2] == 'false king':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['H'+ str(i)] = player_data['H'+ str(i)].value + 1
-                        player_data['X'+ str(i)] = player_data['X'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['G'+ str(i)] = player_data['G'+ str(i)].value + 1
-                            player_data['W'+ str(i)] = player_data['W'+ str(i)].value + 1
-                    elif player[2] == 'spy':
-                        player_data['D'+ str(i)] = player_data['D'+ str(i)].value + 1
-                        player_data['H'+ str(i)] = player_data['H'+ str(i)].value + 1
-                        player_data['AF'+ str(i)] = player_data['AF'+ str(i)].value + 1
-                        if win == True:
-                            player_data['C'+ str(i)] = player_data['C'+ str(i)].value + 1
-                            player_data['G'+ str(i)] = player_data['G'+ str(i)].value + 1
-                            player_data['AE'+ str(i)] = player_data['AE'+ str(i)].value + 1
-                    
-                    break
+            update_player_data_query = 'UPDATE players SET rating = ?, {} = ?, {} = ? WHERE player = ?'.format(*role_to_column_map[player[2]])
+            player_wins = player_role_columns[0]
+            player_games = player_role_columns[1] + 1
+            if win == True:
+                player_wins += 1
 
-        wb.save("WarriorsvsSoldiers/database.xlsx")
+            update_player_data = [new_rating, player_wins, player_games, player[0]]
+            cursor.execute(update_player_data_query, update_player_data)
+            conn.commit()
+        
+        conn.close()
 
         # Embed skill rating changes
         new_ratings = discord.Embed(title = 'Skill Rating (SR) Update', 
@@ -1542,7 +1424,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         warrior_ratings = ''
         for player in self.players:
             if player[1] not in self.warrior_roles:
-                player_info = list(filter(lambda x:x[0] == str(player[0].id), rating_changes))[0]
+                player_info = list(filter(lambda x:x[0] == player[0].id, rating_changes))[0]
                 if self.status == 'game ended soldiers':
                     sign = '+'
                 else:
@@ -1550,7 +1432,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 soldier_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + str(int(round(rating_transfer, 0))) + ')\n'
 
             else:
-                player_info = list(filter(lambda x:x[0] == str(player[0].id), rating_changes))[0]
+                player_info = list(filter(lambda x:x[0] == player[0].id, rating_changes))[0]
                 if self.status == 'game ended soldiers':
                     sign = '-'
                 else:
@@ -1563,196 +1445,233 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
     def update_achievements(self):
         achievements_msgs = []
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        player_data = wb['Player records']
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
 
         for cur_player in self.players:
-            i = 0
-            for row in player_data:
-                i += 1
-                # Player exists in the records (definitely, after updating rating)
-                if row[0].value == str(cur_player[0].id):
-                    if self.status == 'game ended soldiers':
-                        if cur_player[1] not in self.warrior_roles:
-                            win = True
-                        else:
-                            win = False
-                    else:
-                        if cur_player[1] not in self.warrior_roles:
-                            win = False
-                        else:
-                            win = True
+            player_data_query = 'SELECT * FROM players WHERE player = ?'
+            cursor.execute(player_data_query, (cur_player[0].id,))
+            player_data = cursor.fetchone()
 
-                    # Update consecutive wins and add SR, achievement msg if needed
-                    if win == True:
-                        player_data['S'+ str(i)] = player_data['S'+ str(i)].value + 1
-                        if player_data['S'+ str(i)].value > player_data['T'+ str(i)].value:
-                            # New win streak
-                            player_data['T'+ str(i)] = player_data['S'+ str(i)].value
+            # Player exists in the records (definitely, after updating rating)
+            if self.status == 'game ended soldiers':
+                if cur_player[1] not in self.warrior_roles:
+                    win = True
+                else:
+                    win = False
+            else:
+                if cur_player[1] not in self.warrior_roles:
+                    win = False
+                else:
+                    win = True
 
-                            if player_data['T' + str(i)].value in self.consecutive_wins_achievements:
-                                # Achievement msg
-                                consecutive_wins_msg = self.badge_emojis[self.consecutive_wins_achievements[player_data['T' + str(i)].value]] + ' | Congratulations ' + cur_player[0].mention + \
-                                '! You have obtained a **' + self.consecutive_wins_achievements[player_data['T' + str(i)].value] + '** badge for winning **' + \
-                                str(player_data['T' + str(i)].value) + '** games in a row! **(+' + str(self.achievement_rewards[self.consecutive_wins_achievements[player_data['T' + str(i)].value]]) + ' SR)**'
+            # Update consecutive wins and add SR, achievement msg if needed
+            current_streak = player_data[2]
+            best_streak = player_data[3]
+            if win == True:
+                current_streak += 1
 
-                                achievements_msgs.append(consecutive_wins_msg)
-
-                                # Add SR
-                                player_data['B'+ str(i)] = player_data['B'+ str(i)].value + self.achievement_rewards[self.consecutive_wins_achievements[player_data['T' + str(i)].value]]
-
-                    else:
-                        player_data['S'+ str(i)] = 0
-
-                    # Add SR, achievement msgs for other achievements if needed
-                    if player_data['D'+ str(i)].value in self.number_games_achievements:
+                if current_streak > best_streak:
+                    # New win streak
+                    best_streak = current_streak
+                    if best_streak in self.consecutive_wins_achievements:
                         # Achievement msg
-                        games_played_msg = self.badge_emojis[self.number_games_achievements[player_data['D' + str(i)].value]] + ' | Congratulations ' + cur_player[0].mention + \
-                        '! You have obtained a **' + self.number_games_achievements[player_data['D' + str(i)].value] + '** badge for having played **' + \
-                        str(player_data['D' + str(i)].value) + '** games! **(+' + str(self.achievement_rewards[self.number_games_achievements[player_data['D' + str(i)].value]]) + ' SR)**'
+                        consecutive_wins_msg = self.badge_emojis[self.consecutive_wins_achievements[best_streak]] + ' | Congratulations ' + cur_player[0].mention + \
+                        '! You have obtained a **' + self.consecutive_wins_achievements[best_streak] + '** badge for winning **' + \
+                        str(best_streak) + '** games in a row! **(+' + str(self.achievement_rewards[self.consecutive_wins_achievements[best_streak]]) + ' SR)**'
 
-                        achievements_msgs.append(games_played_msg)
+                        achievements_msgs.append(consecutive_wins_msg)
 
                         # Add SR
-                        player_data['B'+ str(i)] = player_data['B'+ str(i)].value + self.achievement_rewards[self.number_games_achievements[player_data['D' + str(i)].value]]
+                        update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+                        rating_gain = self.achievement_rewards[self.consecutive_wins_achievements[best_streak]]
+                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        cursor.execute(update_rating_query, update_rating)
+            else:
+                current_streak = 0
 
-                    if win == True:
-                        if cur_player[1] == 'soldier':
-                            if player_data['I' + str(i)].value in self.soldier_wins_achievements:
-                                # Achievement msg
-                                soldiers_win_msg = self.badge_emojis[self.soldier_wins_achievements[player_data['I' + str(i)].value]] + ' | Congratulations ' + cur_player[0].mention + \
-                                '! You have obtained a **' + self.soldier_wins_achievements[player_data['I' + str(i)].value] + '** badge for winning **' + \
-                                str(player_data['I' + str(i)].value) + '** games as a 🛡**Soldier**🛡! **(+' + str(self.achievement_rewards[self.soldier_wins_achievements[player_data['I' + str(i)].value]]) + ' SR)**'
+            update_streak_query = 'UPDATE players SET current_streak = ?, best_streak = ? WHERE player = ?'
+            update_streak = [current_streak, best_streak, cur_player[0].id]
+            cursor.execute(update_streak_query, update_streak)
+            conn.commit()
 
-                                achievements_msgs.append(soldiers_win_msg)
+            # Add SR, achievement msgs for games played
+            games_played = player_data[5] + player_data[7] + player_data[9] + player_data[11] + player_data[13] + player_data[15] + player_data[17] + player_data[19] + \
+                player_data[21] + player_data[23] + player_data[25]
+            if games_played in self.number_games_achievements:
+                # Achievement msg
+                games_played_msg = self.badge_emojis[self.number_games_achievements[games_played]] + ' | Congratulations ' + cur_player[0].mention + \
+                '! You have obtained a **' + self.number_games_achievements[games_played] + '** badge for having played **' + \
+                str(games_played) + '** games! **(+' + str(self.achievement_rewards[self.number_games_achievements[games_played]]) + ' SR)**'
 
-                                # Add SR
-                                player_data['B'+ str(i)] = player_data['B'+ str(i)].value + self.achievement_rewards[self.soldier_wins_achievements[player_data['I' + str(i)].value]]
+                achievements_msgs.append(games_played_msg)
 
-                        elif cur_player[1] == 'warrior':
-                            if player_data['K' + str(i)].value in self.warrior_wins_achievements:
-                                # Achievement msg
-                                warriors_win_msg = self.badge_emojis[self.warrior_wins_achievements[player_data['K' + str(i)].value]] + ' | Congratulations ' + cur_player[0].mention + \
-                                '! You have obtained a **' + self.warrior_wins_achievements[player_data['K' + str(i)].value] + '** badge for winning **' + \
-                                str(player_data['K' + str(i)].value) + '** games as a ⚔**Warrior**⚔! **(+' + str(self.achievement_rewards[self.warrior_wins_achievements[player_data['K' + str(i)].value]]) + ' SR)**'
+                # Add SR
+                update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+                rating_gain = self.achievement_rewards[self.number_games_achievements[games_played]]
+                update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                cursor.execute(update_rating_query, update_rating)
+                conn.commit()
 
-                                achievements_msgs.append(warriors_win_msg)
+            # Add SR, achievement msgs for games won as role
+            if win == True:
+                if cur_player[1] == 'soldier':
+                    soldier_wins = player_data[4]
+                    if soldier_wins in self.soldier_wins_achievements:
+                        # Achievement msg
+                        soldiers_win_msg = self.badge_emojis[self.soldier_wins_achievements[soldier_wins]] + ' | Congratulations ' + cur_player[0].mention + \
+                        '! You have obtained a **' + self.soldier_wins_achievements[soldier_wins] + '** badge for winning **' + \
+                        str(soldier_wins) + '** games as a 🛡**Soldier**🛡! **(+' + str(self.achievement_rewards[self.soldier_wins_achievements[soldier_wins]]) + ' SR)**'
 
-                                # Add SR
-                                player_data['B'+ str(i)] = player_data['B'+ str(i)].value + self.achievement_rewards[self.warrior_wins_achievements[player_data['K' + str(i)].value]]
+                        achievements_msgs.append(soldiers_win_msg)
 
-                        elif cur_player[1] == 'coordinate':
-                            if player_data['M' + str(i)].value in self.coordinate_wins_achievements:
-                                # Achievement msg
-                                coordinate_win_msg = self.badge_emojis[self.coordinate_wins_achievements[player_data['M' + str(i)].value]] + ' | Congratulations ' + cur_player[0].mention + \
-                                '! You have obtained a **' + self.coordinate_wins_achievements[player_data['M' + str(i)].value] + '** badge for winning **' + \
-                                str(player_data['M' + str(i)].value) + '** games as the 🗺**Coordinate**🗺! **(+' + str(self.achievement_rewards[self.coordinate_wins_achievements[player_data['M' + str(i)].value]]) + ' SR)**'
+                        # Add SR
+                        update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+                        rating_gain = self.achievement_rewards[self.soldier_wins_achievements[soldier_wins]]
+                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        cursor.execute(update_rating_query, update_rating)
+                        conn.commit()
 
-                                achievements_msgs.append(coordinate_win_msg)
+                elif cur_player[1] == 'warrior':
+                    warrior_wins = player_data[6]
+                    if warrior_wins in self.warrior_wins_achievements:
+                        # Achievement msg
+                        warriors_win_msg = self.badge_emojis[self.warrior_wins_achievements[warrior_wins]] + ' | Congratulations ' + cur_player[0].mention + \
+                        '! You have obtained a **' + self.warrior_wins_achievements[warrior_wins] + '** badge for winning **' + \
+                        str(warrior_wins) + '** games as a ⚔**Warrior**⚔! **(+' + str(self.achievement_rewards[self.warrior_wins_achievements[warrior_wins]]) + ' SR)**'
 
-                                # Add SR
-                                player_data['B'+ str(i)] = player_data['B'+ str(i)].value + self.achievement_rewards[self.coordinate_wins_achievements[player_data['M' + str(i)].value]]
+                        achievements_msgs.append(warriors_win_msg)
 
-                        elif cur_player[1] == 'queen' or cur_player[1] == 'ackerman' or cur_player[1] == 'mike' or cur_player[1] == 'scout':
-                            total_wins = player_data['O' + str(i)].value + player_data['Y' + str(i)].value + player_data['AA' + str(i)].value + player_data['AC' + str(i)].value
-                            if total_wins in self.queen_wins_achievements:
-                                # Achievement msg
-                                queen_win_msg = self.badge_emojis[self.queen_wins_achievements[total_wins]] + ' | Congratulations ' + cur_player[0].mention + \
-                                '! You have obtained a **' + self.queen_wins_achievements[total_wins] + '** badge for winning **' + \
-                                str(total_wins) + '** games with an optional Soldier role! **(+' + \
-                                str(self.achievement_rewards[self.queen_wins_achievements[total_wins]]) + ' SR)**'
+                        # Add SR
+                        update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+                        rating_gain = self.achievement_rewards[self.warrior_wins_achievements[warrior_wins]]
+                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        cursor.execute(update_rating_query, update_rating)
+                        conn.commit()
 
-                                achievements_msgs.append(queen_win_msg)
+                elif cur_player[1] == 'coordinate':
+                    coordinate_wins = player_data[8]
+                    if coordinate_wins in self.coordinate_wins_achievements:
+                        # Achievement msg
+                        coordinate_win_msg = self.badge_emojis[self.coordinate_wins_achievements[coordinate_wins]] + ' | Congratulations ' + cur_player[0].mention + \
+                        '! You have obtained a **' + self.coordinate_wins_achievements[coordinate_wins] + '** badge for winning **' + \
+                        str(coordinate_wins) + '** games as the 🗺**Coordinate**🗺! **(+' + str(self.achievement_rewards[self.coordinate_wins_achievements[coordinate_wins]]) + ' SR)**'
 
-                                # Add SR
-                                player_data['B'+ str(i)] = player_data['B'+ str(i)].value + self.achievement_rewards[self.queen_wins_achievements[total_wins]]
+                        achievements_msgs.append(coordinate_win_msg)
 
-                        elif cur_player[1] == 'warchief' or cur_player[1] == 'false king' or cur_player[1] == 'ymir' or cur_player[1] == 'spy':
-                            total_wins = player_data['Q' + str(i)].value + player_data['W' + str(i)].value + player_data['U' + str(i)].value + player_data['AE' + str(i)].value
-                            if total_wins in self.warchief_wins_achievements:
-                                # Achievement msg
-                                warchief_win_msg = self.badge_emojis[self.warchief_wins_achievements[total_wins]] + ' | Congratulations ' + cur_player[0].mention + \
-                                '! You have obtained a **' + self.warchief_wins_achievements[total_wins] + '** badge for winning **' + \
-                                str(total_wins) + '** games with an optional Warrior role! **(+' + str(self.achievement_rewards[self.warchief_wins_achievements[total_wins]]) + ' SR)**'
+                        # Add SR
+                        update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+                        rating_gain = self.achievement_rewards[self.coordinate_wins_achievements[coordinate_wins]]
+                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        cursor.execute(update_rating_query, update_rating)
+                        conn.commit()
 
-                                achievements_msgs.append(warchief_win_msg)
+                elif cur_player[1] == 'queen' or cur_player[1] == 'ackerman' or cur_player[1] == 'mike' or cur_player[1] == 'scout':
+                    optional_soldier_wins = player_data[10] + player_data[18] + player_data[20] + player_data[22]
+                    if optional_soldier_wins in self.queen_wins_achievements:
+                        # Achievement msg
+                        queen_win_msg = self.badge_emojis[self.queen_wins_achievements[optional_soldier_wins]] + ' | Congratulations ' + cur_player[0].mention + \
+                        '! You have obtained a **' + self.queen_wins_achievements[optional_soldier_wins] + '** badge for winning **' + \
+                        str(optional_soldier_wins) + '** games with an optional Soldier role! **(+' + \
+                        str(self.achievement_rewards[self.queen_wins_achievements[optional_soldier_wins]]) + ' SR)**'
 
-                                # Add SR
-                                player_data['B'+ str(i)] = player_data['B'+ str(i)].value + self.achievement_rewards[self.warchief_wins_achievements[total_wins]]
+                        achievements_msgs.append(queen_win_msg)
 
-                    wb.save("WarriorsvsSoldiers/database.xlsx")
-                    break
+                        # Add SR
+                        update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+                        rating_gain = self.achievement_rewards[self.queen_wins_achievements[optional_soldier_wins]]
+                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        cursor.execute(update_rating_query, update_rating)
+                        conn.commit()
+
+                elif cur_player[1] == 'warchief' or cur_player[1] == 'false king' or cur_player[1] == 'ymir' or cur_player[1] == 'spy':
+                    optional_warrior_wins = player_data[12] + player_data[14] + player_data[16] + player_data[24]
+                    if optional_warrior_wins in self.warchief_wins_achievements:
+                        # Achievement msg
+                        warchief_win_msg = self.badge_emojis[self.warchief_wins_achievements[optional_warrior_wins]] + ' | Congratulations ' + cur_player[0].mention + \
+                        '! You have obtained a **' + self.warchief_wins_achievements[optional_warrior_wins] + '** badge for winning **' + \
+                        str(optional_warrior_wins) + '** games with an optional Warrior role! **(+' + str(self.achievement_rewards[self.warchief_wins_achievements[optional_warrior_wins]]) + ' SR)**'
+
+                        achievements_msgs.append(warchief_win_msg)
+
+                        # Add SR
+                        update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+                        rating_gain = self.achievement_rewards[self.warchief_wins_achievements[optional_warrior_wins]]
+                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        cursor.execute(update_rating_query, update_rating)
+                        conn.commit()
+
+        conn.close()
 
         return achievements_msgs
 
     def get_profile(self, player, server):
-        # Returns the rating and game stats of a given player in an embed
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        player_data = wb['Player records']
-        ban_wb = load_workbook("WarriorsvsSoldiers/blacklist.xlsx")
-        blacklist_players = ban_wb['Blacklist']
+        # Returns the rating and game stats of given player in an embed
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        player_data_query = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(player_data_query, (player.id,))
+        player_data = cursor.fetchone()
         
-        for row in player_data:
-            present = False
-            if row[0].value == str(player.id):
-                present = True
-                player_sr = row[1].value
-                stats = {'wins': row[2].value, 'total': row[3].value, 'soldier wins': row[4].value, 'soldier games': row[5].value, 'warrior wins': row[6].value, 'warrior games': row[7].value, 
-                'win as soldier': row[8].value, 'played as soldier': row[9].value, 'win as warrior': row[10].value, 'played as warrior': row[11].value, 'win as coord': row[12].value, 'played as coord': row[13].value, 
-                'win as queen': row[14].value, 'played as queen': row[15].value, 'win as warchief': row[16].value, 'played as warchief': row[17].value, 'win as ymir': row[20].value, 'played as ymir': row[21].value, 
-                'win as false king': row[22].value, 'played as false king': row[23].value, 'win as ackerman': row[24].value, 'played as ackerman': row[25].value, 
-                'win as mike': row[26].value, 'played as mike': row[27].value, 'win as scout': row[28].value, 'played as scout': row[29].value, 'win as spy': row[30].value, 'played as spy': row[31].value}
-                break
-        if present == False:
+        if player_data:
+            player_sr = player_data[1]
+            stats = {'win as soldier': player_data[4], 'played as soldier': player_data[5], 'win as warrior': player_data[6], 'played as warrior': player_data[7], 
+            'win as coord': player_data[8], 'played as coord': player_data[9], 'win as queen': player_data[10], 'played as queen': player_data[11], 'win as warchief': player_data[12], 
+            'played as warchief': player_data[13], 'win as ymir': player_data[14], 'played as ymir': player_data[15], 'win as false king':player_data[16], 'played as false king': player_data[17], 
+            'win as ackerman': player_data[18], 'played as ackerman': player_data[19], 'win as mike': player_data[20], 'played as mike': player_data[21], 'win as scout': player_data[22], 
+            'played as scout': player_data[23], 'win as spy': player_data[24], 'played as spy': player_data[25]}
+
+            stats['soldier wins'] = stats['win as soldier'] + stats['win as coord'] + stats['win as queen'] + stats['win as ackerman'] + stats['win as mike'] + stats['win as scout']
+            stats['soldier games'] = stats['played as soldier'] + stats['played as coord'] + stats['played as queen'] + stats['played as ackerman'] + stats['played as mike'] + stats['played as scout']
+            stats['warrior wins'] = stats['win as warrior'] + stats['win as warchief'] + stats['win as ymir'] + stats['win as false king'] + stats['win as spy']
+            stats['warrior games'] = stats['played as warrior'] + stats['played as warchief'] + stats['played as ymir'] + stats['played as false king'] + stats['played as spy']
+            stats['wins'] = stats['soldier wins'] + stats['warrior wins']
+            stats['games'] = stats['soldier games'] + stats['warrior games']
+
+        else:
             # Add player data into player records
             player_sr = 1500
-            player_data.append([str(player.id), 1500] + 30 * [0])
-            stats = {'wins': 0, 'total': 0, 'soldier wins': 0, 'soldier games': 0, 'warrior wins': 0, 'warrior games': 0, 'win as soldier': 0, 'played as soldier': 0, 'win as warrior': 0, 'played as warrior': 0, 
+            insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 26))
+            insert_player_data = [player.id, 1500] + 24 * [0]
+            cursor.execute(insert_player_data_query, insert_player_data)
+            conn.commit()
+
+            stats = {'wins': 0, 'games': 0, 'soldier wins': 0, 'soldier games': 0, 'warrior wins': 0, 'warrior games': 0, 'win as soldier': 0, 'played as soldier': 0, 'win as warrior': 0, 'played as warrior': 0, 
             'win as coord': 0, 'played as coord': 0, 'win as queen': 0, 'played as queen': 0, 'win as warchief': 0, 'played as warchief': 0, 'win as ymir': 0, 'played as ymir':0, 'win as false king':0, 
             'played as false king': 0, 'win as ackerman': 0, 'played as ackerman': 0, 'win as mike': 0, 'played as mike': 0, 'win as scout': 0, 'played as scout': 0, 'win as spy': 0, 'played as spy': 0}
-            wb.save("WarriorsvsSoldiers/database.xlsx")
 
         # Get total players in server
-        player_rankings = [] # [[player id, sr], [...], ...]
-        # Put all players into a list
-        for row in player_data:
-            if row[0].value == 'ID':
-                continue
-            else:
-                player_rankings.append([row[0].value, row[1].value])
+        player_rankings_query = 'SELECT player, rating FROM players'
+        cursor.execute(player_rankings_query)
+        player_rankings = cursor.fetchall()
         
         # Sort by Exp from biggest to smallest
         player_rankings.sort(key = lambda x: x[1], reverse = True)
 
         # Get players in server
-        server_users = list(map(lambda y: str(y.id), server.members))
+        server_users = list(map(lambda y: y.id, server.members))
         server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
         total_players = len(server_players)
 
         # Get ranking
-        i = 1
+        i = 0
         for person in server_players:
-            if person[0] == str(player.id):
+            i += 1
+            if person[0] == player.id:
                 rank = i
                 break
-            else:
-                i += 1
 
-        # if '🎙 WvS Hosts' in [role.name for role in player.roles]:
-        #     profile_title = '🎙 ' + player.name + '\'s Profile' + ' 🎙'
-        if str(player.id) in [row[0].value for row in blacklist_players]:
-            profile_title = '❌(Blacklisted) ' + player.name + '\'s Profile ❌'
-        else:
-            profile_title = player.name + '\'s Profile'
+        conn.close()
 
-        profile = discord.Embed(title = profile_title, description = 'Skill Rating (SR): **' + str(int(round(player_sr, 0))) + '**', colour=0x0013B4)
+        profile = discord.Embed(title = player.name + '\'s Profile', description = 'Skill Rating (SR): **' + str(int(round(player_sr, 0))) + '**', colour=0x0013B4)
         profile.set_thumbnail(url = player.avatar_url)
 
         profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
-        profile.add_field(name = 'Games played', value = str(stats['total']))
+        profile.add_field(name = 'Games played', value = str(stats['games']))
         won_games = str(stats['wins'])
-        if stats['total'] > 0:
-            won_games += ' (' + str(round(100 * stats['wins'] / stats['total'], 1)) + '%)'
+        if stats['games'] > 0:
+            won_games += ' (' + str(round(100 * stats['wins'] / stats['games'], 1)) + '%)'
         profile.add_field(name = 'Games won', value = won_games)
 
         won_soldiers = '🛡 Soldiers: ' + str(stats['soldier wins']) + ' wins' + ' / ' + str(stats['soldier games']) + ' games'
@@ -1815,21 +1734,32 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         return profile
 
     def get_achievements(self, player):
-        # Returns profile of player in an embed
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        player_data = wb['Player records']
+        # Returns achievements of player in an embed
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
 
         # Extract data
-        inside = False
-        for row in player_data:
-            if row[0].value == str(player.id):
-                # [Name, No. games played, Current win streak, Max win streak, Soldier wins, Warrior wins, Coordinate wins, Queen/Ackerman/Mike/Scout wins, Warchief/False King/Ymir/Spy wins]
-                badges = [player.name, row[3].value, row[18].value, row[19].value, row[8].value, row[10].value, row[12].value, 
-                (row[14].value + row[24].value + row[26].value + row[28].value), (row[16].value + row[22].value + row[20].value + row[30].value)]
-                inside = True
-                break
-        if inside == False:
+        player_data_query = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(player_data_query, (player.id,))
+        player_data = cursor.fetchone()
+
+        if player_data:
+            # [Name, No. games played, Current win streak, Max win streak, Soldier wins, Warrior wins, Coordinate wins, Queen/Ackerman/Mike/Scout wins, Warchief/False King/Ymir/Spy wins]
+            games_played = player_data[5] + player_data[7] + player_data[9] + player_data[11] + player_data[13] + player_data[15] + player_data[17] + player_data[19] + \
+                player_data[21] + player_data[23] + player_data[25]
+            optional_soldier_wins = player_data[10] + player_data[18] + player_data[20] + player_data[22]
+            optional_warrior_wins = player_data[12] + player_data[14] + player_data[16] + player_data[24]
+            badges = [player.name, games_played, player_data[2], player_data[3], player_data[4], player_data[6], player_data[8], optional_soldier_wins, optional_warrior_wins]
+        else:
+            # Add player data into player records
+            insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 26))
+            insert_player_data = [player.id, 1500] + 24 * [0]
+            cursor.execute(insert_player_data_query, insert_player_data)
+            conn.commit()
+
             badges = [player.name, 0, 0, 0, 0, 0, 0, 0, 0]
+
+        conn.close()
 
         # Put info into embed
         num_badges = 0
@@ -1935,9 +1865,18 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
     def get_game_stats(self, page_no):
         # Returns past game statistics
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        game_data = wb['Game records']
-        player_data = wb['Player records']
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        get_game_data_query = 'SELECT * FROM global'
+        cursor.execute(get_game_data_query)
+        game_data = cursor.fetchall()
+
+        get_player_data_query = 'SELECT * FROM players'
+        cursor.execute(get_player_data_query)
+        player_data = cursor.fetchall()
+
+        conn.close()
 
         page_descriptions = {1: 'Game Stats', 2: 'Role Stats'}
 
@@ -1945,61 +1884,42 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         if page_no == 1:
             # Game stats
-            games_played = 'Soldiers: ' + str(game_data['H2'].value)
-            if game_data['H10'].value > 0:
-                games_played += ' (' + str(round(100 * game_data['H2'].value / game_data['H10'].value, 1)) + '%)'
-            games_played += '\nWarriors: ' + str(game_data['H8'].value)
-            if game_data['H10'].value > 0:
-                games_played += ' (' + str(round(100 * game_data['H8'].value / game_data['H10'].value, 1)) + '%)'
-            game_stats.add_field(name = 'Total games played: ' + str(game_data['H10'].value), value = games_played, inline = False)
+            soldiers_wins = sum([row[1] for row in game_data])
+            warriors_wins =  sum([row[2] + row[3] for row in game_data])
+            warriors_walls = sum([row[2] for row in game_data])
+            warriors_kidnap = sum([row[3] for row in game_data])
+            games_played = 'Soldiers: ' + str(soldiers_wins)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * soldiers_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+            games_played += '\nWarriors: ' + str(warriors_wins)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * warriors_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+            games_played += '\n - Walls: ' + str(warriors_walls)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * warriors_walls / (warriors_wins + soldiers_wins), 1)) + '%)'
+            games_played += '\n - Kidnap: ' + str(warriors_kidnap)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * warriors_kidnap / (warriors_wins + soldiers_wins), 1)) + '%)'
+            game_stats.add_field(name = 'Total games played: ' + str(warriors_wins + soldiers_wins), value = games_played, inline = False)
 
-            players5 = 'Soldiers: ' + str(game_data['B2'].value)
-            if game_data['B10'].value > 0:
-                players5 += ' (' + str(round(100 * game_data['B2'].value / game_data['B10'].value, 1)) + '%)'
-            players5 += '\nWarriors: ' + str(game_data['B8'].value)
-            if game_data['B10'].value > 0:
-                players5 += ' (' + str(round(100 * game_data['B8'].value / game_data['B10'].value, 1)) + '%)'
-            game_stats.add_field(name = '5 Players: ' + str(game_data['B10'].value), value = players5)
-
-            players6 = 'Soldiers: ' + str(game_data['C2'].value)
-            if game_data['C10'].value > 0:
-                players6 += ' (' + str(round(100 * game_data['C2'].value / game_data['C10'].value, 1)) + '%)'
-            players6 += '\nWarriors: ' + str(game_data['C8'].value)
-            if game_data['C10'].value > 0:
-                players6 += ' (' + str(round(100 * game_data['C8'].value / game_data['C10'].value, 1)) + '%)'
-            game_stats.add_field(name = '6 Players: ' + str(game_data['C10'].value), value = players6)
-
-            players7 = 'Soldiers: ' + str(game_data['D2'].value)
-            if game_data['D10'].value > 0:
-                players7 += ' (' + str(round(100 * game_data['D2'].value / game_data['D10'].value, 1)) + '%)'
-            players7 += '\nWarriors: ' + str(game_data['D8'].value)
-            if game_data['D10'].value > 0:
-                players7 += ' (' + str(round(100 * game_data['D8'].value / game_data['D10'].value, 1)) + '%)'
-            game_stats.add_field(name = '7 Players: ' + str(game_data['D10'].value), value = players7)
-
-            players8 = 'Soldiers: ' + str(game_data['E2'].value)
-            if game_data['E10'].value > 0:
-                players8 += ' (' + str(round(100 * game_data['E2'].value / game_data['E10'].value, 1)) + '%)'
-            players8 += '\nWarriors: ' + str(game_data['E8'].value)
-            if game_data['E10'].value > 0:
-                players8 += ' (' + str(round(100 * game_data['E8'].value / game_data['E10'].value, 1)) + '%)'
-            game_stats.add_field(name = '8 Players: ' + str(game_data['E10'].value), value = players8)
-
-            players9 = 'Soldiers: ' + str(game_data['F2'].value)
-            if game_data['F10'].value > 0:
-                players9 += ' (' + str(round(100 * game_data['F2'].value / game_data['F10'].value, 1)) + '%)'
-            players9 += '\nWarriors: ' + str(game_data['F8'].value)
-            if game_data['F10'].value > 0:
-                players9 += ' (' + str(round(100 * game_data['F8'].value / game_data['F10'].value, 1)) + '%)'
-            game_stats.add_field(name = '9 Players: ' + str(game_data['F10'].value), value = players9)
-
-            players10 = 'Soldiers: ' + str(game_data['G2'].value)
-            if game_data['G10'].value > 0:
-                players10 += ' (' + str(round(100 * game_data['G2'].value / game_data['G10'].value, 1)) + '%)'
-            players10 += '\nWarriors: ' + str(game_data['G8'].value)
-            if game_data['G10'].value > 0:
-                players10 += ' (' + str(round(100 * game_data['G8'].value / game_data['G10'].value, 1)) + '%)'
-            game_stats.add_field(name = '10 Players: ' + str(game_data['G10'].value), value = players10)
+            for i in range(6):
+                soldiers_wins_n = game_data[i][1]
+                warriors_wins_n =  game_data[i][2] + game_data[i][3]
+                warriors_walls_n = game_data[i][2]
+                warriors_kidnap_n = game_data[i][3]
+                num_players_stats = 'Soldiers: ' + str(soldiers_wins_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * soldiers_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                num_players_stats += '\nWarriors: ' + str(warriors_wins_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * warriors_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                num_players_stats += '\n - Walls: ' + str(warriors_walls_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * warriors_walls_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                num_players_stats += '\n - Kidnap: ' + str(warriors_kidnap_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * warriors_kidnap_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                game_stats.add_field(name = str(i + 5) + ' Players: ' + str(warriors_wins_n + soldiers_wins_n), value = num_players_stats)
 
         elif page_no == 2:
             # Role stats
@@ -2015,29 +1935,29 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             scout_wins, scout_games = 0, 0
             spy_wins, spy_games = 0, 0
 
-            for i in range(2, player_data.max_row + 1):
-                soldier_wins += player_data['I' + str(i)].value
-                soldier_games += player_data['J' + str(i)].value
-                warrior_wins += player_data['K' + str(i)].value
-                warrior_games += player_data['L' + str(i)].value
-                coordinate_wins += player_data['M' + str(i)].value
-                coordinate_games += player_data['N' + str(i)].value
-                queen_wins += player_data['O' + str(i)].value
-                queen_games += player_data['P' + str(i)].value
-                warchief_wins += player_data['Q' + str(i)].value
-                warchief_games += player_data['R' + str(i)].value
-                ymir_wins += player_data['U' + str(i)].value
-                ymir_games += player_data['V' + str(i)].value
-                falseking_wins += player_data['W' + str(i)].value
-                falseking_games += player_data['X' + str(i)].value
-                ackerman_wins += player_data['Y' + str(i)].value
-                ackerman_games += player_data['Z' + str(i)].value
-                mike_wins += player_data['AA' + str(i)].value
-                mike_games += player_data['AB' + str(i)].value
-                scout_wins += player_data['AC' + str(i)].value
-                scout_games += player_data['AD' + str(i)].value
-                spy_wins += player_data['AE' + str(i)].value
-                spy_games += player_data['AF' + str(i)].value
+            for row in player_data:
+                soldier_wins += row[4]
+                soldier_games += row[5]
+                warrior_wins += row[6]
+                warrior_games += row[7]
+                coordinate_wins += row[8]
+                coordinate_games += row[9]
+                queen_wins += row[10]
+                queen_games += row[11]
+                warchief_wins += row[12]
+                warchief_games += row[13]
+                ymir_wins += row[14]
+                ymir_games += row[15]
+                falseking_wins += row[16]
+                falseking_games += row[17]
+                ackerman_wins += row[18]
+                ackerman_games += row[19]
+                mike_wins += row[20]
+                mike_games += row[21]
+                scout_wins += row[22]
+                scout_games += row[23]
+                spy_wins += row[24]
+                spy_games += row[25]
 
             soldier_stats = 'Games: ' + str(soldier_games)
             soldier_stats += '\nWins: ' + str(soldier_wins)
@@ -2109,30 +2029,38 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
     def get_leaderboard(self, server, page=1, player=None):
         # Returns the names of the top players, with 10 per page, in an embed
-        wb = load_workbook("WarriorsvsSoldiers/database.xlsx")
-        player_data = wb['Player records']
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        # Get total players in server
+        player_rankings_query = 'SELECT player, rating FROM players'
+        cursor.execute(player_rankings_query)
+        player_data = cursor.fetchall()
 
         if player:
-            for row in player_data:
-                present = False
-                if row[0].value == str(player.id):
-                    present = True
-                    break   
-            if present == False:
+            # Check if player exists in db
+            player_check_query = 'SELECT * FROM players WHERE player = ?'
+            cursor.execute(player_check_query)
+            player_check = cursor.fetchone()
+            if player_check is None:
                 # Add player data into player records
-                player_data.append([str(player.id), 1500] + 30 * [0])
-                wb.save("WarriorsvsSoldiers/database.xlsx")
+                insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 26))
+                insert_player_data = [player.id, 1500] + 24 * [0]
+                cursor.execute(insert_player_data_query, insert_player_data)
+                conn.commit()
         
+        conn.close()
+
         player_rankings = {} # {player id: sr, ...}
         # Put all players into a dictionary
-        for line in player_data:
-            player_rankings[line[0].value] = line[1].value
+        for row in player_data:
+            player_rankings[row[0]] = row[1]
 
         server_users = server.members
         server_players = []
         for user in server_users:
-            if str(user.id) in player_rankings:
-                server_players.append([user.mention, player_rankings[str(user.id)]])
+            if user.id in player_rankings:
+                server_players.append([user.mention, player_rankings[user.id]])
         
         # Sort by SR from biggest to smallest
         server_players.sort(key = lambda x: x[1], reverse = True)
@@ -2176,13 +2104,11 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 all_names += '#' + str(rank) + ' '
             all_names += server_players[rank-1][0] + '\n'
             if rank <= 10:
-                all_sr += '🔹 ' + str(int(round(server_players[rank-1][1], 0))) + ' 🔹' + '\n'
+                all_sr += '￶￵ ￶￵  ￶￵ 🔹 ' + str(int(round(server_players[rank-1][1], 0))) + ' 🔹' + '\n'
             else:
                 all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
 
         leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = 'Page ' + str(page_no) + '/' + str(num_pages), colour=0x0013B4)
-        # leaderboard.set_thumbnail(url = 'https://i.imgur.com/RZBR3Hb.png')
-
         leaderboard.add_field(name = 'Player', value = all_names)
         leaderboard.add_field(name = 'Skill Rating (SR)', value = all_sr)
         return leaderboard

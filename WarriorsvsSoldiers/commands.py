@@ -823,29 +823,29 @@ class Game():
             #     await self.client.remove_roles(player, host_role)
             #     await message.channel.send(player.mention + ' can no longer host games!')
 
-            def check_perms(mod, server):
-                if mod.id == 238808836075421697:
-                    return True
-                return False
+            # def check_perms(mod, server):
+            #     if mod.id == 238808836075421697:
+            #         return True
+            #     return False
 
-            if message.content.startswith('~ban'):
-                if check_perms(message.author, message.guild):
-                    if message.mentions:
-                        player = message.mentions[0]
-                        ban_msg = self.state.ban(player)
-                        await message.channel.send(ban_msg)
-                    else:
-                        await message.channel.send('Please specify a player to blacklist from the game!')
-                else:
-                    await message.channel.send('You do not have the permissions to do that!')
+            # if message.content.startswith('~ban'):
+            #     if check_perms(message.author, message.guild):
+            #         if message.mentions:
+            #             player = message.mentions[0]
+            #             ban_msg = self.state.ban(player)
+            #             await message.channel.send(ban_msg)
+            #         else:
+            #             await message.channel.send('Please specify a player to blacklist from the game!')
+            #     else:
+            #         await message.channel.send('You do not have the permissions to do that!')
 
-            if message.content.startswith('~unban'):
-                if message.mentions:
-                    player = message.mentions[0]
-                    unban_msg = self.state.unban(player)
-                    await message.channel.send(unban_msg)
-                else:
-                    await message.channel.send('Please specify a player to unban!')
+            # if message.content.startswith('~unban'):
+            #     if message.mentions:
+            #         player = message.mentions[0]
+            #         unban_msg = self.state.unban(player)
+            #         await message.channel.send(unban_msg)
+            #     else:
+            #         await message.channel.send('Please specify a player to unban!')
 
             # Testing command
             if message.content.startswith('~test') and message.author.id == 238808836075421697:
