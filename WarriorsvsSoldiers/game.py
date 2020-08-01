@@ -70,6 +70,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.randomroles = False
         self.paths = False
         self.paths_holders = []
+        self.funds_enabled = False
+        self.funds = 5
         
         self.cur_expedition = 0
         self.expedition_squad = []
@@ -109,6 +111,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.randomroles = False
             self.paths = False
             self.paths_holders = []
+            self.funds_enabled = False
+            self.funds = 5
 
             self.cur_expedition = 0
             self.expedition_squad = []
@@ -286,6 +290,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                     else:
                         return 'The power of the 📢**Paths**📢 has already been enabled!'
 
+                elif role == 'funds' or role == 'limited funds':
+                    if self.funds_enabled == False:
+                        self.funds_enabled = True
+                        return '💰**Limited Funds**💰 for expeditions has been enabled!'
+                    else:
+                        return '💰**Limited Funds**💰 for expeditions has already been enabled!'
+
                 elif role == 'queen':
                     if role not in self.newroles:
                         return self.add_with_role_count_check('queen')
@@ -361,6 +372,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         return 'The power of the 📢**Paths**📢 has been disabled!'
                     else:
                         return 'The power of the 📢**Paths**📢 is not currently enabled!'
+
+                elif role == 'funds' or role == 'limited funds':
+                    if self.funds_enabled == True:
+                        self.funds_enabled = False
+                        return '💰**Limited Funds**💰 for expeditions has been disabled!'
+                    else:
+                        return '💰**Limited Funds**💰 for expeditions is not currently enabled!'
 
                 elif role == 'queen':
                     if role in self.newroles:
@@ -516,7 +534,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         else:
             ymirblessingcheck = '🔮' if self.ymir_blessing else '◼'
             pathscheck = '📢' if self.paths else '◼'
-            role_msg = ymirblessingcheck + ' **Ymir\'s Blessing** ' + ymirblessingcheck + '\n\n' + pathscheck + ' **Paths** ' + pathscheck
+            fundscheck = '💰' if self.funds_enabled else '◼'
+            role_msg = ymirblessingcheck + ' **Ymir\'s Blessing** ' + ymirblessingcheck + '\n\n' + pathscheck + ' **Paths** ' + pathscheck + \
+                '\n\n' + fundscheck + ' **Limited Funds** ' + fundscheck
             return role_msg
 
     def randomize_roles(self):
@@ -625,6 +645,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.randomroles = False
             self.paths = False
             self.paths_holders = []
+            self.funds_enabled = False
+            self.funds = 5
 
             self.cur_expedition = 0
             self.expedition_squad = []
@@ -1225,6 +1247,14 @@ Expedition 5: **' + str(self.expedition_sizes[len(self.players)][4]) + '** membe
             status.add_field(name = 'Progress towards Basement', value = basement_progress, inline = True)
             status.add_field(name = 'Status of the Walls', value = wall_status, inline = True)
             status.add_field(name = 'Expedition Info', value = expedition_info, inline = False)
+
+            if self.funds_enabled:
+                funds_info = ''
+                for _ in range(self.funds):
+                    funds_info += '💰 '
+                for _ in range(5 - self.funds):
+                    funds_info += '❌ '
+                status.add_field(name = 'Funds', value = funds_info, inline = False)
 
             return status
     
@@ -2176,6 +2206,9 @@ However, anyone who has had Ymir\'s blessing previously is granted immunity to b
         paths_info = '📢**Paths**📢\n\n\
 The Paths ability allows players to make an announcement anonymously to everyone in the game. When activated, a random person will be designated as the Paths holder at the start of every expedition. \
 They will then be able to send a single message to the game channel without revealing their role or identity.'
+        funds_info = '💰**Limited Funds**💰\n\n\
+A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition.\n\n\
+If 5 proposals in a row are rejected, the Soldiers will run out of funds, handing the win to the Warriors by default.'
 
         if command_query:
             commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
@@ -2219,7 +2252,8 @@ and status of the Walls, the results of previous expeditions and information on 
                         'ymir': ymir_info,
                         'spy': spy_info,
                         'blessing': blessing_info,
-                        'paths': paths_info}
+                        'paths': paths_info,
+                        'funds': funds_info}
 
             if command_query[0] in commands_dict:
                 return discord.Embed(title = '~' + command_query[0], description = commands_dict[command_query[0]], colour = 0x0013B4)

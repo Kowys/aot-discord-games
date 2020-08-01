@@ -130,26 +130,57 @@ class Game():
                                 self.state.status = 'expedition selection'
 
                                 await self.state.game_channel.send('The proposal has failed!')
-                                expedition_msg = '--**Expedition #' + \
-                                    str(self.state.cur_expedition) + ': Planning phase**--'
-                                await asyncio.sleep(2)
-                                await self.state.game_channel.send(expedition_msg)
 
-                                await asyncio.sleep(2)
-                                self.state.next_commander()
-                                commander_msg = 'The commander for this expedition is **' + \
-                                    self.state.players[0][0].mention + '**!'
-                                await self.state.game_channel.send(commander_msg)
+                                if self.state.funds_enabled:
+                                    self.state.funds -= 1
+                                    status = self.state.get_status()
+                                    await asyncio.sleep(2)
+                                    await self.state.game_channel.send(embed=status)
+                                    if self.state.funds == 1:
+                                        await self.state.game_channel.send('❗| The Soldiers have funds for only **1** more expedition!')
+                                    elif self.state.funds == 0:
+                                        self.state.status = 'game ended warriors wall'
+                                        warriors_win_msg = '⚔The Soldiers have run out of funds for further expeditions. Warriors win!⚔'
+                                        await asyncio.sleep(2)
+                                        await self.state.game_channel.send(warriors_win_msg)
 
-                                await asyncio.sleep(2)
-                                players_msg = self.state.get_players()
-                                await self.state.game_channel.send(embed=players_msg)
+                                        await self.client.change_presence(activity=None)
 
-                                await asyncio.sleep(2)
-                                commander_msg2 = 'Commander **' + \
-                                    self.state.players[0][0].name + \
-                                    '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
-                                await self.state.game_channel.send(commander_msg2)
+                                        end_summary = self.state.get_summary()
+                                        await asyncio.sleep(2)
+                                        await self.state.game_channel.send(embed=end_summary)
+
+                                        if self.state.gametype == 'Ranked':
+                                            rating_changes = self.state.update_rating()
+                                            achievements_msgs = self.state.update_achievements()
+                                            await asyncio.sleep(2)
+                                            await self.state.game_channel.send(embed=rating_changes)
+                                            for achievements_msg in achievements_msgs:
+                                                await self.state.game_channel.send(achievements_msg)
+
+                                        self.state.status = 'game ended'
+
+                                if not self.state.status == 'game ended':
+                                    expedition_msg = '--**Expedition #' + \
+                                        str(self.state.cur_expedition) + ': Planning phase**--'
+                                    await asyncio.sleep(2)
+                                    await self.state.game_channel.send(expedition_msg)
+
+                                    await asyncio.sleep(2)
+                                    self.state.next_commander()
+                                    commander_msg = 'The commander for this expedition is **' + \
+                                        self.state.players[0][0].mention + '**!'
+                                    await self.state.game_channel.send(commander_msg)
+
+                                    await asyncio.sleep(2)
+                                    players_msg = self.state.get_players()
+                                    await self.state.game_channel.send(embed=players_msg)
+
+                                    await asyncio.sleep(2)
+                                    commander_msg2 = 'Commander **' + \
+                                        self.state.players[0][0].name + \
+                                        '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                                    await self.state.game_channel.send(commander_msg2)
                 else:
                     if response.startswith('f') and message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.state.players)))):
                         await message.author.dm_channel.send('You\'ve already voted! You may no longer flip the votes.')
@@ -576,6 +607,9 @@ class Game():
                                 0][0].name
                             await warrior.dm_channel.send(embed=discord.Embed(description='🛡 The Ackerman, **' + ackerman_name + '**, has prevented you from destroying the Walls!', colour=0x00C9FF))
 
+                    if self.state.funds_enabled:
+                        self.state.funds = 5
+
                     if expedition_success == True:
                         result_msg = self.state.expedition_success_update()
                         await asyncio.sleep(2)
@@ -769,7 +803,8 @@ class Game():
                 else:
                     # Help commands here
                     command_help = self.state.get_commands(helpbox[1])
-                    await message.channel.send(embed=command_help)
+                    if command_help:
+                        await message.channel.send(embed=command_help)
 
             if message.content.startswith('~commands'):
                 commands = self.state.get_commands()
@@ -968,25 +1003,57 @@ of the Coordinate.'
                             self.state.status = 'expedition selection'
 
                             await self.state.game_channel.send('The proposal has failed!')
-                            expedition_msg = '--**Expedition #' + \
-                                str(self.state.cur_expedition) + ': Planning phase**--'
-                            await self.state.game_channel.send(expedition_msg)
 
-                            await asyncio.sleep(2)
-                            self.state.next_commander()
-                            commander_msg = 'The commander for this expedition is ' + \
-                                self.state.players[0][0].mention + '!'
-                            await self.state.game_channel.send(commander_msg)
+                            if self.state.funds_enabled:
+                                self.state.funds -= 1
+                                status = self.state.get_status()
+                                await asyncio.sleep(2)
+                                await self.state.game_channel.send(embed=status)
+                                if self.state.funds == 1:
+                                    await self.state.game_channel.send('❗| The Soldiers only have funds for **1** more expedition!')
+                                elif self.state.funds == 0:
+                                    self.state.status = 'game ended warriors wall'
+                                    warriors_win_msg = '⚔The Soldiers have run out of funds for further expeditions. Warriors win!⚔'
+                                    await asyncio.sleep(2)
+                                    await self.state.game_channel.send(warriors_win_msg)
 
-                            await asyncio.sleep(2)
-                            players_msg = self.state.get_players()
-                            await self.state.game_channel.send(embed=players_msg)
+                                    await self.client.change_presence(activity=None)
 
-                            await asyncio.sleep(1)
-                            commander_msg2 = 'Commander **' + \
-                                self.state.players[0][0].name + \
-                                '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
-                            await self.state.game_channel.send(commander_msg2)
+                                    end_summary = self.state.get_summary()
+                                    await asyncio.sleep(2)
+                                    await self.state.game_channel.send(embed=end_summary)
+
+                                    if self.state.gametype == 'Ranked':
+                                        rating_changes = self.state.update_rating()
+                                        achievements_msgs = self.state.update_achievements()
+                                        await asyncio.sleep(2)
+                                        await self.state.game_channel.send(embed=rating_changes)
+                                        for achievements_msg in achievements_msgs:
+                                            await self.state.game_channel.send(achievements_msg)
+
+                                    self.state.status = 'game ended'
+
+                            if not self.state.status == 'game ended':
+                                expedition_msg = '--**Expedition #' + \
+                                    str(self.state.cur_expedition) + ': Planning phase**--'
+                                await asyncio.sleep(2)
+                                await self.state.game_channel.send(expedition_msg)
+
+                                await asyncio.sleep(2)
+                                self.state.next_commander()
+                                commander_msg = 'The commander for this expedition is ' + \
+                                    self.state.players[0][0].mention + '!'
+                                await self.state.game_channel.send(commander_msg)
+
+                                await asyncio.sleep(2)
+                                players_msg = self.state.get_players()
+                                await self.state.game_channel.send(embed=players_msg)
+
+                                await asyncio.sleep(1)
+                                commander_msg2 = 'Commander **' + \
+                                    self.state.players[0][0].name + \
+                                    '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                                await self.state.game_channel.send(commander_msg2)
 
     async def decision_timer(self):
         await self.client.wait_until_ready()
