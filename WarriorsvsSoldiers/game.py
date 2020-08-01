@@ -2043,12 +2043,11 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             player_check = cursor.fetchone()
             if player_check is None:
                 # Add player data into player records
-                player_data.append(insert_player_data)
-
                 insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 26))
                 insert_player_data = [player.id, 1500] + 24 * [0]
                 cursor.execute(insert_player_data_query, insert_player_data)
                 conn.commit()
+                player_data.append(insert_player_data)
 
         conn.close()
 
@@ -2109,12 +2108,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             else:
                 all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
 
-        lb_info = ''
-        if player:
-            lb_info += 'Rank: ' + str(player_rank) + '/' + str(len(server_players))
-        lb_info += '\nPage ' + str(page_no) + '/' + str(num_pages)
-
+        lb_info = 'Page ' + str(page_no) + '/' + str(num_pages)
         leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = lb_info, colour=0x0013B4)
+        if player:
+            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_players)), inline = False)
         leaderboard.add_field(name = 'Player', value = all_names)
         leaderboard.add_field(name = 'Skill Rating (SR)', value = all_sr)
         return leaderboard

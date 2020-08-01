@@ -1379,9 +1379,9 @@ class State():
                 # Add player data into player records
                 insert_player_data = 'INSERT INTO players VALUES (?,?,?,?,?,?,?)'
                 player_data = [player.id, 0, 0, 0, 0, 0, 0]
-                player_rankings.append(player_data)
                 cursor.execute(insert_player_data, player_data)
                 conn.commit()
+                player_rankings.append(player_data)
 
         player_rankings_map = {}
         for player_rank in player_rankings:
@@ -1408,12 +1408,12 @@ class State():
 
         # Get page_no of player rank
         if player:
-            rank = 0
+            player_rank = 0
             for person in server_players:
-                rank += 1
+                player_rank += 1
                 if person[0] == player.mention:
                     break
-            page_no = math.ceil(rank / 10)
+            page_no = math.ceil(player_rank / 10)
 
         total_pages = math.ceil(len(server_players) / 10)
         page_no = min(total_pages, page_no)
@@ -1434,7 +1434,10 @@ class State():
             all_levels_exp += ')\n'
 
         leaderboard = discord.Embed(title = 'Leaderboard for Attack on Wikia', colour=0xC0C0C0)
-        leaderboard.add_field(name = 'Max Level', value = str(len(self.levelling_system)), inline = False)
+        if not player:
+            leaderboard.add_field(name = 'Max Level', value = str(len(self.levelling_system)), inline = False)
+        if player:
+            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_players)), inline = False)
         leaderboard.add_field(name = 'Rank/Name', value = all_names)
         leaderboard.add_field(name = 'Level/Exp', value = all_levels_exp)
         leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
