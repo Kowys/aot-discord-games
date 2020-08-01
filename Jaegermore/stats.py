@@ -175,7 +175,7 @@ class State():
         highest_rankings = [('Eren', []), ('Mikasa', []), ('Armin', []), ('Jean', []), ('Krista', []), ('Sasha', []), ('Levi', []), ('Annie', []), ('Erwin', []), ('Total', [])]
         for i, _ in enumerate(highest_rankings):
             server_players_data.sort(key=lambda row: row[i+1], reverse=True)
-            for j in range(10):
+            for j in range(min(10, len(server_players_data))):
                 rank_info = [server_players_data[j][0], server_players_data[j][i+1]]
                 highest_rankings[i][1].append(rank_info)
 
