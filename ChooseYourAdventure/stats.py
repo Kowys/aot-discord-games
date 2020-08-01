@@ -434,12 +434,12 @@ class State():
 
         # Get page_no of player rank
         if player:
-            rank = 0
+            player_rank = 0
             for person in server_endings:
-                rank += 1
+                player_rank += 1
                 if person[0] == player.id:
                     break
-            page_no = math.ceil(rank / 10)
+            page_no = math.ceil(player_rank / 10)
 
         total_pages = math.ceil(len(server_endings) / 10)
         page_no = min(total_pages, page_no)
@@ -449,6 +449,8 @@ class State():
 
         leaderboard = discord.Embed(title = '🏆 Leaderboard for Choose Your Adventure 🏆', colour=0xE5D2BB)
         leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
+        if player:
+            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_endings)), inline = False)
 
         for rank in range((page_no - 1) * 10 + 1, min(len(server_endings) + 1, page_no * 10 + 1)):
             ending_count = server_endings[rank-1][2]
