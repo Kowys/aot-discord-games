@@ -2,7 +2,6 @@ import discord
 import random
 import math
 import sqlite3
-from openpyxl import load_workbook
 
 
 class State():
@@ -2040,15 +2039,17 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         if player:
             # Check if player exists in db
             player_check_query = 'SELECT * FROM players WHERE player = ?'
-            cursor.execute(player_check_query)
+            cursor.execute(player_check_query, (player.id,))
             player_check = cursor.fetchone()
             if player_check is None:
                 # Add player data into player records
+                player_data.append(insert_player_data)
+
                 insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 26))
                 insert_player_data = [player.id, 1500] + 24 * [0]
                 cursor.execute(insert_player_data_query, insert_player_data)
                 conn.commit()
-        
+
         conn.close()
 
         player_rankings = {} # {player id: sr, ...}
@@ -2076,12 +2077,12 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         # Get page_no of player rank
         if player:
-            rank = 0
+            player_rank = 0
             for person in server_players:
-                rank += 1
+                player_rank += 1
                 if person[0] == player.mention:
                     break
-            page_no = math.ceil(rank / 10)
+            page_no = math.ceil(player_rank / 10)
 
         # Normalize to number of server users
         num_pages = math.ceil(len(server_players) / 10)
@@ -2108,7 +2109,12 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             else:
                 all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
 
-        leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = 'Page ' + str(page_no) + '/' + str(num_pages), colour=0x0013B4)
+        lb_info = ''
+        if player:
+            lb_info += 'Rank: ' + str(player_rank) + '/' + str(len(server_players))
+        lb_info += '\nPage ' + str(page_no) + '/' + str(num_pages)
+
+        leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = lb_info, colour=0x0013B4)
         leaderboard.add_field(name = 'Player', value = all_names)
         leaderboard.add_field(name = 'Skill Rating (SR)', value = all_sr)
         return leaderboard
