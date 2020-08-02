@@ -1338,10 +1338,56 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             else:
                 return '**Warriors (+%d)**' % -advantage_score
 
+    def update_server_records(self):
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        get_server_data_query = 'SELECT * FROM servers WHERE server = ?'
+        cursor.execute(get_server_data_query, (self.server.id,))
+        server_data = cursor.fetchone()
+
+        if server_data:
+            num_players_index = len(self.players) - 5
+            soldiers_wins, warriors_walls, warriors_kidnap = server_data[3 * num_players_index + 1], server_data[3 * num_players_index + 2], server_data[3 * num_players_index + 3]
+            if self.status == 'game ended soldiers':
+                soldiers_wins += 1
+            elif self.status == 'game ended warriors wall':
+                warriors_walls += 1
+            elif self.status == 'game ended warriors coord':
+                warriors_kidnap += 1
+
+            update_cols = ['soldiers_' + str(len(self.players)), 'warriors_walls_' + str(len(self.players)), 'warriors_kidnap_' + str(len(self.players))]
+            update_server_data_query = 'UPDATE servers SET {} = ?, {} = ?, {} = ? WHERE server = ?'.format(*update_cols)
+            update_server_data = [soldiers_wins, warriors_walls, warriors_kidnap, self.server.id]
+            cursor.execute(update_server_data_query, update_server_data)
+            conn.commit()
+
+        else:
+            num_players_index = len(self.players) - 5
+            soldiers_wins, warriors_walls, warriors_kidnap = 0, 0, 0
+            if self.status == 'game ended soldiers':
+                soldiers_wins += 1
+            elif self.status == 'game ended warriors wall':
+                warriors_walls += 1
+            elif self.status == 'game ended warriors coord':
+                warriors_kidnap += 1
+
+            insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 19))
+            insert_server_data = [self.server.id] + [0] * 18
+            for i, score in enumerate([soldiers_wins, warriors_walls, warriors_kidnap]):
+                insert_server_data[3 * num_players_index + i + 1] = score
+            cursor.execute(insert_server_data_query, insert_server_data)
+            conn.commit()
+
+        conn.close()
+
     def update_rating(self):
         # Updates rating of all players after game ends, and returns it in an embed. Updates game records as well.
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
+
+        # Update server records
+        self.update_server_records()
 
         # Update game records
         get_game_data_query = 'SELECT * FROM global'
@@ -1895,10 +1941,14 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         return player_achievements
 
-    def get_game_stats(self, page_no):
+    def get_game_stats(self, page_no, server):
         # Returns past game statistics
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
+
+        get_server_data_query = 'SELECT * FROM servers WHERE server = ?'
+        cursor.execute(get_server_data_query, (server.id,))
+        server_data = cursor.fetchone()
 
         get_game_data_query = 'SELECT * FROM global'
         cursor.execute(get_game_data_query)
@@ -1908,13 +1958,93 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         cursor.execute(get_player_data_query)
         player_data = cursor.fetchall()
 
-        conn.close()
+        page_descriptions = {1: 'Game Stats ({})'.format(server.name), 2: 'Game Stats (Global)', 3: 'Role Stats (Global)'}
 
-        page_descriptions = {1: 'Game Stats', 2: 'Role Stats'}
-
-        game_stats = discord.Embed(title = '⚔ Warriors vs Soldiers Stats 🛡 ', description = 'Page ' + str(page_no) + ': ' + page_descriptions[page_no], colour=0x0013B4)
+        game_stats = discord.Embed(title = '⚔ Warriors vs Soldiers Stats 🛡 ', description = str(page_no) + '. ' + page_descriptions[page_no], colour=0x0013B4)
 
         if page_no == 1:
+            if server_data:
+                # Game stats
+                soldiers_wins = sum(server_data[1::3])
+                warriors_wins =  sum(server_data[2::3]) + sum(server_data[3::3])
+                warriors_walls = sum(server_data[2::3])
+                warriors_kidnap = sum(server_data[3::3])
+                games_played = 'Soldiers: ' + str(soldiers_wins)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * soldiers_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+                games_played += '\nWarriors: ' + str(warriors_wins)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * warriors_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+                games_played += '\n - Walls: ' + str(warriors_walls)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * warriors_walls / (warriors_wins + soldiers_wins), 1)) + '%)'
+                games_played += '\n - Kidnap: ' + str(warriors_kidnap)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * warriors_kidnap / (warriors_wins + soldiers_wins), 1)) + '%)'
+                game_stats.add_field(name = 'Total games played: ' + str(warriors_wins + soldiers_wins), value = games_played, inline = False)
+
+                for i in range(6):
+                    soldiers_wins_n = server_data[3 * i + 1]
+                    warriors_wins_n = server_data[3 * i + 2] + server_data[3 * i + 3]
+                    warriors_walls_n = server_data[3 * i + 2]
+                    warriors_kidnap_n = server_data[3 * i + 3]
+                    num_players_stats = 'Soldiers: ' + str(soldiers_wins_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * soldiers_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    num_players_stats += '\nWarriors: ' + str(warriors_wins_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * warriors_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    num_players_stats += '\n - Walls: ' + str(warriors_walls_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * warriors_walls_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    num_players_stats += '\n - Kidnap: ' + str(warriors_kidnap_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * warriors_kidnap_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    game_stats.add_field(name = str(i + 5) + ' Players: ' + str(warriors_wins_n + soldiers_wins_n), value = num_players_stats)
+            else:
+                insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 19))
+                insert_server_data = [server.id] + [0] * 18
+                cursor.execute(insert_server_data_query, insert_server_data)
+                conn.commit()
+
+                soldiers_wins = 0
+                warriors_wins =  0
+                warriors_walls = 0
+                warriors_kidnap = 0
+                games_played = 'Soldiers: ' + str(soldiers_wins)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * soldiers_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+                games_played += '\nWarriors: ' + str(warriors_wins)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * warriors_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+                games_played += '\n - Walls: ' + str(warriors_walls)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * warriors_walls / (warriors_wins + soldiers_wins), 1)) + '%)'
+                games_played += '\n - Kidnap: ' + str(warriors_kidnap)
+                if (warriors_wins + soldiers_wins) > 0:
+                    games_played += ' (' + str(round(100 * warriors_kidnap / (warriors_wins + soldiers_wins), 1)) + '%)'
+                game_stats.add_field(name = 'Total games played: ' + str(warriors_wins + soldiers_wins), value = games_played, inline = False)
+
+                for i in range(6):
+                    soldiers_wins_n = 0
+                    warriors_wins_n = 0
+                    warriors_walls_n = 0
+                    warriors_kidnap_n = 0
+                    num_players_stats = 'Soldiers: ' + str(soldiers_wins_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * soldiers_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    num_players_stats += '\nWarriors: ' + str(warriors_wins_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * warriors_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    num_players_stats += '\n - Walls: ' + str(warriors_walls_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * warriors_walls_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    num_players_stats += '\n - Kidnap: ' + str(warriors_kidnap_n)
+                    if (warriors_wins_n + soldiers_wins_n) > 0:
+                        num_players_stats += ' (' + str(round(100 * warriors_kidnap_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                    game_stats.add_field(name = str(i + 5) + ' Players: ' + str(warriors_wins_n + soldiers_wins_n), value = num_players_stats)
+
+        elif page_no == 2:
             # Game stats
             soldiers_wins = sum([row[1] for row in game_data])
             warriors_wins =  sum([row[2] + row[3] for row in game_data])
@@ -1953,7 +2083,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                     num_players_stats += ' (' + str(round(100 * warriors_kidnap_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
                 game_stats.add_field(name = str(i + 5) + ' Players: ' + str(warriors_wins_n + soldiers_wins_n), value = num_players_stats)
 
-        elif page_no == 2:
+        elif page_no == 3:
             # Role stats
             soldier_wins, soldier_games = 0, 0
             warrior_wins, warrior_games = 0, 0
@@ -2056,6 +2186,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             if spy_wins > 0:
                 spy_stats += ' (' + str(round(100 * spy_wins / spy_games, 1)) + '%)'
             game_stats.add_field(name = '🕵️‍♀️Spy🕵️‍♀️', value = spy_stats)
+
+        conn.close()
 
         return game_stats
 

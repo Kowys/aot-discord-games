@@ -137,7 +137,7 @@ class Game():
                                     await asyncio.sleep(2)
                                     await self.state.game_channel.send(embed=status)
                                     if self.state.funds == 1:
-                                        await self.state.game_channel.send('❗| The Soldiers have funds for only **1** more expedition!')
+                                        await self.state.game_channel.send('❗| The Soldiers have funds for only **1** more proposal!')
                                     elif self.state.funds == 0:
                                         self.state.status = 'game ended warriors wall'
                                         warriors_win_msg = '⚔The Soldiers have run out of funds for further expeditions. Warriors win!⚔'
@@ -773,9 +773,9 @@ class Game():
 
             if message.content.startswith('~stats') or message.content.startswith('~gamestats'):
                 cur_stat_page = 1
-                game_stats_msg = await message.channel.send(embed=self.state.get_game_stats(cur_stat_page))
-                stats_emojis = {1:'1️⃣', 2:'2️⃣'}
-                stats_emojis_rev = {'1️⃣':1, '2️⃣':2}
+                game_stats_msg = await message.channel.send(embed=self.state.get_game_stats(cur_stat_page, message.guild))
+                stats_emojis = {1:'1️⃣', 2:'2️⃣', 3:'3️⃣'}
+                stats_emojis_rev = {'1️⃣':1, '2️⃣':2, '3️⃣':3}
                 for emoji in stats_emojis_rev:
                     await game_stats_msg.add_reaction(emoji)
 
@@ -787,7 +787,7 @@ class Game():
 
                     if rxn.emoji != stats_emojis[cur_stat_page]:
                         cur_stat_page = stats_emojis_rev[rxn.emoji]
-                        await game_stats_msg.edit(embed=self.state.get_game_stats(cur_stat_page))
+                        await game_stats_msg.edit(embed=self.state.get_game_stats(cur_stat_page, message.guild))
                         await game_stats_msg.clear_reactions()
                         for emoji in stats_emojis_rev:
                             await game_stats_msg.add_reaction(emoji)
@@ -1011,7 +1011,7 @@ of the Coordinate.'
                                 await asyncio.sleep(2)
                                 await self.state.game_channel.send(embed=status)
                                 if self.state.funds == 1:
-                                    await self.state.game_channel.send('❗| The Soldiers only have funds for **1** more expedition!')
+                                    await self.state.game_channel.send('❗| The Soldiers have funds for only **1** more proposal!')
                                 elif self.state.funds == 0:
                                     self.state.status = 'game ended warriors wall'
                                     warriors_win_msg = '⚔The Soldiers have run out of funds for further expeditions. Warriors win!⚔'
