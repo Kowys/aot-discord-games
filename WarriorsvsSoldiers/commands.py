@@ -801,8 +801,9 @@ class Game():
                     commands = self.state.get_commands()
                     await message.channel.send(embed=commands)
                 else:
+                    arguments = ' '.join(helpbox[1:]).lower()
                     # Help commands here
-                    command_help = self.state.get_commands(helpbox[1])
+                    command_help = self.state.get_commands(arguments)
                     if command_help:
                         await message.channel.send(embed=command_help)
 

@@ -39,6 +39,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                                  'ymir': {5:100, 6:90, 7:60, 8:50, 9:50, 10:30},
                                  'spy': {5:-140, 6:-160, 7:-180, 8:-200, 9:-220, 10:-240}}
         self.blessing_advantages = {5:150, 6:120, 7:100, 8:80, 9:60, 10:50}
+        self.funds_advantages = {5:-50, 6:-60, 7:-70, 8:-80, 9:-90, 10:-100}
 
 
         self.number_games_achievements = {10:'Bronze', 25:'Silver', 50:'Gold', 100:'Platinum', 250:'Diamond', 500:'Master', 1000:'Grandmaster'}
@@ -1319,6 +1320,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         advantage_score = roles_advantage + expedition_advantage
         if self.ymir_blessing:
             advantage_score += self.blessing_advantages[num_players]
+        if self.funds_enabled:
+            advantage_score += self.funds_advantages[num_players]
 
         if write == False:
             return advantage_score
@@ -2208,7 +2211,7 @@ The Paths ability allows players to make an announcement anonymously to everyone
 They will then be able to send a single message to the game channel without revealing their role or identity.'
         funds_info = '💰**Limited Funds**💰\n\n\
 A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition.\n\n\
-If 5 proposals in a row are rejected, the Soldiers will run out of funds, handing the win to the Warriors by default.'
+If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.'
 
         if command_query:
             commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
@@ -2247,12 +2250,14 @@ and status of the Walls, the results of previous expeditions and information on 
                         'ackerman': ackerman_info,
                         'mike': mike_info,
                         'scout': scout_info,
+                        'false king': falseking_info,
                         'falseking': falseking_info,
                         'warchief': warchief_info,
                         'ymir': ymir_info,
                         'spy': spy_info,
                         'blessing': blessing_info,
                         'paths': paths_info,
+                        'limited funds': funds_info,
                         'funds': funds_info}
 
             if command_query[0] in commands_dict:
