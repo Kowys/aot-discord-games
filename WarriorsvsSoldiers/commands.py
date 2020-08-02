@@ -774,8 +774,8 @@ class Game():
             if message.content.startswith('~stats') or message.content.startswith('~gamestats'):
                 cur_stat_page = 1
                 game_stats_msg = await message.channel.send(embed=self.state.get_game_stats(cur_stat_page, message.guild))
-                stats_emojis = {1:'1️⃣', 2:'2️⃣', 3:'3️⃣'}
-                stats_emojis_rev = {'1️⃣':1, '2️⃣':2, '3️⃣':3}
+                stats_emojis = {1:'1️⃣', 2:'2️⃣', 3:'3️⃣', 4:'4️⃣'}
+                stats_emojis_rev = {'1️⃣':1, '2️⃣':2, '3️⃣':3, '4️⃣':4}
                 for emoji in stats_emojis_rev:
                     await game_stats_msg.add_reaction(emoji)
 
