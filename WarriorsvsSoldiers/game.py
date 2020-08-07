@@ -19,7 +19,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.reset_msg = discord.Embed(title = 'Game Reset!', description = 'Type **`~host`** to create a new lobby.\nType **`~intro`** for more information about the game.', colour=0x0013B4)
 
         self.start_msg = 'Assigning roles...'
-        self.roles_assigned_msg = 'Roles assigned!\n\nWhen everyone is ready, the host may type **~next** to begin the first expedition.'
+        self.roles_assigned_msg = 'Roles assigned!\n\nWhen everyone is ready, type **~next** to begin the first expedition.'
 
         self.player_roles = {5: ['soldier','soldier','warrior','warrior','coordinate'], 
                              6: ['soldier','soldier','soldier','warrior','warrior','coordinate'],
@@ -2500,7 +2500,7 @@ Voting: 1 min -> 30 secs\nExpedition selection: 5 min -> 2 min\nKidnap: 10 min -
                             'ranked': 'Toggles ranked mode on, with SR and badges being awarded as usual.',
                             'players':'If game hasn\'t started yet: Brings up the current list of players in the lobby.\n\
 If game has started: Brings up the current list of players, arranged in order of their position in the queue to be Commander.',
-                            'next':'Starts the next expedition. Used by the host after the previous expedition has ended.',
+                            'next':'Starts the next expedition after the previous expedition has ended.',
                             'pick':'The command used by the current Commander to select the expedition team (E.g. ~pick @armin)',
                             'kidnap': 'Usable if the Soldiers reach the basement, any Warrior can use this command to pick who they think is the Coordinate (E.g. ~kidnap @eren)',
                             'status':'Brings up the current game status. This includes the number of players, the number of Warriors and Soldiers, the current progress towards the Basement \

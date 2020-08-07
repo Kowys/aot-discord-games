@@ -429,7 +429,7 @@ class Game():
 
             if message.content.startswith('~next'):
                 # Begin next expedition, commander to pick team
-                if (message.author == self.state.game_host or message.author.id == 238808836075421697):
+                if (message.author in list(map(lambda x:x[0], self.state.players)) or message.author.id == 238808836075421697):
                     if message.content.startswith('~redo'):
                         if (self.state.status == 'assigning roles' or self.state.status == 'expedition over'
                             or self.state.status == 'expedition selection' or self.state.status == 'expedition decision'
@@ -512,9 +512,8 @@ class Game():
                                 self.state.players[0][0].name + \
                                 '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
                             await message.channel.send(commander_msg2)
-
-                elif message.author != self.state.game_host:
-                    await message.channel.send('Only the host, **' + self.state.game_host.name + '**, can start the expedition!')
+                else:
+                    await message.channel.send('You may only start the next expedition if you are in the game!')
 
             if message.content.startswith('~check'):
                 if self.state.status == 'ymir\'s blessing':
@@ -536,7 +535,7 @@ class Game():
                                         self.state.blessed.append(message.author)
                                         self.state.currently_blessed = player_obj
 
-                                        next_expedition_msg = 'When everyone is ready, the host may type **~next** to begin the next expedition.'
+                                        next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
                                         await asyncio.sleep(2)
                                         await message.channel.send(next_expedition_msg)
 
@@ -634,7 +633,7 @@ class Game():
 
                             else:
                                 self.state.status = 'expedition over'
-                                next_expedition_msg = 'When everyone is ready, the host may type **~next** to begin the next expedition.'
+                                next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
                                 await asyncio.sleep(2)
                                 await message.channel.send(next_expedition_msg)
 
@@ -677,7 +676,7 @@ class Game():
 
                             else:
                                 self.state.status = 'expedition over'
-                                next_expedition_msg = 'When everyone is ready, the host may type **~next** to begin the next expedition.'
+                                next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
                                 await asyncio.sleep(2)
                                 await message.channel.send(next_expedition_msg)
 
@@ -1201,7 +1200,7 @@ of the Coordinate.'
                         self.state.blessed.append(self.state.currently_blessed)
                         self.state.currently_blessed = None
 
-                        next_expedition_msg = 'When everyone is ready, the host may type **~next** to begin the next expedition.'
+                        next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
                         await asyncio.sleep(2)
                         await self.state.game_channel.send(next_expedition_msg)
 
