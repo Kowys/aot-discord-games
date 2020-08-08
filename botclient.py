@@ -2,6 +2,7 @@ import discord
 import asyncio
 import botconfig
 import config_queries
+import db_backup
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -12,18 +13,15 @@ class MyClient(discord.Client):
         # Create all databases and tables if they don't exist (5 dbs in total, backup every week)
         config_queries.initialize_dbs()
 
+        # Begin DB backup loop
+        db_backup.DBbackup(self)
+
         # Initialize game states for all channels in the config record
         instance_data = config_queries.get_instances()
         botconfig.instances = []
         for row in instance_data:
             new_instance = botconfig.Instance(row[0], row[1], row[2], self)
             botconfig.instances.append(new_instance)
-
-    # async def on_message_delete(message):
-    #     if message.author.id != client.user.id:
-    #         deleted_msg = discord.Embed(title = 'Deleted message from ' + message.author.name, description = message.content, colour=0xE5D2BB)
-    #         deleted_logs_channel = client.get_channel('519087476195983361')
-    #         await deleted_logs_channel.send(embed = deleted_msg)
 
     async def on_message(self, message): # Only one of these allowed
         # Get cur_game, which is the game object consisting of commands and all other relevant states of the game
