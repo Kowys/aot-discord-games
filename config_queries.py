@@ -10,7 +10,7 @@ def initialize_dbs():
             ('achievements', ['player integer', 'one_clue integer', 'challenges_played integer', 'last_play text', 'current_streak integer', 'max_streak integer', 'perfect_hangman integer',
             'one_clue_gm integer', 'challenges_gm integer', 'streak_gm integer', 'hangman_gm integer']),
             ('dailies', ['player integer', 'last_play text', 'standard integer', 'hangman integer', 'challenge integer', 'image integer']),
-            ('global', ['questions_asked integer', 'questions_correct integer', 'challenges_completed integer', 'challenge_questions integer', 'challenge_questions_correct integer',
+            ('overall', ['questions_asked integer', 'questions_correct integer', 'challenges_completed integer', 'challenge_questions integer', 'challenge_questions_correct integer',
             'hangman_games_played integer', 'hangman_games_won integer', 'images_generated integer', 'images_correct integer'])
         ],
         'ChooseYourAdventure/cya_db.db': [
@@ -58,7 +58,104 @@ def initialize_dbs():
         conn.commit()
         conn.close()
 
+    init_aow_global()
+    init_cya_global()
+    init_jaegermore_global()
+    init_wvs_global()
+
     print('All databases initialized.')
+
+def init_aow_global():
+    conn = sqlite3.connect('AttackonWikia/aow_db.db')
+    cursor = conn.cursor()
+
+    select_aow_global_query = 'SELECT * FROM overall'
+    cursor.execute(select_aow_global_query)
+    global_stats = cursor.fetchall()
+
+    if len(global_stats) == 0:
+        insert_aow_global_query = 'INSERT INTO overall VALUES ({})'.format(','.join('?' * 9))
+        insert_aow_global_data = [0] * 9
+        cursor.execute(insert_aow_global_query, insert_aow_global_data)
+
+        conn.commit()
+        conn.close()
+
+def init_cya_global():
+    conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
+    cursor = conn.cursor()
+
+    select_cya_global_query = 'SELECT * FROM global'
+    cursor.execute(select_cya_global_query)
+    global_stats = cursor.fetchall()
+
+    if len(global_stats) == 0:
+        insert_cya_global_query = 'INSERT INTO global VALUES ({})'.format(','.join('?' * 2))
+        insert_cya_global_data = [
+            ['Total', 0], 
+            ['Joining the Garrison', 0], 
+            ['An Ordinary Moment of Happiness', 0],
+            ['Jean Kirstein of the Survey Corps', 0],
+            ['A Narrow Victory', 0],
+            ['Armin Arlert\'s Dream', 0],
+            ['Captain Levi\'s Recruit', 0],
+            ['Mikasa\'s True Face', 0],
+            ['Nameless Hero', 0],
+            ['Eren Yeager\'s Hand', 0],
+            ['Sasha Blouse\'s Promise', 0],
+            ['The Girl Who Hid Her True Self', 0],
+            ['No Regrets', 0],
+            ['Jean of the Military Police', 0],
+            ['Trial of Eren and Mikasa', 0],
+            ['A Soldier\'s Duty', 0],
+            ['Failure of the Reclamation Plan', 0],
+            ['A Regular Soldier', 0],
+            ['104th Annihilated at HQ', 0],
+            ['The Fall of Wall Rose', 0],
+            ['Failure to Reclaim Trost District', 0],
+            ['A Moment\'s Peace', 0],
+            ['Eren Flees', 0],
+            ['The Death of a Merchant', 0],
+            ['Junior High', 0]
+        ]
+        for row in insert_cya_global_data:
+            cursor.execute(insert_cya_global_query, row)
+
+        conn.commit()
+        conn.close()
+
+def init_jaegermore_global():
+    conn = sqlite3.connect('Jaegermore/jaegermore_db.db')
+    cursor = conn.cursor()
+
+    select_jaegermore_global_query = 'SELECT * FROM global'
+    cursor.execute(select_jaegermore_global_query)
+    global_stats = cursor.fetchall()
+
+    if len(global_stats) == 0:
+        insert_jaegermore_global_query = 'INSERT INTO global VALUES ({})'.format(','.join('?' * 10))
+        insert_jaegermore_global_data = [0] * 10
+        cursor.execute(insert_jaegermore_global_query, insert_jaegermore_global_data)
+
+        conn.commit()
+        conn.close()
+
+def init_wvs_global():
+    conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+    cursor = conn.cursor()
+
+    select_wvs_global_query = 'SELECT * FROM global'
+    cursor.execute(select_wvs_global_query)
+    global_stats = cursor.fetchall()
+
+    if len(global_stats) == 0:
+        insert_wvs_global_query = 'INSERT INTO global VALUES ({})'.format(','.join('?' * 4))
+        insert_wvs_global_data = [[5,0,0,0],[6,0,0,0],[7,0,0,0],[8,0,0,0],[9,0,0,0],[10,0,0,0]]
+        for row in insert_wvs_global_data:
+            cursor.execute(insert_wvs_global_query, row)
+
+        conn.commit()
+        conn.close()
 
 def get_instances():
     conn = sqlite3.connect('config_db.db')
