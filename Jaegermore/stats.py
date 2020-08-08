@@ -2,7 +2,6 @@ import random
 import discord
 import sqlite3
 from Jaegermore import questions
-from openpyxl import load_workbook
 
 class Scores():
     def __init__(self):
