@@ -3,7 +3,6 @@ import math
 import sqlite3
 from ChooseYourAdventure import book
 from ChooseYourAdventure import book2
-from openpyxl import load_workbook
 
 
 class Affinities():
