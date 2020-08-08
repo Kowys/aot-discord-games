@@ -35,7 +35,7 @@ class DBbackup:
                                 sqliteCon.backup(backupCon)
                             print('Backup created successfully at {}'.format(db_path_with_date))
                         except Exception as error:
-                            print('Error while making backup: ', error)
+                            print('Error while making backup:', error)
                         finally:
                             if backupCon:
                                 backupCon.close()
