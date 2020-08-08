@@ -2580,7 +2580,7 @@ and an uninformed majority (the Soldiers).\n\n\
 :three: Messaging another player in private (DM) is not allowed while in a game.\n\n\
 :four: Revealing your role via screenshot is also not allowed.\n\n\
 :five: To invite people to join, you can ping `@Warriors vs. Soldiers` (do not abuse pings, and do not ping other roles or random people).\n\n\
-:six: Be civil and respectful to others when playing, keeping in mind these rules and the server <#458311147234263051>. Failure to do so may result in you getting blacklisted.\n\n\
+:six: Be civil and respectful to others when playing, keeping in mind these rules and the server rules.\n\n\
 Click on ▶ below for more information about the game.'
             return tutorial1
 
