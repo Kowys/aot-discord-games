@@ -14,7 +14,8 @@ As a participant in this game, your abilities of logical deduction, deception, a
 Will the Soldiers reach the Basement and find out the truth about the world? \
 Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 ❗Type **`~host`** to begin a new game.\n\n\
-❗You may type **`~help`** at any time to see the list of commands.'
+❗Type **`~rules`** to view the game rules.\n\n\
+❗Type **`~help`** to see the full list of commands.'
 
         self.reset_msg = discord.Embed(title = 'Game Reset!', description = 'Type **`~host`** to create a new lobby.\nType **`~intro`** for more information about the game.', colour=0x0013B4)
 
@@ -2505,7 +2506,7 @@ If game has started: Brings up the current list of players, arranged in order of
                             'kidnap': 'Usable if the Soldiers reach the basement, any Warrior can use this command to pick who they think is the Coordinate (E.g. ~kidnap @eren)',
                             'status':'Brings up the current game status. This includes the number of players, the number of Warriors and Soldiers, the current progress towards the Basement \
 and status of the Walls, the results of previous expeditions and information on the current expedition.',
-                            'tutorial':'Provides a rundown of how to play the game, with detailed information about each role.',
+                            'rules':'A breakdown of the game rules and information about each available role, as well as some common tips and strategies.',
                             'profile':'Calls up the profile of a given person (E.g. ~profile @levi).',
                             'badges':'Checks the badges a given user has. Use just ~badges to check your own badges.',
                             'gamestats':'Brings up the past records of all games played.',
@@ -2550,7 +2551,7 @@ and status of the Walls, the results of previous expeditions and information on 
 ~casual\n\
 ~ranked\n\
 ~players\n\
-~tutorial\n\
+~rules\n\
 ~profile <@person>\n\
 ~badges <@person>\n\
 ~gamestats\n\

@@ -810,7 +810,7 @@ class Game():
                 commands = self.state.get_commands()
                 await message.channel.send(embed=commands)
 
-            if message.content.startswith('~tutorial'):
+            if message.content.startswith('~tutorial') or message.content.startswith('~rules'):
                 # For a detailed explanation of the game
                 cur_tutorial = 1
                 tutorial = await message.channel.send(self.state.tutorial(1))
