@@ -300,11 +300,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_question_query = 'SELECT questions_asked FROM overall'
+        get_question_query = 'SELECT questions_asked FROM global'
         cursor.execute(get_question_query)
         question_info = cursor.fetchone()
 
-        update_question_query = 'UPDATE overall SET questions_asked = ?'
+        update_question_query = 'UPDATE global SET questions_asked = ?'
         cursor.execute(update_question_query, (question_info[0] + 1,))
         
         conn.commit()
@@ -314,11 +314,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_question_query = 'SELECT questions_correct FROM overall'
+        get_question_query = 'SELECT questions_correct FROM global'
         cursor.execute(get_question_query)
         question_info = cursor.fetchone()
 
-        update_question_query = 'UPDATE overall SET questions_correct = ?'
+        update_question_query = 'UPDATE global SET questions_correct = ?'
         cursor.execute(update_question_query, (question_info[0] + 1,))
         
         conn.commit()
@@ -328,11 +328,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_hangman_query = 'SELECT hangman_games_played FROM overall'
+        get_hangman_query = 'SELECT hangman_games_played FROM global'
         cursor.execute(get_hangman_query)
         hangman_info = cursor.fetchone()
 
-        update_hangman_query = 'UPDATE overall SET hangman_games_played = ?'
+        update_hangman_query = 'UPDATE global SET hangman_games_played = ?'
         cursor.execute(update_hangman_query, (hangman_info[0] + 1,))
         
         conn.commit()
@@ -342,11 +342,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_hangman_query = 'SELECT hangman_games_won FROM overall'
+        get_hangman_query = 'SELECT hangman_games_won FROM global'
         cursor.execute(get_hangman_query)
         hangman_info = cursor.fetchone()
 
-        update_hangman_query = 'UPDATE overall SET hangman_games_won = ?'
+        update_hangman_query = 'UPDATE global SET hangman_games_won = ?'
         cursor.execute(update_hangman_query, (hangman_info[0] + 1,))
         
         conn.commit()
@@ -356,11 +356,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_image_query = 'SELECT images_generated FROM overall'
+        get_image_query = 'SELECT images_generated FROM global'
         cursor.execute(get_image_query)
         image_info = cursor.fetchone()
 
-        update_image_query = 'UPDATE overall SET images_generated = ?'
+        update_image_query = 'UPDATE global SET images_generated = ?'
         cursor.execute(update_image_query, (image_info[0] + 1,))
         
         conn.commit()
@@ -370,11 +370,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_image_query = 'SELECT images_correct FROM overall'
+        get_image_query = 'SELECT images_correct FROM global'
         cursor.execute(get_image_query)
         image_info = cursor.fetchone()
 
-        update_image_query = 'UPDATE overall SET images_correct = ?'
+        update_image_query = 'UPDATE global SET images_correct = ?'
         cursor.execute(update_image_query, (image_info[0] + 1,))
         
         conn.commit()
@@ -384,11 +384,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_challenge_query = 'SELECT questions_asked, challenge_questions, hangman_games_played FROM overall'
+        get_challenge_query = 'SELECT questions_asked, challenge_questions, hangman_games_played FROM global'
         cursor.execute(get_challenge_query)
         challenge_info = cursor.fetchone()
 
-        update_challenge_query = 'UPDATE overall SET questions_asked = ?, challenge_questions = ?, hangman_games_played = ?'
+        update_challenge_query = 'UPDATE global SET questions_asked = ?, challenge_questions = ?, hangman_games_played = ?'
         if self.hangman_challenge == False:
             update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2]]
         else:
@@ -403,11 +403,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_challenge_query = 'SELECT questions_correct, challenge_questions_correct, hangman_games_won FROM overall'
+        get_challenge_query = 'SELECT questions_correct, challenge_questions_correct, hangman_games_won FROM global'
         cursor.execute(get_challenge_query)
         challenge_info = cursor.fetchone()
 
-        update_challenge_query = 'UPDATE overall SET questions_correct = ?, challenge_questions_correct = ?, hangman_games_won = ?'
+        update_challenge_query = 'UPDATE global SET questions_correct = ?, challenge_questions_correct = ?, hangman_games_won = ?'
         if self.hangman_challenge == False:
             update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2]]
         else:
@@ -422,11 +422,11 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_challenge_query = 'SELECT challenges_completed FROM overall'
+        get_challenge_query = 'SELECT challenges_completed FROM global'
         cursor.execute(get_challenge_query)
         challenge_info = cursor.fetchone()
 
-        update_challenge_query = 'UPDATE overall SET challenges_completed = ?'
+        update_challenge_query = 'UPDATE global SET challenges_completed = ?'
         cursor.execute(update_challenge_query, (challenge_info[0] + 1,))
         
         conn.commit()
@@ -1316,7 +1316,7 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        game_data_query = 'SELECT * FROM overall'
+        game_data_query = 'SELECT * FROM global'
         cursor.execute(game_data_query)
         game_data = cursor.fetchone()
 
