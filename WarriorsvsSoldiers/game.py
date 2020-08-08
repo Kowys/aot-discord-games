@@ -2481,8 +2481,9 @@ However, anyone who has had Ymir\'s blessing previously is granted immunity to b
 The Paths ability allows players to make an announcement anonymously to everyone in the game. When activated, a random person will be designated as the Paths holder at the start of every expedition. \
 They will then be able to send a single message to the game channel without revealing their role or identity.'
         funds_info = '💰**Limited Funds**💰\n\n\
-A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition.\n\n\
-If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.'
+A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition. \
+If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.\n\n\
+Enabling this effect could help reduce the frequency of gridlocks while adding an additional element of strategy for both sides.'
 
         if command_query:
             commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
@@ -2704,7 +2705,11 @@ Ymir\'s blessing will then be passed onto the player who was investigated, who c
 However, anyone who has had Ymir\'s blessing previously is granted immunity to being investigated by future holders of it.\n\n\
 📢**Paths**📢\n\n\
 The Paths ability allows players to make an announcement anonymously to everyone in the game. When activated, a random person will be designated as the Paths holder at the start of every expedition. \
-They will then be able to send a single message to the game channel without revealing their role or identity.'
+They will then be able to send a single message to the game channel without revealing their role or identity.\n\n\
+💰**Limited Funds**💰\n\n\
+A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition. \
+If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.\n\n\
+Enabling this effect could help reduce the frequency of gridlocks while adding an additional element of strategy for both sides.'
             return tutorial10
 
         elif num == 11:
