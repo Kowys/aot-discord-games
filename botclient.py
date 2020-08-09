@@ -17,6 +17,10 @@ class MyClient(discord.Client):
         # Begin DB backup loop
         db_backup.DBbackup(self)
 
+        # Set default status for public bot
+        bot_status = discord.Game(name = '~help | ~config')
+        await self.change_presence(activity = bot_status)
+
         # Initialize game states for all channels in the config record
         instance_data = config_queries.get_instances()
         botconfig.instances = []

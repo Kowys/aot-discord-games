@@ -144,8 +144,6 @@ class Game():
                                         await asyncio.sleep(2)
                                         await self.state.game_channel.send(warriors_win_msg)
 
-                                        await self.client.change_presence(activity=None)
-
                                         end_summary = self.state.get_summary()
                                         await asyncio.sleep(2)
                                         await self.state.game_channel.send(embed=end_summary)
@@ -259,9 +257,6 @@ class Game():
                 await message.channel.send(msg)
                 if 'has started' in msg:
                     lobby = self.state.display_lobby()
-                    game_name = discord.Game(name='Warriors vs Soldiers hosted by ' +
-                                             self.state.game_host.name + '#' + self.state.game_host.discriminator)
-                    await self.client.change_presence(activity=game_name)
                     self.state.message_box.append(await message.channel.send(embed=lobby))
                     # Delete previous lobby messages
                     if len(self.state.message_box) > 1:
@@ -286,8 +281,6 @@ class Game():
                 # Leaves an open lobby
                 msg = self.state.leave(message.author)
                 await message.channel.send(msg)
-                if 'Lobby closed' in msg:
-                    await self.client.change_presence(activity=None)
                 if msg.startswith('**') and len(self.state.players) >= 1:
                     lobby = self.state.display_lobby()
                     self.state.message_box.append(await message.channel.send(embed=lobby))
@@ -405,8 +398,6 @@ class Game():
                 if type(msg) == str:
                     await message.channel.send(msg)
                 else:
-                    await self.client.change_presence(activity=None)
-
                     self.reset_timers()
 
                     await message.channel.send(embed=msg)
@@ -648,7 +639,6 @@ class Game():
 
                         if self.state.walls_destroyed == 3:
                             self.state.status = 'game ended warriors wall'
-                            await self.client.change_presence(activity=None)
                             warriors_win_msg = '⚔All the Walls have been destroyed and humanity has been wiped out. Warriors win!⚔'
                             await message.channel.send(warriors_win_msg)
                             end_summary = self.state.get_summary()
@@ -696,8 +686,6 @@ class Game():
                                     self.state.status = 'game ended soldiers'
                                     soldiers_win = '🛡The Warriors did not manage to identify the Coordinate. Soldiers win!🛡'
                                     await message.channel.send(soldiers_win)
-
-                                await self.client.change_presence(activity=None)
 
                                 end_summary = self.state.get_summary()
                                 await asyncio.sleep(2)
@@ -1017,8 +1005,6 @@ of the Coordinate.'
                                     await asyncio.sleep(2)
                                     await self.state.game_channel.send(warriors_win_msg)
 
-                                    await self.client.change_presence(activity=None)
-
                                     end_summary = self.state.get_summary()
                                     await asyncio.sleep(2)
                                     await self.state.game_channel.send(embed=end_summary)
@@ -1285,8 +1271,6 @@ of the Coordinate.'
                         self.state.status = 'game ended soldiers'
                         times_up_msg = '🛡The Warriors did not manage to kidnap the Coordinate in time. Soldiers win!🛡'
                         await self.state.game_channel.send(times_up_msg)
-
-                        await self.client.change_presence(activity=None)
 
                         end_summary = self.state.get_summary()
                         await asyncio.sleep(2)
