@@ -1,5 +1,0 @@
-BOT_TOKEN = ''
-BOT_TOKEN1 = ''
-BOT_TOKEN2 = ''
-BOT_TOKEN3 = ''
-BOT_TOKEN4 = ''
