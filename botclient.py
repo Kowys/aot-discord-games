@@ -3,6 +3,7 @@ import asyncio
 import botconfig
 import config_queries
 import db_backup
+import admin
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -31,6 +32,10 @@ class MyClient(discord.Client):
             print("Terminating")
             raise SystemExit
 
+        # Admin commands
+        elif message.content.split(' ')[0] in admin.commands_list:
+            await admin.message_handler(self, message)
+
         # Config 
         elif message.content.startswith('~config'):
             if message.author.id == 238808836075421697:
@@ -51,27 +56,6 @@ class MyClient(discord.Client):
                 await message.channel.send(embed = config_game)
             else:
                 await message.channel.send('Only the bot owner can configure me!')
-
-        # Display servers bot is in
-        elif message.content.startswith('~servers') and message.mentions and message.author.id == 238808836075421697:
-            if message.mentions[0] == self.user:
-                servers = self.guilds
-                server_names = '\n'.join(list(map(lambda x: x.name, servers)))
-                server_ids = '\n'.join(list(map(lambda x: str(x.id), servers)))
-                servers_embed = discord.Embed(title = 'Number of servers: ' + str(len(servers)), colour=0xE5D2BB)
-                servers_embed.add_field(name = 'Server names', value = server_names)
-                servers_embed.add_field(name = 'Server IDs', value = server_ids)
-                await message.channel.send(embed = servers_embed)
-
-        elif message.content.startswith('~botleaveserver') and message.author.id == 238808836075421697:
-            server_id = message.content.split(' ')[1]
-            servers = self.guilds
-            if server_id in list(map(lambda x: str(x.id), servers)):
-                server_obj = list(filter(lambda x: str(x.id) == server_id, servers))[0]
-                await server_obj.leave()
-                await message.channel.send('Left server: **' + server_obj.name + '**')
-            else:
-                await message.channel.send('I am not in this server!')
 
         # Deletes a specified number of messages  
         elif message.content.startswith('~clear') and message.author.id == 238808836075421697: 
