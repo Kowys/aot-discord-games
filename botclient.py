@@ -40,7 +40,7 @@ class MyClient(discord.Client):
         elif message.content.split(' ')[0] in admin.commands_list:
             await admin.message_handler(self, message)
 
-        # Config 
+        # Config
         elif message.content.startswith('~config'):
             if message.author.id == 238808836075421697:
                 config_msg = botconfig.get_config_msg(cur_game)
@@ -65,6 +65,9 @@ class MyClient(discord.Client):
         elif message.content.startswith('~clear') and message.author.id == 238808836075421697: 
             number_to_delete = int(message.content.split(' ')[1]) + 1
             await message.channel.purge(limit = number_to_delete)
+
+        elif message.content in ['-help', '-config']:
+            await message.channel.send('My prefix is `~`! E.g. type `~help` to see my list of commands.')
 
         elif cur_game:
             await cur_game.msg_handler(message)
