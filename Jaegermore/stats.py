@@ -237,11 +237,15 @@ class State():
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Jaegermore', colour = 0x5CFFE9)
-        commands_list.add_field(name = '~start', value = 'Starts a new assessment. Use ~start full to take the full assessment.')
-        commands_list.add_field(name = '~intro', value = 'Introduces the game.')
-        commands_list.add_field(name = '~result', value = 'Reveals your personality at the end of the assessment.')
-        commands_list.add_field(name = '~stats', value = 'Provides detailed scores obtained for each character at the end of the assessment.')
-        commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.')
-        commands_list.add_field(name = '~leaderboard/~lb <personality>', value = 'Brings up the leaderboard, showing the top player(s) for each personality.')
-        commands_list.add_field(name = '~gamestats', value = 'Brings up the overall game statistics.')
+        general_commands = '`~credits` : Who made me/Get support'
+        commands_list.add_field(name = 'General', value = general_commands, inline = False)
+
+        jaegermore_commands = '`~start`\n Starts a new assessment. Use `~start full` to take the full assessment.\n' + \
+        '`~intro`\n Introduces the game.\n' + \
+        '`~result`\n Reveals your personality at the end of the assessment.\n' + \
+        '`~stats`\n Provides detailed scores for each character at the end of the assessment.\n' + \
+        '`~profile <@person>`\n Checks the personality scores of a given user.\n' + \
+        '`~leaderboard/~lb <personality>`\n Brings up the leaderboard, showing the top player(s) for each personality.\n' + \
+        '`~gamestats`\n Brings up the overall game statistics.'
+        commands_list.add_field(name = 'Jaegermore', value = jaegermore_commands)
         return commands_list

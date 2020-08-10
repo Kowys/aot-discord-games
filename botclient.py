@@ -69,8 +69,27 @@ class MyClient(discord.Client):
         elif message.content in ['-help', '-config']:
             await message.channel.send('My prefix is `~`! E.g. type `~help` to see my list of commands.')
 
+        elif message.content.startswith('~credits'):
+            credits_msg = 'I was made by Entropi#3441. For any suggestions/bug reports, please go to the support server: [Click here](https://discord.gg/FEN6sUM)'
+            credits_embed =  discord.Embed(title = 'Credits', description = credits_msg, colour=0xE5D2BB)
+            await message.channel.send(embed=credits_embed)
+
+        elif message.content.startswith('~invite'):
+            invite_msg = '[Click here](https://discord.com/oauth2/authorize?client_id=422033689250234368&scope=bot&permissions=12659727) to invite me to your server!'
+            invite_embed =  discord.Embed(title = 'Invite link', description = invite_msg, colour=0xE5D2BB)
+            invite_embed.set_thumbnail(url=str(self.user.avatar_url))
+            await message.channel.send(embed=invite_embed)
+
         elif cur_game:
             await cur_game.msg_handler(message)
+        
+        elif message.content.startswith('~help'):
+            commands = discord.Embed(title = 'List of commands', description = 'Here is the list of available commands.', colour=0xE5D2BB)
+            general_commands = '`~config` : Lets you select the game for each channel\n' + \
+                '`~credits` : Who made me/Get support\n' + \
+                '`~invite` : Link to invite me'
+            commands.add_field(name = 'General', value = general_commands)
+            await message.channel.send(embed=commands)
 
         elif message.content.startswith('~') and not '~~' in message.content:
             msg = 'No game is currently enabled in this channel! Type `~config` to select a game.'

@@ -1447,16 +1447,20 @@ class State():
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Attack on Wikia', colour = 0xC0C0C0)
-        commands_list.add_field(name = '~new', value = 'Starts a new puzzle in normal mode.', inline = False)
-        commands_list.add_field(name = '~clue', value = 'Use during an active puzzle in normal mode to obtain more information about the wiki page. Maximum of 5 clues per puzzle.', inline = False)
-        commands_list.add_field(name = '~hangman <@person>', value = 'Starts a new Hangman game. Type ~hangman <@person> to challenge someone to a Hangman game.', inline = False)
-        commands_list.add_field(name = '~image', value = 'Starts image mode.', inline = False)
-        commands_list.add_field(name = '~answer', value = 'Reveals the answer of an active puzzle.', inline = False)
-        commands_list.add_field(name = '~challenge <@person>', value = 'Sends a challenge to another person, or accepts an incoming challenge.', inline = False)
-        commands_list.add_field(name = '~reset', value = 'Resets the game.', inline = False)
-        commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.', inline = False)
-        commands_list.add_field(name = '~badges <@person>', value = 'Checks the badges a given user has. Use just ~badges to check your own badges.', inline = False)
-        commands_list.add_field(name = '~dailies', value = 'Checks the progress of your daily rewards.', inline = False)
-        commands_list.add_field(name = '~gamestats', value = 'Shows the overall game statistics.', inline = False)
-        commands_list.add_field(name = '~leaderboard/~lb <page> <@person>', value = 'Shows the leaderboard, listing the top 10 players on the server. Add a number behind to see subsequent pages (e.g. ~lb 2).', inline = False)
+        general_commands = '`~credits` : Who made me/Get support'
+        commands_list.add_field(name = 'General', value = general_commands, inline = False)
+
+        aow_commands = '`~new`\n Starts a new puzzle.\n' + \
+        '`~clue`\n Gives another hint for the current puzzle. There is a maximum of 5 clues per puzzle.\n' + \
+        '`~hangman <@person>`\n Starts a new Hangman game. Type `~hangman <@person>` to challenge someone to a Hangman game.\n' + \
+        '`~image`\n Starts image mode.\n' + \
+        '`~answer`\n Reveals the answer of an active puzzle.\n' + \
+        '`~challenge <@person>`\n Sends a challenge to another person, or accepts an incoming challenge.\n' + \
+        '`~reset`\n Resets the game.\n' + \
+        '`~profile <@person>`\n Checks the profile of a given user.\n' + \
+        '`~badges <@person>`\n Checks the badges of a given user.\n' + \
+        '`~dailies`\n Checks the progress of your daily rewards.\n' + \
+        '`~gamestats`\n Shows the overall game statistics.\n' + \
+        '`~leaderboard/~lb <page> <@person>`\n Shows the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).'
+        commands_list.add_field(name = 'Attack on Wikia', value = aow_commands)
         return commands_list

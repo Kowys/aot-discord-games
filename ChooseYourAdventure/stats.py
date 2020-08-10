@@ -512,11 +512,15 @@ class State():
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Choose Your Adventure', colour=0xE5D2BB)
-        commands_list.add_field(name = '~start', value = 'Starts a new game.', inline = False)
-        commands_list.add_field(name = '~intro', value = 'Gives a short introduction to the game.', inline = False)
-        commands_list.add_field(name = '~reset', value = 'Resets the game.', inline = False)
-        commands_list.add_field(name = '~stats', value = 'Brings up the Battle Report Card during a game.', inline = False)
-        commands_list.add_field(name = '~profile <@person>', value = 'Checks the profile of a given user. Use just ~profile to check your own profile.', inline = False)
-        commands_list.add_field(name = '~leaderboard/~lb', value = 'Shows the leaderboard, listing the top 10 players on the server. Add a number behind to see subsequent pages (e.g. ~lb 2).', inline = False)
-        commands_list.add_field(name = '~gamestats', value = 'Brings up the overall game statistics.', inline = False)
+        general_commands = '`~credits` : Who made me/Get support'
+        commands_list.add_field(name = 'General', value = general_commands, inline = False)
+
+        cya_commands = '`~start`\n Starts a new game.\n' + \
+        '`~intro`\n Gives a short introduction to the game.\n' + \
+        '`~reset`\n Resets the game.\n' + \
+        '`~stats`\n Brings up the Battle Report Card during a game.\n' + \
+        '`~profile <@person>`\n Checks the profile of a given user.\n' + \
+        '`~leaderboard/~lb`\n Shows the leaderboard, listing the top 10 players on the server. Add a number to see subsequent pages (e.g. `~lb 2`).\n' + \
+        '`~gamestats`\n Brings up the overall game statistics.'
+        commands_list.add_field(name = 'Choose Your Adventure', value = cya_commands)
         return commands_list
