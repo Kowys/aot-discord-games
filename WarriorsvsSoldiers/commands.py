@@ -387,6 +387,7 @@ class Game():
                         if not player[0].dm_channel:
                             await player[0].create_dm()
                         role_msg = self.state.get_role_msg(player)
+                        await asyncio.sleep(0.1)
                         await player[0].dm_channel.send(embed=role_msg)
                     await asyncio.sleep(1)
                     await message.channel.send(self.state.roles_assigned_msg)
