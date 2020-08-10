@@ -52,10 +52,10 @@ def get_cur_game(message):
 def get_config_msg(cur_game):
     config_msg = 'Which game would you like to enable for this channel?'
     config_msg += '\n(Current game: ' + (cur_game.game_name if cur_game else 'None') + ')'
-    config_msg += '\n\n:one: Choose Your Adventure\n\n\
-:two: Jaegermore\n\n\
+    config_msg += '\n\n:one: Choose Your Adventure (Locked)\n\n\
+:two: Jaegermore (Locked)\n\n\
 :three: Warriors vs Soldiers\n\n\
-:four: Attack on Wikia\n\n\
+:four: Attack on Wikia (Locked)\n\n\
 :zero: None'
     return config_msg
 
@@ -65,12 +65,22 @@ def config_bot(config_msg, client):
         return discord.Embed(description = 'Config has timed out after 60 seconds. Type `~config` to start again.', colour=0xE5D2BB)
     else:
         options = {
-            '1️⃣':'Choose Your Adventure', 
-            '2️⃣':'Jaegermore', 
-            '3️⃣':'Warriors vs Soldiers', 
+            '1️⃣':'Choose Your Adventure',
+            '2️⃣':'Jaegermore',
+            '3️⃣':'Warriors vs Soldiers',
             '4️⃣':'Attack on Wikia',
             '0️⃣':'None'
         }
+        locked_options = {
+            '1️⃣':'Choose Your Adventure',
+            '2️⃣':'Jaegermore',
+            '4️⃣':'Attack on Wikia'
+        }
+        if config_msg.content in locked_options and config_msg.author.id != 238808836075421697:
+            locked_msg = 'If you\'d like to play this game, please join the [Attack on Titan Wiki server](https://discord.gg/attackontitan).'
+            locked_embed = discord.Embed(title = 'Game currently unavailable to the public', description = locked_msg, colour=0xE5D2BB)
+            return locked_embed
+
         chosen_game = options[config_msg.content]
 
         # Update DB

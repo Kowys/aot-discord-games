@@ -42,13 +42,13 @@ class MyClient(discord.Client):
 
         # Config
         elif message.content.startswith('~config'):
-            if message.author.id == 238808836075421697:
+            if message.author.id == 238808836075421697 or message.author.guild_permissions.manage_guild:
                 config_msg = botconfig.get_config_msg(cur_game)
                 config_embed = discord.Embed(title = config_msg, colour=0xE5D2BB)
                 await message.channel.send(embed = config_embed)
 
                 def options(my_msg):
-                    return (message.author.id == message.guild.owner.id or message.author.id == 238808836075421697) \
+                    return (my_msg.author.guild_permissions.manage_guild or my_msg.author.id == 238808836075421697) \
                     and my_msg.content in ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '0️⃣']
                     
                 try:
@@ -59,7 +59,7 @@ class MyClient(discord.Client):
                 config_game = botconfig.config_bot(config_response, self)
                 await message.channel.send(embed = config_game)
             else:
-                await message.channel.send('Only the bot owner can configure me!')
+                await message.channel.send('You require the **Manage Server** permission to configure me!')
 
         # Deletes a specified number of messages  
         elif message.content.startswith('~clear') and message.author.id == 238808836075421697: 
