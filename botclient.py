@@ -94,3 +94,13 @@ class MyClient(discord.Client):
         elif message.content.startswith('~') and not '~~' in message.content:
             msg = 'No game is currently enabled in this channel! Type `~config` to select a game.'
             await message.channel.send(embed=discord.Embed(description=msg, colour=0xE5D2BB))
+
+    async def on_guild_join(self, server):
+        logs_channel = self.get_channel(742621514003644507)
+        server_info = 'Server ID: ' + str(server.id) + '\n' + '# Members: ' + str(len(server.members))
+        await logs_channel.send(embed=discord.Embed(title='Joined server: ' + server.name, description = server_info, colour=0xE5D2BB))
+
+    async def on_guild_remove(self, server):
+        logs_channel = self.get_channel(742621514003644507)
+        server_info = 'Server ID: ' + str(server.id) + '\n' + '# Members: ' + str(len(server.members))
+        await logs_channel.send(embed=discord.Embed(title='Left server: ' + server.name, description = server_info, colour=0xE5D2BB))
