@@ -1345,7 +1345,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         get_server_data_query = 'SELECT * FROM servers WHERE server = ?'
         cursor.execute(get_server_data_query, (self.server.id,))
-        server_data = list(cursor.fetchone())
+        server_data = cursor.fetchone()
 
         role_index_map = {'soldier':[19,20], 'warrior':[21,22], 'coordinate':[23,24], 'queen':[25,26], 'warchief':[27,28], 'ymir':[29,30], 'false king':[31,32],
         'ackerman':[33,34], 'mike':[35,36], 'scout':[37,38], 'spy':[39,40]}
@@ -1364,6 +1364,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         }
 
         if server_data:
+            server_data = list(server_data)
             num_players_index = len(self.players) - 5
             soldiers_wins, warriors_walls, warriors_kidnap = server_data[3 * num_players_index + 1], server_data[3 * num_players_index + 2], server_data[3 * num_players_index + 3]
             if self.status == 'game ended soldiers':
