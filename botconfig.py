@@ -69,12 +69,20 @@ def config_bot(config_msg, client):
             '2️⃣':'Jaegermore',
             '3️⃣':'Warriors vs Soldiers',
             '4️⃣':'Attack on Wikia',
-            '0️⃣':'None'
+            '0️⃣':'None',
+            '1':'Choose Your Adventure',
+            '2':'Jaegermore',
+            '3':'Warriors vs Soldiers',
+            '4':'Attack on Wikia',
+            '0':'None'
         }
         locked_options = {
             '1️⃣':'Choose Your Adventure',
             '2️⃣':'Jaegermore',
-            '4️⃣':'Attack on Wikia'
+            '4️⃣':'Attack on Wikia',
+            '1':'Choose Your Adventure',
+            '2':'Jaegermore',
+            '4':'Attack on Wikia'
         }
         if config_msg.content in locked_options and config_msg.author.id != 238808836075421697:
             locked_msg = 'If you\'d like to play this game, please join the [Attack on Titan Wiki server](https://discord.gg/attackontitan).'

@@ -49,7 +49,7 @@ class MyClient(discord.Client):
 
                 def options(my_msg):
                     return (my_msg.author.guild_permissions.manage_guild or my_msg.author.id == 238808836075421697) \
-                    and my_msg.content in ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '0️⃣']
+                    and my_msg.content in ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '0️⃣', '1', '2', '3', '4', '0']
                     
                 try:
                     config_response = await self.wait_for('message', check = options, timeout = 60)
