@@ -776,7 +776,6 @@ class Game():
                     if rxn.emoji != stats_emojis[cur_stat_page]:
                         cur_stat_page = stats_emojis_rev[rxn.emoji]
                         await game_stats_msg.edit(embed=self.state.get_game_stats(cur_stat_page, message.guild))
-                        await game_stats_msg.clear_reactions()
                         for emoji in stats_emojis_rev:
                             await game_stats_msg.add_reaction(emoji)
                             

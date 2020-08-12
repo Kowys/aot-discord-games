@@ -2528,6 +2528,7 @@ and status of the Walls, the results of previous expeditions and information on 
                         'warchief': warchief_info,
                         'ymir': ymir_info,
                         'spy': spy_info,
+                        'ymir\'s blessing': blessing_info,
                         'blessing': blessing_info,
                         'paths': paths_info,
                         'limited funds': funds_info,
