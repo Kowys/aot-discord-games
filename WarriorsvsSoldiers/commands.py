@@ -768,16 +768,15 @@ class Game():
                     await game_stats_msg.add_reaction(emoji)
 
                 def reaction_check(reaction, user):
-                    return user != self.client.user and (reaction.emoji in stats_emojis_rev)
+                    return user != self.client.user and (reaction.emoji in stats_emojis_rev) and (reaction.message.id == game_stats_msg.id)
 
                 while True:
-                    rxn, _ = await self.client.wait_for('reaction_add', check = reaction_check)
+                    rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
 
                     if rxn.emoji != stats_emojis[cur_stat_page]:
                         cur_stat_page = stats_emojis_rev[rxn.emoji]
                         await game_stats_msg.edit(embed=self.state.get_game_stats(cur_stat_page, message.guild))
-                        for emoji in stats_emojis_rev:
-                            await game_stats_msg.add_reaction(emoji)
+                        await rxn.remove(user)
                             
                     await asyncio.sleep(0.1)
 
@@ -806,31 +805,34 @@ class Game():
                 await asyncio.sleep(0.5)
 
                 def reaction_check(reaction, user):
-                    return user != self.client.user and (reaction.emoji == '▶' or reaction.emoji == '◀')
+                    return user != self.client.user and (reaction.emoji == '▶' or reaction.emoji == '◀') and (reaction.message.id == tutorial.id)
 
                 while True:
-                    rxn, _ = await self.client.wait_for('reaction_add', check = reaction_check)
+                    rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
+
                     if rxn.emoji == '▶':
                         if cur_tutorial < 11:
                             cur_tutorial += 1
                             await tutorial.edit(content=self.state.tutorial(cur_tutorial))
-                            await tutorial.clear_reactions()
-                            if cur_tutorial > 1:
+                            await rxn.remove(user)
+                            if cur_tutorial == 2:
+                                await rxn.remove(self.client.user)
                                 await tutorial.add_reaction('◀')
-                            if cur_tutorial < 11:
                                 await tutorial.add_reaction('▶')
-                            await asyncio.sleep(0.5)
+                            if cur_tutorial == 11:
+                                await rxn.remove(self.client.user)
+                            await asyncio.sleep(0.1)
 
                     elif rxn.emoji == '◀':
                         if cur_tutorial > 1:
                             cur_tutorial -= 1
                             await tutorial.edit(content=self.state.tutorial(cur_tutorial))
-                            await tutorial.clear_reactions()
-                            if cur_tutorial > 1:
-                                await tutorial.add_reaction('◀')
-                            if cur_tutorial < 11:
+                            await rxn.remove(user)
+                            if cur_tutorial == 10:
                                 await tutorial.add_reaction('▶')
-                            await asyncio.sleep(0.5)
+                            if cur_tutorial == 1:
+                                await rxn.remove(self.client.user)
+                            await asyncio.sleep(0.1)
 
             # if message.content.startswith('~allowhost') and message.author.id == '238808836075421697':
             #     if message.mentions:
