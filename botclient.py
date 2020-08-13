@@ -38,7 +38,7 @@ class MyClient(discord.Client):
 
         # Admin commands
         elif message.content.split(' ')[0] in admin.commands_list:
-            await admin.message_handler(self, message)
+            await admin.message_handler(self, message, botconfig.instances)
 
         # Config
         elif message.content.startswith('~config'):
