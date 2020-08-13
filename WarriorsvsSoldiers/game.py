@@ -1045,6 +1045,8 @@ Your fellow Warriors are:\n'
             if num_titans >= 1:
                 approval_msg += '\n❗You smell **%s** Titan%s in this expedition!❗\n' % (
                     str(num_titans), 's' if num_titans >= 2 else '')
+            else:
+                approval_msg += '\n✅ You do not smell any Titans in this expedition! ✅\n'
 
         approval_msg += '\nDo you approve of this expedition team proposal?\n' + \
             '✅ Type `y` to approve the proposal.\n' + \
