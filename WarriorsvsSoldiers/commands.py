@@ -750,14 +750,33 @@ class Game():
             if message.content.startswith('~leaderboard') or message.content.startswith('~lb'):
                 messagebox = message.content.split(' ')
                 if len(messagebox) == 1:
-                    leaderboard = self.state.get_leaderboard(message.guild)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild)
                 elif message.mentions:
                     player_profile = message.mentions[0]
-                    leaderboard = self.state.get_leaderboard(message.guild, player=player_profile)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, player=player_profile)
                 else:
                     page_no = messagebox[1]
-                    leaderboard = self.state.get_leaderboard(message.guild, page=page_no)
-                await message.channel.send(embed=leaderboard)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=page_no)
+                leaderboard_msg = await message.channel.send(embed=leaderboard)
+
+                def reaction_check(reaction, user):
+                    return user != self.client.user and (reaction.emoji == '▶' or reaction.emoji == '◀') and (reaction.message.id == leaderboard_msg.id)
+
+                await leaderboard_msg.add_reaction('◀')
+                await leaderboard_msg.add_reaction('▶')
+
+                while True:
+                    rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
+
+                    if rxn.emoji == '▶':
+                        cur_page += 1
+                    elif rxn.emoji == '◀':
+                        cur_page -= 1
+
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page)
+                    await leaderboard_msg.edit(embed=leaderboard)
+                    await rxn.remove(user)
+                    await asyncio.sleep(0.1)
 
             if message.content.startswith('~stats') or message.content.startswith('~gamestats'):
                 cur_stat_page = 1
@@ -833,44 +852,6 @@ class Game():
                             if cur_tutorial == 1:
                                 await rxn.remove(self.client.user)
                             await asyncio.sleep(0.1)
-
-            # if message.content.startswith('~allowhost') and message.author.id == '238808836075421697':
-            #     if message.mentions:
-            #         player = message.mentions[0]
-            #     host_role = [role for role in self.state.guild.roles if role.name == '🎙 WvS Hosts'][0]
-            #     await self.client.add_roles(player, host_role)
-            #     await message.channel.send(player.mention + ' can now host games!')
-
-            # if message.content.startswith('~rmhost') and message.author.id == '238808836075421697':
-            #     if message.mentions:
-            #         player = message.mentions[0]
-            #     host_role = [role for role in self.state.guild.roles if role.name == '🎙 WvS Hosts'][0]
-            #     await self.client.remove_roles(player, host_role)
-            #     await message.channel.send(player.mention + ' can no longer host games!')
-
-            # def check_perms(mod, server):
-            #     if mod.id == 238808836075421697:
-            #         return True
-            #     return False
-
-            # if message.content.startswith('~ban'):
-            #     if check_perms(message.author, message.guild):
-            #         if message.mentions:
-            #             player = message.mentions[0]
-            #             ban_msg = self.state.ban(player)
-            #             await message.channel.send(ban_msg)
-            #         else:
-            #             await message.channel.send('Please specify a player to blacklist from the game!')
-            #     else:
-            #         await message.channel.send('You do not have the permissions to do that!')
-
-            # if message.content.startswith('~unban'):
-            #     if message.mentions:
-            #         player = message.mentions[0]
-            #         unban_msg = self.state.unban(player)
-            #         await message.channel.send(unban_msg)
-            #     else:
-            #         await message.channel.send('Please specify a player to unban!')
 
             # Testing command
             if message.content.startswith('~test') and message.author.id == 238808836075421697:

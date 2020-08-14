@@ -2372,14 +2372,20 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         # Sort by SR from biggest to smallest
         server_players.sort(key = lambda x: x[1], reverse = True)
 
+        # Get total number of pages
+        num_pages = math.ceil(len(server_players) / 10)
+
         # Top 10x players
         try: 
             page_no = int(page)
         except:
             page_no = 1
 
-        if page_no < 1:
+        # Wrap-around for leaderboard page flipping
+        if page_no > num_pages:
             page_no = 1
+        if page_no < 1:
+            page_no = num_pages
 
         # Get page_no of player rank
         if player:
@@ -2389,10 +2395,6 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 if person[0] == player.mention:
                     break
             page_no = math.ceil(player_rank / 10)
-
-        # Normalize to number of server users
-        num_pages = math.ceil(len(server_players) / 10)
-        page_no = min(num_pages, page_no)
 
         # Put names into embed
         all_names = ''
@@ -2421,7 +2423,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_players)), inline = False)
         leaderboard.add_field(name = 'Player', value = all_names)
         leaderboard.add_field(name = 'Skill Rating (SR)', value = all_sr)
-        return leaderboard
+        return leaderboard, page_no
 
     def get_commands(self, *command_query):
         soldier_info = '🛡**Soldier**🛡\n\n\
