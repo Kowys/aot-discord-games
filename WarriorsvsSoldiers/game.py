@@ -2614,25 +2614,25 @@ the only thing the Soldiers know is how many Warriors exist, not who they are. A
 The game consists of up to 5 expeditions, each expedition consisting of 3 phases to decide its success or failure.\n\n\
 **🔹Planning Phase🔹**\n\n\
 At the start of this phase, one of the players (either a Soldier or Warrior) is selected, based on a randomized queue implemented at the start of the game, to be the Commander. \
-The Commander selects a certain number of players to form the expedition team (the Commander may choose to join the expedition team themselves).\n\n\
+The Commander selects a number of players (which can include the Commander) to form the expedition team.\n\n\
 **🔹Approval Phase🔹**\n\n\
-After the Commander has picked the expedition team, all of the players discuss the Commander\'s choice, and vote in private (via DMs) on whether to accept the team make-up or not. \
+After the Commander has picked the expedition team, all of the players discuss the Commander\'s choice, and vote in private (via DMs) on whether or not to accept the proposed team. \
 If a majority of players votes no to the proposal or if it\'s a tie, the Commander position passes on to the next player in line, who proposes their own expedition team. This continues \
 until a majority of players agree with the current Commander\'s expedition team, at which point the round moves to the action phase.'
             return tutorial3
 
         elif num == 4:
             tutorial4 = '**🔹Action Phase🔹**\n\n\
-Once an expedition team is agreed on, the players in the expedition team then "embark" on the expedition. A Soldier must choose to help the expedition succeed, while a Warrior may either \
-help the expedition succeed as well, or secretly sabotage the expedition (via DM), destroying one of the Walls in the process.\n\n\
+Once an expedition team is agreed upon, the players in the expedition team then embark on the expedition. A Soldier must choose to help the expedition succeed, while a Warrior may either \
+help the expedition succeed, or secretly sabotage the expedition (via DM), destroying one of the Walls in the process.\n\n\
 Once everyone has made their decision, the individual choices are \
 shuffled then revealed to everyone, minus the names of the players who made the choice. If all the players choose to succeed the expedition, the Soldiers advance one step closer to the Basement. \
 But if a Warrior sabotages the expedition, the outermost Wall is destroyed and the Warriors move one step closer to victory.\n\n\
 This process then repeats until one side has accumulated 3 victories (Soldiers reach the Basement after 3 expeditions, Warriors have 3 walls to destroy).\n\n\
 **🏆Win conditions and the Coordinate🏆**\n\n\
-If the Warriors manage to destroy all 3 Walls before the Soldiers reach the basement, then Warriors win.\n\n\
+If the Warriors manage to destroy all 3 Walls before the Soldiers reach the Basement, then Warriors win.\n\n\
 If the Soldiers manage to reach the Basement first, the Warriors have one last chance to win by correctly identifying and kidnapping the Coordinate, who knows their identities. \
-If they fail to do so, then Soldiers win.\n\n\
+If they choose the wrong person, then Soldiers win.\n\n\
 Click on ▶ below to see the detailed descriptions of each role.'
             return tutorial4
 
@@ -2644,8 +2644,8 @@ and help protect the identity of the Coordinate.\n\n\
 Tip: The Soldier is simultaneously the weakest and strongest role in the game. Even though the Soldier has no knowledge of any one else\'s identity, a Soldier has \
 no need to conceal their identity and are free to act however they want.\n\n\
 ⚔**Warrior**⚔\n\n\
-The Warrior is the spy within the ranks of the military. Their role is to avoid being discovered by the Soldiers, persuade them to allow you into their expeditions, and sabotage them. If that fails, \
-they can still win by identifying the Coordinate within the ranks of the soldiers.\n\n\
+The Warrior is the infiltrator within the ranks of the military. Their role is to avoid discovery by the Soldiers, persuade them to allow you into their expeditions, and sabotage them. If that fails, \
+they can still win by identifying the Coordinate within the ranks of the Soldiers.\n\n\
 Tip: The Warrior relies on deception and cunning to succeed. Teamwork and coordination with other Warriors is essential, to prevent your identities \
 from being exposed. This must be done discreetly, however, as using DMs to communicate with other Warriors is against the rules and spirit of the game.\n\n\
 🗺**Coordinate**🗺\n\n\
@@ -2664,17 +2664,15 @@ Tip: While the Queen has the advantage of knowing the Coordinate\'s identity, sh
 💂**Ackerman**💂\n\n\
 The Ackerman has the ability to secure the Walls in **one** expedition that they\'re in. This prevents any Warriors on the expedition from destroying it. However, doing so also \
 alerts any Warriors in the expedition of the Ackerman\'s identity, making it easier for them to identity the Coordinate.\n\n\
-Tip: Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, reducing the chances \
-of the Warriors kidnapping the Coordinate at the end.'
+Tip: Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, keeping your identity hidden.'
             return tutorial6
 
         elif num == 7:
             tutorial7 = '**Optional Soldier Roles (2)**\n\n\
 <:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n\
 Humanity\'s 2nd strongest soldier **Mike Zacharias** has the incredible ability to sniff out Titans in expeditions <:aotSmirk:571740978377916416>. \
-During the approval phase of all the expeditions that he is in, Mike will be told how many Titans the expedition contains, if any. Both Warriors and the Coordinate are considered Titans.\n\n\
-Tip: The knowledge of how many Titans are in an expedition can be very valuable to both Soldiers and Warriors. Be careful what you do with that information. \
-Prove yourself worthy of the title of humanity\'s 2nd strongest soldier!\n\n\
+During the approval phase of the expeditions he is in, Mike will be told how many Titans the expedition contains. Both Warriors and the Coordinate are considered Titans.\n\n\
+Tip: The knowledge of how many Titans are in an expedition can be very valuable to both Warriors and Soldiers. Be careful not to reveal information that might help the Warriors identify the Coordinate.\n\n\
 🏇**Scout**🏇\n\n\
 The Scout is the guiding light of an expedition. If the Scout is in an expedition, they will automatically fire a signal flare, alerting everyone of their presence in the expedition.\n\n\
 Tip: The knowledge of the Scout\'s identity can benefit both sides in the game. The Scout should try to help the Soldiers identify them correctly, while working with their fellow Soldiers \
@@ -2713,7 +2711,7 @@ Tip: The Spy needs to be strategic about when to flip the votes to favor the War
 Ymir\'s Blessing allows a player who has it to check another player\'s true allegiance (Warriors or Soldiers). At the start of the 3rd expedition, a random player will be given Ymir\'s blessing. \
 They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
 Ymir\'s blessing will then be passed onto the player who was investigated, who can use it at the start of the next expedition, and so on. \
-However, anyone who has had Ymir\'s blessing previously is granted immunity to being investigated by future holders of it.\n\n\
+Anyone who has had Ymir\'s blessing previously is granted immunity to being investigated by future holders of it.\n\n\
 📢**Paths**📢\n\n\
 The Paths ability allows players to make an announcement anonymously to everyone in the game. When activated, a random person will be designated as the Paths holder at the start of every expedition. \
 They will then be able to send a single message to the game channel without revealing their role or identity.\n\n\
@@ -2729,7 +2727,7 @@ Enabling this effect could help reduce the frequency of gridlocks while adding a
 gives the Soldiers a significant headstart. Be tactful about when to do this (for example, if people are starting to suspect you).\n\n\
 💭 Warriors can often find clues on who the Coordinate is by looking at past Commanders\' decisions and the voting rounds. As the Coordinate knows the Warriors\' identities, \
 they rarely ever pick or vote incorrectly.\n\n\
-💭 It is helpful to also do weird and crazy things occasionally and be known as the guy/gal who just does unexpected things sometimes. This might be arrogantly displaying how they \
+💭 It can be helpful to also do weird and crazy things occasionally and be known as the guy/gal who just does unexpected things sometimes. This might be arrogantly displaying how they \
 are randomly voting for an expedition for fun, vehemently accusing someone of being a Warrior with no solid evidence, or being mute \
 for a game. This kind of randomness will help cover up slip-ups in games because it can be shrugged off as, "but he/she just always does that kind of thing".\n\n\
 💭 Remember that at the end of the day, this is just a game! Lying and deception are part-and-parcel of the game; don\'t take it too seriously, and you\'ll have a great time!'
