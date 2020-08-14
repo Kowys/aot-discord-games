@@ -174,7 +174,7 @@ def update_config(server_id, channel_id, game):
     conn = sqlite3.connect('config_db.db')
     cursor = conn.cursor()
 
-    get_instance = 'SELECT * FROM instances WHERE channel=?'
+    get_instance = 'SELECT * FROM instances WHERE channel = ?'
     cursor.execute(get_instance, (channel_id,))
     instance_data = cursor.fetchall()
 
