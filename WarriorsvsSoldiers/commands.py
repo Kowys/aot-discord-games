@@ -121,6 +121,7 @@ class Game():
                                 for person in self.state.expedition_squad:
                                     decision_msg = self.state.get_decision_msg(person)
                                     await person.dm_channel.send(embed=decision_msg)
+                                    await asyncio.sleep(0.1)
 
                                 self.state.status = 'expedition decision'
 
@@ -574,6 +575,7 @@ class Game():
                                         await player.create_dm()
                                     approval_msg = self.state.get_expedition_approval_msg(player)
                                     await player.dm_channel.send(embed=approval_msg)
+                                    await asyncio.sleep(0.1)
                         else:
                             await message.channel.send('Please pick someone for the expedition team!')
                     else:
@@ -965,6 +967,7 @@ of the Coordinate.'
                             for person in self.state.expedition_squad:
                                 decision_msg = self.state.get_decision_msg(person)
                                 await person.dm_channel.send(embed=decision_msg)
+                                await asyncio.sleep(0.1)
 
                             self.state.status = 'expedition decision'
 
