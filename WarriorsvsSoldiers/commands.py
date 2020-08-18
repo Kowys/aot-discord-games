@@ -77,7 +77,7 @@ class Game():
                         if type(flip_msg) == str:
                             await message.author.dm_channel.send(flip_msg)
                         else:
-                            await message.author.dm_channel.send(embed=flip_msg) 
+                            await message.author.dm_channel.send(embed=flip_msg)
 
                     if not response.startswith('f'):
                         expedition_approval_status = self.state.approval_players()

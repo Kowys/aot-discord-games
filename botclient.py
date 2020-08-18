@@ -30,7 +30,7 @@ class MyClient(discord.Client):
 
     async def on_message(self, message): # Only one of these allowed
         # Get cur_game, which is the game object consisting of commands and all other relevant states of the game
-        cur_game = botconfig.get_cur_game(message)
+        cur_games = botconfig.get_cur_game(message)
 
         if message.content == '~die' and message.author.id == 238808836075421697:
             print("Terminating")
@@ -43,7 +43,7 @@ class MyClient(discord.Client):
         # Config
         elif message.content.startswith('~config'):
             if message.author.id == 238808836075421697 or message.author.guild_permissions.manage_guild:
-                config_msg = botconfig.get_config_msg(cur_game)
+                config_msg = botconfig.get_config_msg(cur_games)
                 config_embed = discord.Embed(title = config_msg, colour=0xE5D2BB)
                 await message.channel.send(embed = config_embed)
 
@@ -80,8 +80,9 @@ class MyClient(discord.Client):
             invite_embed.set_thumbnail(url=str(self.user.avatar_url))
             await message.channel.send(embed=invite_embed)
 
-        elif cur_game:
-            await cur_game.msg_handler(message)
+        elif cur_games:
+            for game in cur_games:
+                await game.msg_handler(message)
         
         elif message.content.startswith('~help'):
             commands = discord.Embed(title = 'List of commands', description = 'Here is the list of available commands.', colour=0xE5D2BB)

@@ -35,23 +35,25 @@ def get_cur_game(message):
     # Returns the game state from games corresponding to the channel
     # Returns None if no game is enabled for the channel
     # If private message, return the game state of Warriors vs Soldiers if person is in game
+    cur_games = []
     for instance in instances:
         if str(message.channel.type) == 'private':
-            # Players can join only 1 game at a time (Might need to fix later)
             try:
+                # For multiple wvs games
                 if message.author in list(map(lambda x:x[0], instance.game.state.players)):
-                    return instance
+                    cur_games.append(instance)
             except:
                 continue
         else:
             if instance.channel_id == message.channel.id:
-                return instance
+                cur_games.append(instance)
+                break
 
-    return None
+    return cur_games
 
-def get_config_msg(cur_game):
+def get_config_msg(cur_games):
     config_msg = 'Which game would you like to enable for this channel?'
-    config_msg += '\n(Current game: ' + (cur_game.game_name if cur_game else 'None') + ')'
+    config_msg += '\n(Current game: ' + (cur_games[0].game_name if cur_games else 'None') + ')'
     config_msg += '\n\n:one: Choose Your Adventure (Locked)\n\n\
 :two: Jaegermore (Locked)\n\n\
 :three: Warriors vs Soldiers\n\n\
