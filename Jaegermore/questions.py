@@ -33,7 +33,7 @@ Be sure to give your most honest response to get the most accurate result. \n\n\
 
     def question_handler(self, option):
         # Records the choice and updates scores
-        self.all_qns[self.cur_qn[0]](option) 
+        self.all_qns[self.cur_qn[0]](option)
 
         # Choose a random number and update cur_qn (until qn limit is reached, in which case go to results)
         if len(self.qns_played) >= self.num_qns:

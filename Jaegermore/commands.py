@@ -72,7 +72,7 @@ class Game():
             await message.channel.send('**If you\'re ready, type `~start` to begin a new assessment.**')
 
         # Returns detailed personality info for the current test result
-        if message.content.startswith('~stats') and (self.state.question.cur_qn[0] == 'result' or self.state.question.cur_qn[0] == 'result2'):
+        if message.content.startswith('~stats') and self.state.question.cur_qn[0] == 'result2':
             stats_info = self.state.get_info()
             await message.channel.send(embed = stats_info)
 
