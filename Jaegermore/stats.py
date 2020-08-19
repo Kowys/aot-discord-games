@@ -1,4 +1,6 @@
 import random
+import math
+import time
 import discord
 import sqlite3
 from Jaegermore import questions
@@ -90,6 +92,18 @@ class State():
 
         return stats_info
 
+    def calculate_affinity(self, personality_count, all_personalities_count):
+        non_personality_count = (all_personalities_count - personality_count) / 8
+        total_count = personality_count + non_personality_count
+
+        if total_count > 0:
+            raw_score = personality_count / total_count
+        else:
+            return 0
+
+        affinity_score = raw_score - (raw_score - 0.5) * (1 / (2 ** math.log2(total_count + 1)))
+        return round(affinity_score * 100, 2)
+
     def get_profile(self, player):
         conn = sqlite3.connect('Jaegermore/jaegermore_db.db')
         cursor = conn.cursor()
@@ -143,6 +157,9 @@ class State():
                 pers_text += '**' + dominant_personalities[i] + '**'
         if highest == 0:
             pers_text = 'None'
+        else:
+            affinity_score = self.calculate_affinity(highest, sum(all_personalities))
+            pers_text += '\n(Similarity: ' + str(affinity_score) + '%)'
 
         profile = discord.Embed(title = pers_title, description = pers_text, colour=0x5CFFE9)
         profile.set_author(name = player.name, icon_url = player.avatar_url)
@@ -171,12 +188,25 @@ class State():
         conn.close()
         
         # Sort by characters + total
+
+        starttime = time.time()
         highest_rankings = [('Eren', []), ('Mikasa', []), ('Armin', []), ('Jean', []), ('Krista', []), ('Sasha', []), ('Levi', []), ('Annie', []), ('Erwin', []), ('Total', [])]
         for i, _ in enumerate(highest_rankings):
-            server_players_data.sort(key=lambda row: row[i+1], reverse=True)
+            if i == 9:
+                server_players_data.sort(key=lambda row: row[i+1], reverse=True)
+            else:
+                server_players_data.sort(key=lambda row: self.calculate_affinity(row[i+1], row[-1]), reverse=True)
+
             for j in range(min(10, len(server_players_data))):
-                rank_info = [server_players_data[j][0], server_players_data[j][i+1]]
-                highest_rankings[i][1].append(rank_info)
+                # Name, affinity, count
+                if i == 9:
+                    rank_info = [server_players_data[j][0], server_players_data[j][i+1]]
+                    highest_rankings[i][1].append(rank_info)
+                else:
+                    rank_info = [server_players_data[j][0], self.calculate_affinity(server_players_data[j][i+1], server_players_data[j][-1]), server_players_data[j][i+1]]
+                    highest_rankings[i][1].append(rank_info)
+        time_elapsed = time.time() - starttime
+        print('Time elapsed:', time_elapsed, 's')
 
         # Display rankings for chosen character
         character_map = {'eren':0, 'mikasa':1, 'armin':2, 'jean':3, 'krista':4, 'sasha':5, 'levi':6, 'annie':7, 'erwin':8, 'total':9}
@@ -191,25 +221,35 @@ class State():
         'Erwin':'https://i.imgur.com/MGKlG4x.png',
         'Total':'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/trophy_1f3c6.png'}
 
-        if character:
+        if character and character in character_map:
             char_index = character_map[character.lower()]
             char_rankings = highest_rankings[char_index]
             player_names = ''
+            player_affinities = ''
             char_count = ''
             for i, player in enumerate(char_rankings[1]):
                 player_names += '#' + str(i+1) + ' ' + player[0] + '\n'
-                char_count += str(player[1]) + '\n'
+                if char_index < 9:
+                    player_affinities += str(player[1]) + '%\n'
+                    char_count += str(player[2]) + '\n'
+                else:
+                    char_count += str(player[1]) + '\n'
 
             leaderboard = discord.Embed(title = 'Leaderboard for Jaegermore (' + char_rankings[0] + ')', colour=0x5CFFE9)
+            leaderboard.add_field(name = 'Player', value = player_names)
             if char_index < 9:
                 leaderboard.set_thumbnail(url = thumbnail_urls[char_rankings[0]])
-            leaderboard.add_field(name = 'Player', value = player_names)
+                leaderboard.add_field(name = 'Similarity', value = player_affinities)
             leaderboard.add_field(name = 'Count', value = char_count)
+            leaderboard.set_footer(text = 'How is Similarity calculated? Type ~similarity to find out!')
 
         else:
             leaderboard = discord.Embed(title = '👑 Leaderboard for Jaegermore 👑', colour=0x5CFFE9)
-            for character_info in highest_rankings:
-                leaderboard.add_field(name = character_info[0], value = character_info[1][0][0] + '\n' + 'Count: ' + str(character_info[1][0][1]))
+            for i, character_info in enumerate(highest_rankings):
+                if i < 9:
+                    leaderboard.add_field(name = character_info[0], value = character_info[1][0][0] + '\n' + 'Similarity: ' + str(character_info[1][0][1]) + '%')
+                else:
+                    leaderboard.add_field(name = character_info[0], value = character_info[1][0][0] + '\n' + 'Count: ' + str(character_info[1][0][1]))
             leaderboard.set_footer(text = 'Add a character name behind the ~lb command to see the leaderboard for each character, e.g. ~lb eren/~lb total.')
         
         return leaderboard
@@ -246,6 +286,15 @@ class State():
         '`~stats`\n Provides detailed scores for each character at the end of the assessment.\n' + \
         '`~profile <@person>`\n Checks the personality scores of a given user.\n' + \
         '`~leaderboard/~lb <personality>`\n Brings up the leaderboard, showing the top player(s) for each personality.\n' + \
-        '`~gamestats`\n Brings up the overall game statistics.'
+        '`~gamestats`\n Brings up the overall game statistics.\n' + \
+        '`~similarity`\n Explains how the similarity percentage for a character is calculated.'
         commands_list.add_field(name = 'Jaegermore', value = jaegermore_commands)
         return commands_list
+
+    def similarity_explanation(self):
+        similarity_msg = 'Your Similarity score for a given character is calculated based on two factors:\n\n' + \
+            '1. The percentage of tests where you obtained that character\n' + \
+            '2. The total number of tests taken\n\n' + \
+            'What this means is that to increase your Similarity score for a character, you should try to get only that character in as many tests as possible!'
+        similarity_embed = discord.Embed(title = 'How is Similarity calculated?', description = similarity_msg, colour = 0x5CFFE9)
+        return similarity_embed

@@ -106,6 +106,11 @@ class Game():
             commands = self.state.get_commands()
             await message.channel.send(embed = commands)
 
+        # Explains similarity percentage calculation
+        if message.content.startswith('~similarity'):
+            similarity_embed = self.state.similarity_explanation()
+            await message.channel.send(embed = similarity_embed)
+
         # Testing command
         if message.content.startswith('~test'):
             test = discord.Embed(title = 'Test', description = 'testing')
