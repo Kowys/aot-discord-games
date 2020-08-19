@@ -101,7 +101,7 @@ class State():
         else:
             return 0
 
-        affinity_score = raw_score - (raw_score - 0.5) * (1 / (2 ** math.log2(total_count + 1)))
+        affinity_score = raw_score - (raw_score - 0.5) * (1 / (2 ** math.log(total_count ** 1.75 + 1, 10)))
         return round(affinity_score * 100, 2)
 
     def get_profile(self, player):
