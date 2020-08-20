@@ -222,7 +222,7 @@ class State():
         'Total':'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/trophy_1f3c6.png'}
 
         if character and character in character_map:
-            char_index = character_map[character.lower()]
+            char_index = character_map[character]
             char_rankings = highest_rankings[char_index]
             player_names = ''
             player_affinities = ''

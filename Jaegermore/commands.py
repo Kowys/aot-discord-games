@@ -92,7 +92,7 @@ class Game():
             if len(messagebox) == 1:
                 leaderboard = self.state.get_leaderboard(message.guild)
             else:
-                character = messagebox[1]
+                character = messagebox[1].lower()
                 leaderboard = self.state.get_leaderboard(message.guild, character=character)
             await message.channel.send(embed = leaderboard)
 
