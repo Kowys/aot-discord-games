@@ -1,6 +1,5 @@
 import random
 import math
-import time
 import discord
 import sqlite3
 from Jaegermore import questions
@@ -188,8 +187,6 @@ class State():
         conn.close()
         
         # Sort by characters + total
-
-        starttime = time.time()
         highest_rankings = [('Eren', []), ('Mikasa', []), ('Armin', []), ('Jean', []), ('Krista', []), ('Sasha', []), ('Levi', []), ('Annie', []), ('Erwin', []), ('Total', [])]
         for i, _ in enumerate(highest_rankings):
             if i == 9:
@@ -201,12 +198,9 @@ class State():
                 # Name, affinity, count
                 if i == 9:
                     rank_info = [server_players_data[j][0], server_players_data[j][i+1]]
-                    highest_rankings[i][1].append(rank_info)
                 else:
-                    rank_info = [server_players_data[j][0], self.calculate_affinity(server_players_data[j][i+1], server_players_data[j][-1]), server_players_data[j][i+1]]
-                    highest_rankings[i][1].append(rank_info)
-        time_elapsed = time.time() - starttime
-        print('Time elapsed:', time_elapsed, 's')
+                    rank_info = [server_players_data[j][0], self.calculate_affinity(server_players_data[j][i+1], server_players_data[j][-1]), server_players_data[j][i+1], server_players_data[j][-1]]
+                highest_rankings[i][1].append(rank_info)
 
         # Display rankings for chosen character
         character_map = {'eren':0, 'mikasa':1, 'armin':2, 'jean':3, 'krista':4, 'sasha':5, 'levi':6, 'annie':7, 'erwin':8, 'total':9}
@@ -231,16 +225,16 @@ class State():
                 player_names += '#' + str(i+1) + ' ' + player[0] + '\n'
                 if char_index < 9:
                     player_affinities += str(player[1]) + '%\n'
-                    char_count += str(player[2]) + '\n'
+                    char_count += str(player[2]) + '/' + str(player[3]) + '\n'
                 else:
                     char_count += str(player[1]) + '\n'
 
             leaderboard = discord.Embed(title = 'Leaderboard for Jaegermore (' + char_rankings[0] + ')', colour=0x5CFFE9)
             leaderboard.add_field(name = 'Player', value = player_names)
+            leaderboard.add_field(name = 'Count', value = char_count)
             if char_index < 9:
                 leaderboard.set_thumbnail(url = thumbnail_urls[char_rankings[0]])
                 leaderboard.add_field(name = 'Similarity', value = player_affinities)
-            leaderboard.add_field(name = 'Count', value = char_count)
             leaderboard.set_footer(text = 'How is Similarity calculated? Type ~similarity to find out!')
 
         else:
