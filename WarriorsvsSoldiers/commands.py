@@ -821,49 +821,34 @@ class Game():
             if message.content.startswith('~tutorial') or message.content.startswith('~rules'):
                 # For a detailed explanation of the game
                 cur_tutorial = 1
-                tutorial = await message.channel.send(self.state.tutorial(1))
-                await tutorial.add_reaction('▶')
-                await asyncio.sleep(0.5)
+                tutorial, tutorial_embed, cur_tutorial = self.state.tutorial(1)
+                tutorial_msg = await message.channel.send(content=tutorial, embed=tutorial_embed)
+                await tutorial_msg.add_reaction('◀')
+                await tutorial_msg.add_reaction('▶')
 
                 def reaction_check(reaction, user):
-                    return user != self.client.user and (reaction.emoji == '▶' or reaction.emoji == '◀') and (reaction.message.id == tutorial.id)
+                    return user != self.client.user and (reaction.emoji == '▶' or reaction.emoji == '◀') and (reaction.message.id == tutorial_msg.id)
 
                 while True:
                     rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
 
                     if rxn.emoji == '▶':
-                        if cur_tutorial < 11:
-                            cur_tutorial += 1
-                            await tutorial.edit(content=self.state.tutorial(cur_tutorial))
-                            await rxn.remove(user)
-                            if cur_tutorial == 2:
-                                await rxn.remove(self.client.user)
-                                await tutorial.add_reaction('◀')
-                                await tutorial.add_reaction('▶')
-                            if cur_tutorial == 11:
-                                await rxn.remove(self.client.user)
-                            await asyncio.sleep(0.1)
-
+                        cur_tutorial += 1
                     elif rxn.emoji == '◀':
-                        if cur_tutorial > 1:
-                            cur_tutorial -= 1
-                            await tutorial.edit(content=self.state.tutorial(cur_tutorial))
-                            await rxn.remove(user)
-                            if cur_tutorial == 10:
-                                await tutorial.add_reaction('▶')
-                            if cur_tutorial == 1:
-                                await rxn.remove(self.client.user)
-                            await asyncio.sleep(0.1)
+                        cur_tutorial -= 1
+
+                    tutorial, tutorial_embed, cur_tutorial = self.state.tutorial(cur_tutorial)
+                    await tutorial_msg.edit(content=tutorial, embed=tutorial_embed)
+                    await rxn.remove(user)
+                    await asyncio.sleep(0.1)
 
             # Testing command
             if message.content.startswith('~test') and message.author.id == 238808836075421697:
-                role_msg = 'You are a **Soldier**!\n\n\
-As a member of the Survey Corps, you have been tasked with the responsibility of finding the secrets to the world \
-by reaching the basement.\n\n\
-Your task is to find out who the traitors within the military are, reach the basement before they destroy all 3 Walls, and help protect the identity \
-of the Coordinate.'
-                status = discord.Embed(title='🛡 Soldier 🛡', description=role_msg, colour=0x00C9FF)
-                status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png')
+                role_msg = 'Hello'
+                status = discord.Embed(colour=0x00C9FF)
+                status.add_field(name = '\u200B', value='test')
+                # status.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/748958842087538748/annie_vs_kenneeh.PNG')
+                # status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png')
 
 #                 role_msg = 'You are a **Warrior**!\n\n\
 # You are a Titan shifter who has infiltrated the Walls and are now working undercover to undermine the military\'s efforts. Working with your \
@@ -874,7 +859,7 @@ of the Coordinate.'
 # **Warrior 2**'
 #                 status = discord.Embed(title='⚔ Warrior ⚔', description=role_msg, colour=0xB23E00)
 #                 status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png')
-                await message.channel.send(embed=status)
+                await message.channel.send(content=role_msg, embed=status)
 
 
     def reset_timers(self):

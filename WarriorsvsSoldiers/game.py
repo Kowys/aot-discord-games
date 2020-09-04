@@ -2429,54 +2429,54 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         soldier_info = '🛡**Soldier**🛡\n\n\
 The most common role in the game, the Soldier represents the uninformed majority. Their role is find out who the traitors within the military are, reach the basement before they destroy all 3 Walls, \
 and help protect the identity of the Coordinate.\n\n\
-**Tip**: The Soldier is simultaneously the weakest and strongest role in the game. Even though the Soldier has no knowledge of any one else\'s identity, a Soldier has \
+**Tip:** The Soldier is simultaneously the weakest and strongest role in the game. Even though the Soldier has no knowledge of any one else\'s identity, a Soldier has \
 no need to conceal their identity and are free to act however they want.'
         warrior_info = '⚔**Warrior**⚔\n\n\
 The Warrior is the spy within the ranks of the military. Their role is to avoid being discovered by the Soldiers, persuade them to allow you into their expeditions, and sabotage them. If that fails, \
 they can still win by identifying the Coordinate within the ranks of the soldiers.\n\n\
-**Tip**: The Warrior relies on deception and cunning to succeed. Teamwork and coordination with other Warriors is essential, to prevent your identities \
+**Tip:** The Warrior relies on deception and cunning to succeed. Teamwork and coordination with other Warriors is essential, to prevent your identities \
 from being exposed. This must be done discreetly, however, as using DMs to communicate with other Warriors is against the rules and spirit of the game.'
         coordinate_info = '🗺**Coordinate**🗺\n\n\
 The Coordinate holds the greatest power in the game, but with it comes a heavy responsibility. The Coordinate is aware of the Warriors\' identities from the start, but has to find \
 a way to communicate this information to the Soldiers without being noticed by the Warriors, who can kidnap the Coordinate if the Soldiers reach the Basement.\n\n\
-**Tip**: The Coordinate\'s playstyle can change depending on the situation. For example, if the other Soldiers are doing a good job identifying the Warriors, it would be advisable to focus on \
+**Tip:** The Coordinate\'s playstyle can change depending on the situation. For example, if the other Soldiers are doing a good job identifying the Warriors, it would be advisable to focus on \
 deflecting suspicion away from themselves instead.'
         queen_info = '👼**Queen**👼\n\n\
 The Queen has the unique position of knowing the Coordinate\'s identity, which allows her to make better decisions during expeditions at no added risk. Her role is to protect \
 the Coordinate using this information by acting like they would.\n\n\
-**Tip**: While the Queen has the advantage of knowing the Coordinate\'s identity, she also has to be careful not to accidentally reveal the Coordinate\'s identity by favoring them on expeditions too much.'
+**Tip:** While the Queen has the advantage of knowing the Coordinate\'s identity, she also has to be careful not to accidentally reveal the Coordinate\'s identity by favoring them on expeditions too much.'
         ackerman_info = '💂**Ackerman**💂\n\n\
 The Ackerman has the ability to secure the Walls in **one** expedition that they\'re in. This prevents any Warriors on the expedition from destroying it. However, doing so also \
 alerts any Warriors in the expedition of the Ackerman\'s identity, making it easier for them to identity the Coordinate.\n\n\
-**Tip**: Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, reducing the chances \
+**Tip:** Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, reducing the chances \
 of the Warriors kidnapping the Coordinate at the end.'
         mike_info = '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n\
 Humanity\'s 2nd strongest soldier **Mike Zacharias** has the incredible ability to sniff out Titans in expeditions <:aotSmirk:571740978377916416>. \
 During the approval phase of all the expeditions that he is in, Mike will be told how many Titans the expedition contains, if any. Both Warriors and the Coordinate are considered Titans.\n\n\
-**Tip**: The knowledge of how many Titans are in an expedition can be very valuable to both Soldiers and Warriors. Be careful what you do with that information. \
+**Tip:** The knowledge of how many Titans are in an expedition can be very valuable to both Soldiers and Warriors. Be careful what you do with that information. \
 Prove yourself worthy of the title of humanity\'s 2nd strongest soldier!'
         scout_info = '🏇**Scout**🏇\n\n\
 The Scout is the guiding light of an expedition. If the Scout is in an expedition, they will automatically fire a signal flare, alerting everyone of their presence in the expedition.\n\n\
-**Tip**: The knowledge of the Scout\'s identity can benefit both sides in the game. The Scout should try to help the Soldiers identify them correctly, while working with their fellow Soldiers \
+**Tip:** The knowledge of the Scout\'s identity can benefit both sides in the game. The Scout should try to help the Soldiers identify them correctly, while working with their fellow Soldiers \
 to confuse the Warriors as to who they are.'
         falseking_info = '🕴**False King**🕴\n\n\
 The False King appears as the Coordinate to the Queen, in addition to the real Coordinate. This gives him the ability to confuse her by acting as the Coordinate, which can \
 help turn the tide in the Warriors\' favor.\n\n\
-**Tip**: As the False King, it can be especially advantageous to succeed expeditions which you are in, solely to gain the Queen\'s trust.'
+**Tip:** As the False King, it can be especially advantageous to succeed expeditions which you are in, solely to gain the Queen\'s trust.'
         warchief_info = '🦹‍♂️**Warchief**🦹‍♂️\n\n\
 The Warchief has the ability to conceal his identity from the Coordinate. This allows more possibilities to sow confusion within the Soldiers\' ranks without worrying about the \
 Coordinate stepping in.\n\n\
-**Tip**: The Warchief\'s role acts like a double-edged blade. Without the Coordinate\'s knowing the Warchief\'s identity, he can more easily gain the Soldiers\' trust. \
+**Tip:** The Warchief\'s role acts like a double-edged blade. Without the Coordinate\'s knowing the Warchief\'s identity, he can more easily gain the Soldiers\' trust. \
 However, the very fact that the Coordinate is unaware of the Warchief\'s identity can make it harder for the Warriors to identify the Coordinate.'
         ymir_info = '🤷‍♀️**Ymir**🤷‍♀️\n\n\
 Ymir is also on the Warriors\' side, but does not know of their identities, nor do they know hers. To achieve success, she must keep a close watch \
 for potential comrades during expeditions.\n\n\
-**Tip**: In smaller expeditions, it can be risky to choose to destroy the Walls, as there might be another Warrior in your group which would give both of you away. \
+**Tip:** In smaller expeditions, it can be risky to choose to destroy the Walls, as there might be another Warrior in your group which would give both of you away. \
 It is usually a good idea to wait until the later (and larger) expeditions to make your move.'
         spy_info = '🕵️‍♀️**Spy**🕵️‍♀️\n\n\
 A highly skilled infiltrator, the Spy has the ability to flip the votes during the approval phase of an expedition. \
 She may only do this once, however, as everyone will be alerted that the votes have been flipped.\n\n\
-**Tip**: The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.'
+**Tip:** The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.'
         blessing_info = '🔮**Ymir\'s Blessing**🔮\n\n\
 Ymir\'s Blessing allows a player who has it to check another player\'s true allegiance (Warriors or Soldiers). At the start of the 3rd expedition, a random player will be given Ymir\'s blessing. \
 They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
@@ -2582,147 +2582,140 @@ and status of the Walls, the results of previous expeditions and information on 
             commands.add_field(name = 'In-game commands', value = game_commands)
             return commands
 
-    def tutorial(self, num):
-        if num == 1:
-            tutorial1 = 'Warriors vs Soldiers is an Attack on Titan themed party game modelling a conflict between two groups: an informed minority (the Warriors), \
-and an uninformed majority (the Soldiers).\n\n\
-**📌Rules of the game📌**\n\n\
-:one: The objective of the Soldiers is to figure out who the Warriors are, while the Warriors aim to conceal their identity from the Soldiers.\n\n\
-:two: The team that completes their objectives first win (succeed 3 expeditions for Soldiers, destroy all 3 Walls for Warriors).\n\n\
-:three: Messaging another player in private (DM) is not allowed while in a game.\n\n\
-:four: Revealing your role via screenshot is also not allowed.\n\n\
-:five: To invite people to join, you can ping `@Warriors vs. Soldiers` (do not abuse pings, and do not ping other roles or random people).\n\n\
-:six: Be civil and respectful to others when playing, keeping in mind these rules and the server rules.\n\n\
-Click on ▶ below for more information about the game.'
-            return tutorial1
+    def tutorial(self, page_num):
+        if page_num < 1:
+            page_num = 16
+        elif page_num > 16:
+            page_num = 1
 
-        if num == 2:
+        if page_num == 1:
+            tutorial1_intro = 'Warriors vs Soldiers is a party game for 5-10 players. It is based on the tabletop game Avalon/Resistance, ' + \
+            'with a similar concept to other deception games like Werewolf, Mafia, and Among Us.\n\u200B'
+            tutorial1_embed = discord.Embed(title = 'Rules Summary', description = tutorial1_intro, colour=0x0013B4)
+
+            tutorial1_teams = 'There are two teams, Warriors and Soldiers. The Soldiers will always outnumber the Warriors in a game. ' + \
+            'However, the Soldiers do not know anyone\'s identities, while the Warriors know each other\'s identities.\n\u200B'
+            tutorial1_embed.add_field(name = 'The Teams', value = tutorial1_teams, inline = False)
+
+            tutorial1_objective = 'The objective of the game is to score 3 points for your team before the opposing team does.\n\u200B'
+            tutorial1_embed.add_field(name = 'The Objective', value = tutorial1_objective, inline = False)
+
+            tutorial1_selection = 'There can be up to 5 rounds (called Expeditions) in a game. Players take turns to pick a team (of varying size) to embark on each expedition.\n\u200B'
+            tutorial1_embed.add_field(name = 'Team Selection', value = tutorial1_selection, inline = False)
+
+            tutorial1_expedition = 'If a team is comprised of all Soldiers, then the expedition succeeds and Soldiers gain a point. ' + \
+            'However, if there is a Warrior in the team, they may choose to sabotage the expedition, giving Warriors a point instead.\n\u200B'
+            tutorial1_embed.add_field(name = 'The Expedition', value = tutorial1_expedition, inline = False)
+
+            tutorial1_coordinate = 'The Coordinate is a special Soldier role who knows the Warriors\' identities from the beginning. ' + \
+            'However, if the Soldiers score 3 points first, the Warriors have a last chance to win by identifying the Coordinate correctly at the end of the game.'
+            tutorial1_embed.add_field(name = 'The Coordinate', value = tutorial1_coordinate, inline = False)
+
+            tutorial1_details = 'For more detailed information on the game (including in-game screenshots!), click on ▶ below.'
+            tutorial1_embed.add_field(name = '\u200B', value = tutorial1_details, inline = False)
+
+            return None, tutorial1_embed, page_num
+
+        if page_num == 2:
             tutorial2 = '**📖Backstory📖**\n\n\
 The Year 850 was a pivotal year in the world of Attack on Titan. Around this time, it was discovered that Titan shifters who call themselves "Warriors" have infiltrated the Walls, \
 and are attempting to wipe out the remainder of humanity by either destroying the Walls with their Titan powers or capturing the Coordinate, an unimaginable source of power.\n\n\
-At approximately the same time, the Survey Corps, soldiers who have dedicated their lives to the survival of humanity, are on the verge of a major breakthrough. They have discovered \
-that a certain basement in the border town of Shiganshina contains valuable secrets about the Titans, secrets that could allow them to overcome the Titan menace once and for all. \
+At approximately the same time, the Survey Corps, soldiers who have dedicated their lives to the survival of humanity, are on the verge of a major breakthrough. \
+They have discovered that a certain basement in the border town of Shiganshina contains valuable secrets about the Titans, secrets that could allow them to overcome the Titan menace once and for all. \
 Acting on that information, the Survey Corps prepare to embark on a series of expeditions to reach the Basement and secure this secret.\n\n\
-This game puts you and your friends at the centre of this conflict. In a race against time, whichever side manages to reach their objectives first will decide the fate of humanity.\n\n\
-Click on ▶ below to continue.'
-            return tutorial2
+This game puts you and your friends at the centre of this conflict. In a race against time, whichever side reaches their objectives first will decide the fate of humanity.\n\n\
+Click on ▶ below to see the in-game rules.'
+            return tutorial2, None, page_num
 
-        elif num == 3:
-            tutorial3 = '**🎲Gameplay🎲**\n\n\
-At the start of the game, each player is secretly assigned a role (through DMs) affliated with one of these teams. The Warriors are made aware of each other without the Soldiers knowing - \
-the only thing the Soldiers know is how many Warriors exist, not who they are. Additionally, the player with the Coordinate role is also made aware of the Warriors\' identities.\n\n\
-The game consists of up to 5 expeditions, each expedition consisting of 3 phases to decide its success or failure.\n\n\
-**🔹Planning Phase🔹**\n\n\
+        if page_num == 3:
+            tutorial3 = '**📌Game Rules📌**\n\n\
+:one: Messaging another player in private (DM) is not allowed while in a game.\n\n\
+:two: Revealing your role via screenshot is not allowed.\n\n\
+:three: To invite people to join, you can ping `@Warriors vs. Soldiers`. Do not abuse pings, and do not ping other roles or random people.\n\n\
+:four: Be civil and respectful to others when playing, keeping in mind these rules and the server rules.\n\n\
+Click on ▶ below for more detailed information on gameplay.'
+            return tutorial3, None, page_num
+
+        elif page_num == 4:
+            tutorial4 = '**🎲Gameplay🎲**\n\n\
+At the start of the game, each player is secretly assigned a role (through DMs).\n\n\
+The Warriors are made aware of each other without the Soldiers knowing - \
+the only thing the Soldiers know is how many Warriors exist, not who they are. The player with the Coordinate role is also made aware of the Warriors\' identities.\n\n\
+Below is an example of what a role message for a Warrior might look like:\n\u200B'
+            warrior_msg = 'You are a **Warrior**!\n\n\
+You are a Titan shifter who has infiltrated the Walls and are now working undercover to undermine the military\'s efforts. Working with your \
+fellow Warriors, you seek to destroy the Walls and wipe out humanity. \n\n\
+Your task is to conceal your identity from the Soldiers, and persuade them to allow you into their expeditions. At the same time, you need to try and identify the Coordinate within the ranks of the Soldiers.\n\n\
+Your fellow Warriors are:\n**Reiner**\n**Bertolt**'
+            tutorial4_embed = discord.Embed(title = '⚔ Warrior ⚔', description=warrior_msg, colour=0xB23E00)
+            tutorial4_embed.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png')
+            return tutorial4, tutorial4_embed, page_num
+
+        elif page_num == 5:
+            tutorial5 = '**🏠 Game Status 🏠**\n\n\
+The game consists of up to 5 expeditions, each consisting of 3 phases to decide its success or failure.\n\n\
+At any point during the game, you may type `~status` to bring up the current state of the game.\n\n\
+This is what the game state looks like at the start of the game:\n\u200B'
+            tutorial5_embed = discord.Embed(title='Current Game Information', description= 'Number of players: **5**\n**3** Soldiers vs **2** Warriors', colour=0xF9FF41)
+            basement_progress = '￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵ ￶￵￶￵ \u2001\u2001\u20011⃣\n\u2001\u2001\u2001\u2001\u20012⃣\n\u2001\u2001\u2001\u2001\u20013⃣🏁'
+            wall_status = '￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ \u200A\u200A\u2000🏠🇲🏠\n\u2001\u2000\u2000🏦🇷🏦\n\u2001\u2000\u2000🏰🇸🏰'
+
+            expedition_info = 'Expedition 1: **2** members ' + '🏇' + '\n\n\
+Expedition 2: **3** members ' + '\n\n\
+Expedition 3: **2** members ' + '\n\n\
+Expedition 4: **3** members ' + '\n\n\
+Expedition 5: **3** members '
+
+            tutorial5_embed.add_field(name = 'Progress towards Basement', value = basement_progress, inline = True)
+            tutorial5_embed.add_field(name = 'Status of the Walls', value = wall_status, inline = True)
+            tutorial5_embed.add_field(name = 'Expedition Info', value = expedition_info, inline = False)
+            return tutorial5, tutorial5_embed, page_num
+
+        elif page_num == 6:
+            tutorial6 = '**🔹Planning Phase🔹**\n\n\
 At the start of this phase, one of the players (either a Soldier or Warrior) is selected, based on a randomized queue implemented at the start of the game, to be the Commander. \
-The Commander selects a number of players (which can include the Commander) to form the expedition team.\n\n\
-**🔹Approval Phase🔹**\n\n\
-After the Commander has picked the expedition team, all of the players discuss the Commander\'s choice, and vote in private (via DMs) on whether or not to accept the proposed team. \
-If a majority of players votes no to the proposal or if it\'s a tie, the Commander position passes on to the next player in line, who proposes their own expedition team. This continues \
-until a majority of players agree with the current Commander\'s expedition team, at which point the round moves to the action phase.'
-            return tutorial3
+The Commander selects a number of players (which can include the Commander) to form the expedition team.\n\u200B'
+            tutorial6_msg = 'Here, it is Armin\'s turn to be the Commander, and he selects Eren, Reiner, and himself to be in the expedition.'
+            tutorial6_embed = discord.Embed(description=tutorial6_msg, colour=0x0013B4)
+            tutorial6_embed.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/751345113992527882/selection_phase.PNG')
+            return tutorial6, tutorial6_embed, page_num
 
-        elif num == 4:
-            tutorial4 = '**🔹Action Phase🔹**\n\n\
+        elif page_num == 7:
+            tutorial7 = '**🔹Approval Phase🔹**\n\n\
+After the Commander has picked the expedition team, all of the players discuss the Commander\'s choice, and vote in private (via DMs) whether or not to accept the proposed team.\n\n\
+If a majority of players votes no to the proposal or if it\'s a tie, the Commander position passes on to the next player in line, who proposes their own expedition team.\n\n\
+This continues until a majority of players agree with the current expedition team, at which point the round moves to the Action Phase.\n\u200B'
+            tutorial7_msg = 'Everyone votes on the proposed expedition team (left), and the results are revealed after everyone has voted (right).\n\n' + \
+            'As everyone with the exception of Eren approved of the expedition, the round progresses to the Action Phase.'
+            tutorial7_embed = discord.Embed(description=tutorial7_msg, colour=0x0013B4)
+            tutorial7_embed.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/751355515736424448/approval-phase-combined5.png')
+            return tutorial7, tutorial7_embed, page_num
+
+        elif page_num == 8:
+            tutorial8 = '**🔹Action Phase🔹**\n\n\
 Once an expedition team is agreed upon, the players in the expedition team then embark on the expedition. A Soldier must choose to help the expedition succeed, while a Warrior may either \
-help the expedition succeed, or secretly sabotage the expedition (via DM), destroying one of the Walls in the process.\n\n\
-Once everyone has made their decision, the individual choices are \
-shuffled then revealed to everyone, minus the names of the players who made the choice. If all the players choose to succeed the expedition, the Soldiers advance one step closer to the Basement. \
-But if a Warrior sabotages the expedition, the outermost Wall is destroyed and the Warriors move one step closer to victory.\n\n\
-This process then repeats until one side has accumulated 3 victories (Soldiers reach the Basement after 3 expeditions, Warriors have 3 walls to destroy).\n\n\
-**🏆Win conditions and the Coordinate🏆**\n\n\
-If the Warriors manage to destroy all 3 Walls before the Soldiers reach the Basement, then Warriors win.\n\n\
+help the expedition succeed, or secretly sabotage the expedition.\n\n\
+If all the players choose to succeed the expedition, the Soldiers advance one step closer to the Basement. \
+But if a Warrior sabotages the expedition, the outermost Wall is destroyed and the Warriors move one step closer to victory.\n\u200B'
+            tutorial8_msg = 'This 3-player expedition has been sabotaged by a Warrior within, resulting in a loss of a Wall.'
+            tutorial8_embed = discord.Embed(description=tutorial8_msg, colour=0x0013B4)
+            tutorial8_embed.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/751345083193753610/decision_phase.PNG')
+            return tutorial8, tutorial8_embed, page_num
+
+        elif page_num == 9:
+            tutorial9 = '**🏆 Win conditions and the Coordinate 🏆**\n\n\
+If the Warriors manage to destroy all 3 Walls before the Soldiers reach the Basement (3 successful expeditions), then Warriors win.\n\n\
 If the Soldiers manage to reach the Basement first, the Warriors have one last chance to win by correctly identifying and kidnapping the Coordinate, who knows their identities. \
-If they choose the wrong person, then Soldiers win.\n\n\
-Click on ▶ below to see the detailed descriptions of each role.'
-            return tutorial4
+If they choose the wrong person, then Soldiers win.\n\u200B'
+            tutorial9_msg = 'In this game, the Soldiers have reached the Basement by succeeding 3 expeditions.\n\n' + \
+            'However, the Warriors correctly managed to identify the Coordinate, Eren, resulting in a win for the Warriors.'
+            tutorial9_embed = discord.Embed(description=tutorial9_msg, colour=0x0013B4)
+            tutorial9_embed.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/751345102492008458/kidnap_phase2.PNG')
+            tutorial9_embed.set_footer(text='It was kind of obvious who it was, really...')
+            return tutorial9, tutorial9_embed, page_num
 
-        elif num == 5:
-            tutorial5 = '**Basic Roles**\n\n\
-🛡**Soldier**🛡\n\n\
-The most common role in the game, the Soldier represents the uninformed majority. Their role is find out who the traitors within the military are, reach the basement before they destroy all 3 Walls, \
-and help protect the identity of the Coordinate.\n\n\
-Tip: The Soldier is simultaneously the weakest and strongest role in the game. Even though the Soldier has no knowledge of any one else\'s identity, a Soldier has \
-no need to conceal their identity and are free to act however they want.\n\n\
-⚔**Warrior**⚔\n\n\
-The Warrior is the infiltrator within the ranks of the military. Their role is to avoid discovery by the Soldiers, persuade them to allow you into their expeditions, and sabotage them. If that fails, \
-they can still win by identifying the Coordinate within the ranks of the Soldiers.\n\n\
-Tip: The Warrior relies on deception and cunning to succeed. Teamwork and coordination with other Warriors is essential, to prevent your identities \
-from being exposed. This must be done discreetly, however, as using DMs to communicate with other Warriors is against the rules and spirit of the game.\n\n\
-🗺**Coordinate**🗺\n\n\
-The Coordinate holds the greatest power in the game, but with it comes a heavy responsibility. The Coordinate is aware of the Warriors\' identities from the start, but has to find \
-a way to communicate this information to the Soldiers without being noticed by the Warriors, who can kidnap the Coordinate if the Soldiers reach the Basement.\n\n\
-Tip: The Coordinate\'s playstyle can change depending on the situation. For example, if the other Soldiers are doing a good job identifying the Warriors, it would be advisable to focus on \
-deflecting suspicion away from themselves instead.'
-            return tutorial5
-
-        elif num == 6:
-            tutorial6 = '**Optional Soldier Roles (1)**\n\n\
-👼**Queen**👼\n\n\
-The Queen has the unique position of knowing the Coordinate\'s identity, which allows her to make better decisions during expeditions at no added risk. Her role is to protect \
-the Coordinate using this information by acting like they would.\n\n\
-Tip: While the Queen has the advantage of knowing the Coordinate\'s identity, she also has to be careful not to accidentally reveal the Coordinate\'s identity by favoring them on expeditions too much.\n\n\
-💂**Ackerman**💂\n\n\
-The Ackerman has the ability to secure the Walls in **one** expedition that they\'re in. This prevents any Warriors on the expedition from destroying it. However, doing so also \
-alerts any Warriors in the expedition of the Ackerman\'s identity, making it easier for them to identity the Coordinate.\n\n\
-Tip: Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, keeping your identity hidden.'
-            return tutorial6
-
-        elif num == 7:
-            tutorial7 = '**Optional Soldier Roles (2)**\n\n\
-<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n\
-Humanity\'s 2nd strongest soldier **Mike Zacharias** has the incredible ability to sniff out Titans in expeditions <:aotSmirk:571740978377916416>. \
-During the approval phase of the expeditions he is in, Mike will be told how many Titans the expedition contains. Both Warriors and the Coordinate are considered Titans.\n\n\
-Tip: The knowledge of how many Titans are in an expedition can be very valuable to both Warriors and Soldiers. Be careful not to reveal information that might help the Warriors identify the Coordinate.\n\n\
-🏇**Scout**🏇\n\n\
-The Scout is the guiding light of an expedition. If the Scout is in an expedition, they will automatically fire a signal flare, alerting everyone of their presence in the expedition.\n\n\
-Tip: The knowledge of the Scout\'s identity can benefit both sides in the game. The Scout should try to help the Soldiers identify them correctly, while working with their fellow Soldiers \
-to confuse the Warriors as to who they are.'
-            return tutorial7
-
-        elif num == 8:
-            tutorial8 = '**Optional Warrior Roles (1)**\n\n\
-🕴**False King**🕴\n\n\
-The False King appears as the Coordinate to the Queen, in addition to the real Coordinate. This gives him the ability to confuse her by acting as the Coordinate, which can \
-help turn the tide in the Warriors\' favor.\n\n\
-Tip: As the False King, it can be especially advantageous to succeed expeditions which you are in, solely to gain the Queen\'s trust.\n\n\
-🦹‍♂️**Warchief**🦹‍♂️\n\n\
-The Warchief has the ability to conceal his identity from the Coordinate. This allows more possibilities to sow confusion within the Soldiers\' ranks without worrying about the \
-Coordinate stepping in.\n\n\
-Tip: The Warchief\'s role acts like a double-edged blade. Without the Coordinate\'s knowing the Warchief\'s identity, he can more easily gain the Soldiers\' trust. \
-However, the very fact that the Coordinate is unaware of the Warchief\'s identity can make it harder for the Warriors to identify the Coordinate.'
-            return tutorial8
-
-        elif num == 9:
-            tutorial9 = '**Optional Warrior Roles (2)**\n\n\
-🤷‍♀️**Ymir**🤷‍♀️\n\n\
-Ymir is also on the Warriors\' side, but does not know of their identities, nor do they know hers. To achieve success, she must keep a close watch \
-for potential comrades during expeditions.\n\n\
-Tip: In smaller expeditions, it can be risky to choose to destroy the Walls, as there might be another Warrior in your group which would give both of you away. \
-It is usually a good idea to wait until the later (and larger) expeditions to make your move.\n\n\
-🕵️‍♀️**Spy**🕵️‍♀️\n\n\
-A highly skilled infiltrator, the Spy has the ability to flip the votes during the approval phase of an expedition. \
-She may only do this once, however, as everyone will be alerted that the votes have been flipped.\n\n\
-Tip: The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.'
-            return tutorial9
-
-        elif num == 10:
-            tutorial10 = '**In-Game Effects**\n\n\
-🔮**Ymir\'s Blessing**🔮\n\n\
-Ymir\'s Blessing allows a player who has it to check another player\'s true allegiance (Warriors or Soldiers). At the start of the 3rd expedition, a random player will be given Ymir\'s blessing. \
-They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
-Ymir\'s blessing will then be passed onto the player who was investigated, who can use it at the start of the next expedition, and so on. \
-Anyone who has had Ymir\'s blessing previously is granted immunity to being investigated by future holders of it.\n\n\
-📢**Paths**📢\n\n\
-The Paths ability allows players to make an announcement anonymously to everyone in the game. When activated, a random person will be designated as the Paths holder at the start of every expedition. \
-They will then be able to send a single message to the game channel without revealing their role or identity.\n\n\
-💰**Limited Funds**💰\n\n\
-A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition. \
-If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.\n\n\
-Enabling this effect could help reduce the frequency of gridlocks while adding an additional element of strategy for both sides.'
-            return tutorial10
-
-        elif num == 11:
-            tutorial11 = '💡**Tips and Strategies**💡\n\n\
+        elif page_num == 10:
+            tutorial10 = '💡**Tips and Strategies**💡\n\n\
 💭 A common strategy used by the Warriors is to succeed the first couple of expeditions. This allows them to maintain their cover for a longer period, but also \
 gives the Soldiers a significant headstart. Be tactful about when to do this (for example, if people are starting to suspect you).\n\n\
 💭 Warriors can often find clues on who the Coordinate is by looking at past Commanders\' decisions and the voting rounds. As the Coordinate knows the Warriors\' identities, \
@@ -2731,9 +2724,99 @@ they rarely ever pick or vote incorrectly.\n\n\
 are randomly voting for an expedition for fun, vehemently accusing someone of being a Warrior with no solid evidence, or being mute \
 for a game. This kind of randomness will help cover up slip-ups in games because it can be shrugged off as, "but he/she just always does that kind of thing".\n\n\
 💭 Remember that at the end of the day, this is just a game! Lying and deception are part-and-parcel of the game; don\'t take it too seriously, and you\'ll have a great time!'
-            return tutorial11
-        
+            return tutorial10, None, page_num
 
+        elif page_num == 11:
+            tutorial11_soldier = 'The most common role in the game, the Soldier represents the uninformed majority. \
+Their role is find out who the traitors within the military are, reach the basement before they destroy all 3 Walls, and help protect the identity of the Coordinate.\n\n\
+**Tip:** The Soldier is simultaneously the weakest and strongest role in the game. Even though the Soldier has no knowledge of any one else\'s identity, a Soldier has \
+no need to conceal their identity and are free to act however they want.\n\u200B'
+            tutorial11_warrior = 'The Warrior is the infiltrator within the ranks of the military. \
+Their role is to avoid discovery by the Soldiers, persuade them to allow you into their expeditions, and sabotage them. If that fails, \
+they can still win by identifying the Coordinate within the ranks of the Soldiers.\n\n\
+**Tip:** The Warrior relies on deception and cunning to succeed. Teamwork and coordination with other Warriors is essential, to prevent your identities \
+from being exposed. This must be done discreetly, however, as using DMs to communicate with other Warriors is against the rules and spirit of the game.\n\u200B'
+            tutorial11_coordinate = 'The Coordinate holds the greatest power in the game, but with it comes a heavy responsibility. \
+The Coordinate is aware of the Warriors\' identities from the start, but has to find \
+a way to communicate this information to the Soldiers without being noticed by the Warriors, who can kidnap the Coordinate if the Soldiers reach the Basement.\n\n\
+**Tip:** The Coordinate\'s playstyle can change depending on the situation. For example, if the other Soldiers are doing a good job identifying the Warriors, it would be advisable to focus on \
+deflecting suspicion away from themselves instead.'
 
+            tutorial11_embed = discord.Embed(title='Basic Roles', colour=0x0013B4)
+            tutorial11_embed.add_field(name = '🛡Soldier🛡', value = tutorial11_soldier, inline = False)
+            tutorial11_embed.add_field(name = '⚔Warrior⚔', value = tutorial11_warrior, inline = False)
+            tutorial11_embed.add_field(name = '🗺Coordinate🗺', value = tutorial11_coordinate, inline = False)
+            return None, tutorial11_embed, page_num
 
+        elif page_num == 12:
+            tutorial12_queen = 'The Queen has the unique position of knowing the Coordinate\'s identity, which allows her to make better decisions during expeditions at no added risk. Her role is to protect \
+the Coordinate using this information by acting like they would.\n\n\
+**Tip:** While the Queen has the advantage of knowing the Coordinate\'s identity, she also has to be careful not to accidentally reveal the Coordinate\'s identity by favoring them on expeditions too much.\n\u200B'
+            tutorial12_ackerman = 'The Ackerman has the ability to secure the Walls in **one** expedition that they\'re in. This prevents any Warriors on the expedition from destroying it. However, doing so also \
+alerts any Warriors in the expedition of the Ackerman\'s identity, making it easier for them to identity the Coordinate.\n\n\
+**Tip:** Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, keeping your identity hidden.'
 
+            tutorial12_embed = discord.Embed(title='Optional Soldier Roles (1)', colour=0x0013B4)
+            tutorial12_embed.add_field(name = '👼Queen👼', value = tutorial12_queen, inline = False)
+            tutorial12_embed.add_field(name = '💂Ackerman💂', value = tutorial12_ackerman, inline = False)
+            return None, tutorial12_embed, page_num
+
+        elif page_num == 13:
+            tutorial13_mike = 'Humanity\'s 2nd strongest soldier Mike Zacharias has the incredible ability to sniff out Titans in expeditions. \
+During the approval phase of the expeditions he is in, Mike will be told how many Titans the expedition contains. Both Warriors and the Coordinate are considered Titans.\n\n\
+**Tip:** The knowledge of how many Titans are in an expedition can be very valuable to both Warriors and Soldiers. Be careful not to reveal information that might help the Warriors identify the Coordinate.\n\u200B'
+            tutorial13_scout = 'The Scout is the guiding light of an expedition. If the Scout is in an expedition, they will automatically fire a signal flare, alerting everyone of their presence in the expedition.\n\n\
+**Tip:** The knowledge of the Scout\'s identity can benefit both sides in the game. The Scout should try to help the Soldiers identify them correctly, while working with their fellow Soldiers \
+to confuse the Warriors as to who they are.'
+
+            tutorial13_embed = discord.Embed(title='Optional Soldier Roles (2)', colour=0x0013B4)
+            tutorial13_embed.add_field(name = '<:aotSmirk:571740978377916416>Mike Zacharias <:aotSmirk:571740978377916416>', value = tutorial13_mike, inline = False)
+            tutorial13_embed.add_field(name = '🏇Scout🏇', value = tutorial13_scout, inline = False)
+            return None, tutorial13_embed, page_num
+
+        elif page_num == 14:
+            tutorial14_falseking = 'The False King appears as the Coordinate to the Queen, in addition to the real Coordinate. \
+This gives him the ability to confuse her by acting as the Coordinate, which can help turn the tide in the Warriors\' favor.\n\n\
+**Tip:** As the False King, it can be especially advantageous to succeed expeditions which you are in, solely to gain the Queen\'s trust.\n\u200B'
+            tutorial14_warchief = 'The Warchief has the ability to conceal his identity from the Coordinate. \
+This allows more possibilities to sow confusion within the Soldiers\' ranks without worrying about the Coordinate stepping in.\n\n\
+**Tip:** The Warchief\'s role acts like a double-edged blade. Without the Coordinate\'s knowing the Warchief\'s identity, he can more easily gain the Soldiers\' trust. \
+However, the very fact that the Coordinate is unaware of the Warchief\'s identity can make it harder for the Warriors to identify the Coordinate.'
+
+            tutorial14_embed = discord.Embed(title='Optional Warrior Roles (1)', colour=0x0013B4)
+            tutorial14_embed.add_field(name = '🕴False King🕴', value = tutorial14_falseking, inline = False)
+            tutorial14_embed.add_field(name = '🦹‍♂️Warchief🦹‍♂️', value = tutorial14_warchief, inline = False)
+            return None, tutorial14_embed, page_num
+
+        elif page_num == 15:
+            tutorial15_ymir = 'Ymir is also on the Warriors\' side, but does not know of their identities, nor do they know hers. To achieve success, she must keep a close watch \
+for potential comrades during expeditions.\n\n\
+**Tip:** In smaller expeditions, it can be risky to choose to destroy the Walls, as there might be another Warrior in your group which would give both of you away. \
+It is usually a good idea to wait until the later (and larger) expeditions to make your move.\n\u200B'
+            tutorial15_spy = 'A highly skilled infiltrator, the Spy has the ability to flip the votes during the approval phase of an expedition. \
+She may only do this once, however, as everyone will be alerted that the votes have been flipped.\n\n\
+**Tip:** The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.'
+
+            tutorial15_embed = discord.Embed(title='Optional Warrior Roles (2)', colour=0x0013B4)
+            tutorial15_embed.add_field(name = '🤷‍♀️Ymir🤷‍♀️', value = tutorial15_ymir, inline = False)
+            tutorial15_embed.add_field(name = '🕵️‍♀️Spy🕵️‍♀️', value = tutorial15_spy, inline = False)
+            return None, tutorial15_embed, page_num
+
+        elif page_num == 16:
+            tutorial16_blessing = 'Ymir\'s Blessing allows a player who has it to check another player\'s true allegiance (Warriors or Soldiers). \
+At the start of the 3rd expedition, a random player will be given Ymir\'s blessing. \
+They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
+Ymir\'s blessing will then be passed onto the player who was investigated, who can use it at the start of the next expedition, and so on. \
+Anyone who has had Ymir\'s blessing previously is granted immunity to being investigated by future holders of it.\n\u200B'
+            tutorial16_paths = 'The Paths ability allows players to make an announcement anonymously to everyone in the game. \
+When activated, a random person will be designated as the Paths holder at the start of every expedition. \
+They will then be able to send a single message to the game channel without revealing their role or identity.\n\u200B'
+            tutorial16_funds = 'A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition. \
+If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.\n\n\
+Enabling this effect could help reduce the frequency of gridlocks while adding an additional element of strategy for both sides.'
+
+            tutorial16_embed = discord.Embed(title='In-Game Effects', colour=0x0013B4)
+            tutorial16_embed.add_field(name = '🔮Ymir\'s Blessing🔮', value = tutorial16_blessing, inline = False)
+            tutorial16_embed.add_field(name = '📢Paths📢', value = tutorial16_paths, inline = False)
+            tutorial16_embed.add_field(name = '💰Limited Funds💰', value = tutorial16_funds, inline = False)
+            return None, tutorial16_embed, page_num
