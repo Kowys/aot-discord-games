@@ -4,6 +4,7 @@ import botconfig
 import config_queries
 import db_backup
 import admin
+from WarriorsvsSoldiers import game
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -95,6 +96,11 @@ class MyClient(discord.Client):
         elif message.content.startswith('~') and not '~~' in message.content:
             msg = 'No game is currently enabled in this channel! Type `~config` to select a game.'
             await message.channel.send(embed=discord.Embed(description=msg, colour=0xE5D2BB))
+
+    async def on_member_join(self, member):
+        if member.guild.id == 748080644340318299:
+            # Assign role to member in WvS server
+            await game.State.update_role(member, self)
 
     async def on_guild_join(self, server):
         logs_channel = self.get_channel(742621514003644507)

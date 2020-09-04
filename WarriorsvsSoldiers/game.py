@@ -1727,6 +1727,43 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         return achievements_msgs
 
+    @staticmethod
+    async def update_role(player, client):
+        # Updates role based on games played
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        player_data_query = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(player_data_query, (player.id,))
+        player_data = cursor.fetchone()
+
+        if player_data:
+            games_played = player_data[5] + player_data[7] + player_data[9] + player_data[11] + player_data[13] + player_data[15] + \
+            player_data[17] + player_data[19] + player_data[21] + player_data[23] + player_data[25]
+        else:
+            games_played = 0
+        
+        conn.close()
+
+        server = client.get_guild(748080644340318299)
+
+        roles_dict = {
+            0: server.get_role(749524096328400936),
+            5: server.get_role(749524141308117022),
+            10: server.get_role(749524180696956949),
+            25: server.get_role(751426544148152441),
+            50: server.get_role(751426716697755658),
+            100: server.get_role(751426972474671144),
+            250: server.get_role(749524159574442005), 
+            500: server.get_role(749525061136023603)
+        }
+
+        member = server.get_member(player.id)
+        if member:
+            for threshold in roles_dict:
+                if games_played >= threshold:
+                    await member.add_roles(roles_dict[threshold])
+
     def get_profile(self, player, server):
         # Returns the rating and game stats of given player in an embed
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')

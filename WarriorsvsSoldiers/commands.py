@@ -152,6 +152,9 @@ class Game():
                                         if self.state.gametype == 'Ranked':
                                             rating_changes = self.state.update_rating()
                                             achievements_msgs = self.state.update_achievements()
+                                            # Update roles in official WvS server
+                                            for player in self.state.players:
+                                                await self.state.update_role(player[0], self.client)
                                             await asyncio.sleep(2)
                                             await self.state.game_channel.send(embed=rating_changes)
                                             for achievements_msg in achievements_msgs:
@@ -651,6 +654,9 @@ class Game():
                             if self.state.gametype == 'Ranked':
                                 rating_changes = self.state.update_rating()
                                 achievements_msgs = self.state.update_achievements()
+                                # Update roles in official WvS server
+                                for player in self.state.players:
+                                    await self.state.update_role(player[0], self.client)
                                 await asyncio.sleep(2)
                                 await message.channel.send(embed=rating_changes)
                                 for achievements_msg in achievements_msgs:
@@ -697,6 +703,9 @@ class Game():
                                 if self.state.gametype == 'Ranked':
                                     rating_changes = self.state.update_rating()
                                     achievements_msgs = self.state.update_achievements()
+                                    # Update roles in official WvS server
+                                    for player in self.state.players:
+                                        await self.state.update_role(player[0], self.client)
                                     await asyncio.sleep(2)
                                     await message.channel.send(embed=rating_changes)
                                     for achievements_msg in achievements_msgs:
@@ -983,6 +992,9 @@ class Game():
                                     if self.state.gametype == 'Ranked':
                                         rating_changes = self.state.update_rating()
                                         achievements_msgs = self.state.update_achievements()
+                                        # Update roles in official WvS server
+                                        for player in self.state.players:
+                                            await self.state.update_role(player[0], self.client)
                                         await asyncio.sleep(2)
                                         await self.state.game_channel.send(embed=rating_changes)
                                         for achievements_msg in achievements_msgs:
@@ -1250,6 +1262,9 @@ class Game():
                         if self.state.gametype == 'Ranked':
                             rating_changes = self.state.update_rating()
                             achievements_msgs = self.state.update_achievements()
+                            # Update roles in official WvS server
+                            for player in self.state.players:
+                                await self.state.update_role(player[0], self.client)
                             await asyncio.sleep(2)
                             await self.state.game_channel.send(embed=rating_changes)
                             for achievements_msg in achievements_msgs:
