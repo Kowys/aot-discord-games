@@ -853,23 +853,15 @@ class Game():
 
             # Testing command
             if message.content.startswith('~test') and message.author.id == 238808836075421697:
-                role_msg = 'Hello'
-                status = discord.Embed(colour=0x00C9FF)
-                status.add_field(name = '\u200B', value='test')
+                pings_msg = 'Type `y` if you want to be pinged.\nType `n` if you no longer want to be pinged.'
+                status = discord.Embed(title = 'Would you like to be pinged for games in this server?', description = pings_msg, colour=0x00C9FF)
+
+                # status.add_field(name = '\u200B', value='test')
                 # status.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/748958842087538748/annie_vs_kenneeh.PNG')
                 # status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png')
-
-#                 role_msg = 'You are a **Warrior**!\n\n\
-# You are a Titan shifter who has infiltrated the Walls and are now working undercover to undermine the military\'s efforts. Working with your \
-# fellow Warriors, you seek to destroy the Walls and wipe out humanity. \n\n\
-# Your task is to conceal your identity from the Soldiers, and persuade them to allow you into their expeditions. At the same time, you need to identify the Coordinate within the ranks of the Soldiers.\n\n\
-# Your fellow Warriors are:\n\
-# **Warrior 1**\n\
-# **Warrior 2**'
 #                 status = discord.Embed(title='⚔ Warrior ⚔', description=role_msg, colour=0xB23E00)
 #                 status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png')
-                await message.channel.send(content=role_msg, embed=status)
-
+                await message.channel.send(embed=status)
 
     def reset_timers(self):
         self.approval_timer_obj.cancel()

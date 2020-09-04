@@ -81,6 +81,26 @@ class MyClient(discord.Client):
             invite_embed.set_thumbnail(url=str(self.user.avatar_url))
             await message.channel.send(embed=invite_embed)
 
+        elif message.guild.id == 748080644340318299 and message.channel.id == 751466308079583262:
+            if message.content.startswith('~pings') and message.author.id == 238808836075421697:
+                pings_msg = 'Type `y` if you want to be pinged.\nType `n` if you no longer want to be pinged.'
+                status = discord.Embed(title = 'Would you like to be pinged for games in this server?', description = pings_msg, colour=0x00C9FF)
+                await message.channel.send(embed=status)
+            elif message.content.lower() == 'y':
+                await message.author.add_roles(message.guild.get_role(748084175352889364))
+                confirmation_msg = await message.channel.send(embed=discord.Embed(description = message.author.mention + ', you can now be pinged for games in this server!', colour=0x00C9FF))
+                await message.delete()
+                await asyncio.sleep(15)
+                await confirmation_msg.delete()
+            elif message.content.lower() == 'n':
+                await message.author.remove_roles(message.guild.get_role(748084175352889364))
+                confirmation_msg = await message.channel.send(embed=discord.Embed(description = message.author.mention + ', you will no longer be pinged for games in this server!', colour=0x00C9FF))
+                await message.delete()
+                await asyncio.sleep(15)
+                await confirmation_msg.delete()
+            elif message.author.id != self.user.id:
+                await message.delete()
+
         elif cur_games:
             for game in cur_games:
                 await game.msg_handler(message)
