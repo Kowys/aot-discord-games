@@ -82,7 +82,7 @@ class MyClient(discord.Client):
             invite_embed.set_thumbnail(url=str(self.user.avatar_url))
             await message.channel.send(embed=invite_embed)
 
-        elif message.guild.id == 748080644340318299 and message.channel.id == 751466308079583262:
+        elif message.channel.id == 751466308079583262:
             if message.content.startswith('~pings') and message.author.id == 238808836075421697:
                 pings_msg = 'Type `y` if you want to be pinged.\nType `n` if you no longer want to be pinged.'
                 status = discord.Embed(title = 'Would you like to be pinged for games in this server?', description = pings_msg, colour=0x00C9FF)
