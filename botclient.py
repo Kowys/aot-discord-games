@@ -76,7 +76,7 @@ class MyClient(discord.Client):
             await message.channel.send(embed=credits_embed)
 
         elif message.content.startswith('~invite'):
-            invite_msg = '[Click here](https://discord.com/oauth2/authorize?client_id=422033689250234368&scope=bot&permissions=388169) to invite me to your server!\n\n' + \
+            invite_msg = '[Click here](https://discord.com/oauth2/authorize?client_id=422033689250234368&scope=bot&permissions=388161) to invite me to your server!\n\n' + \
             'Or join the official [Warriors vs Soldiers server](https://discord.gg/sBjKwBp)!'
             invite_embed =  discord.Embed(title = 'Invite link', description = invite_msg, colour=0xE5D2BB)
             invite_embed.set_thumbnail(url=str(self.user.avatar_url))
