@@ -57,7 +57,7 @@ class Game():
                 await asyncio.sleep(1)
                 commander_msg2 = 'Commander **' + \
                     self.state.players[0][0].name + \
-                    '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                    '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                 await self.state.game_channel.send(commander_msg2)
 
             # Expedition voting phase
@@ -181,7 +181,7 @@ class Game():
                                     await asyncio.sleep(2)
                                     commander_msg2 = 'Commander **' + \
                                         self.state.players[0][0].name + \
-                                        '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                                        '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                                     await self.state.game_channel.send(commander_msg2)
                 else:
                     if response.startswith('f') and message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.state.players)))):
@@ -238,7 +238,7 @@ class Game():
                                 self.state.message_box = []
                                 if self.state.scout_in_expedition():
                                     await self.state.game_channel.send('💫 A flare has been fired by the **Scout**! 💫')
-                                await self.state.game_channel.send('Type \'**~result**\' to see the results of the expedition!')
+                                await self.state.game_channel.send('Type `~result` to see the results of the expedition!')
                     else:
                         await message.author.dm_channel.send('You\'ve already made your decision!')
                 else:
@@ -461,7 +461,7 @@ class Game():
                             await asyncio.sleep(1)
                             commander_msg2 = 'Commander **' + \
                                 self.state.players[0][0].name + \
-                                '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                                '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                             await message.channel.send(commander_msg2)
 
                         else:
@@ -506,7 +506,7 @@ class Game():
                             await asyncio.sleep(2)
                             commander_msg2 = 'Commander **' + \
                                 self.state.players[0][0].name + \
-                                '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                                '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                             await message.channel.send(commander_msg2)
                 else:
                     await message.channel.send('You may only start the next expedition if you are in the game!')
@@ -531,7 +531,7 @@ class Game():
                                         self.state.blessed.append(message.author)
                                         self.state.currently_blessed = player_obj
 
-                                        next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
+                                        next_expedition_msg = 'When everyone is ready, type `~next` to begin the next expedition.'
                                         await asyncio.sleep(2)
                                         await message.channel.send(next_expedition_msg)
 
@@ -630,7 +630,7 @@ class Game():
 
                             else:
                                 self.state.status = 'expedition over'
-                                next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
+                                next_expedition_msg = 'When everyone is ready, type `~next` to begin the next expedition.'
                                 await asyncio.sleep(2)
                                 await message.channel.send(next_expedition_msg)
 
@@ -675,7 +675,7 @@ class Game():
 
                             else:
                                 self.state.status = 'expedition over'
-                                next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
+                                next_expedition_msg = 'When everyone is ready, type `~next` to begin the next expedition.'
                                 await asyncio.sleep(2)
                                 await message.channel.send(next_expedition_msg)
 
@@ -1013,7 +1013,7 @@ class Game():
                                 await asyncio.sleep(1)
                                 commander_msg2 = 'Commander **' + \
                                     self.state.players[0][0].name + \
-                                    '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                                    '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                                 await self.state.game_channel.send(commander_msg2)
 
     async def decision_timer(self):
@@ -1047,7 +1047,7 @@ class Game():
                             self.state.message_box = []
                             if self.state.scout_in_expedition():
                                 await self.state.game_channel.send('💫 A flare has been fired by the **Scout**! 💫')
-                            await self.state.game_channel.send('Type \'**~result**\' to see the results of the expedition!')
+                            await self.state.game_channel.send('Type `~result` to see the results of the expedition!')
                         else:
                             await self.state.game_channel.send('Something went wrong! Resetting current expedition...')
 
@@ -1077,7 +1077,7 @@ class Game():
                             await asyncio.sleep(1)
                             commander_msg2 = 'Commander **' + \
                                 self.state.players[0][0].name + \
-                                '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                                '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                             await self.state.game_channel.send(commander_msg2)
 
     async def selection_timer(self):
@@ -1129,7 +1129,7 @@ class Game():
                         await asyncio.sleep(1)
                         commander_msg2 = 'Commander ' + \
                             self.state.players[0][0].name + \
-                            ', please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                            ', please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                         await self.state.game_channel.send(commander_msg2)
 
     async def blessing_timer(self):
@@ -1161,7 +1161,7 @@ class Game():
                         self.state.blessed.append(self.state.currently_blessed)
                         self.state.currently_blessed = None
 
-                        next_expedition_msg = 'When everyone is ready, type **~next** to begin the next expedition.'
+                        next_expedition_msg = 'When everyone is ready, type `~next` to begin the next expedition.'
                         await asyncio.sleep(2)
                         await self.state.game_channel.send(next_expedition_msg)
 
@@ -1210,7 +1210,7 @@ class Game():
                         await asyncio.sleep(1)
                         commander_msg2 = 'Commander **' + \
                             self.state.players[0][0].name + \
-                            '**, please select your team for the expedition. (Type ~pick <@name> to pick a team member.)'
+                            '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                         await self.state.game_channel.send(commander_msg2)
 
     async def kidnap_timer(self):

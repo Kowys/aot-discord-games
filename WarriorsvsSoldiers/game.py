@@ -1196,7 +1196,7 @@ Your fellow Warriors are:\n'
 
     def reach_basement(self):
         self.status = 'choose coordinate'
-        basement_msg = 'The Soldiers have reached the Basement! The Warriors have one last chance to seize victory by capturing the Coordinate. Any Warrior may type **~kidnap <@name>** \
+        basement_msg = 'The Soldiers have reached the Basement! The Warriors have one last chance to seize victory by capturing the Coordinate. Any Warrior may type `~kidnap <@name>` \
 to select who they believe is the Coordinate.\n\nThe Warriors are:\n'
         for person in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
             basement_msg += '**' + person[0].name + '**\n'
@@ -2542,7 +2542,7 @@ Enabling this effect could help reduce the frequency of gridlocks while adding a
                             'start':'Starts the game (requires 5-10 players)',
                             'reset':'Stops the existing game or clears the current lobby (only the host can reset once the game starts)',
                             'add':'Adds the specified optional role to the game. (E.g. `~add queen`)',
-                            'remove':'Removes the specified optional role from the game. (E.g. `~add queen`)',
+                            'remove':'Removes the specified optional role from the game. (E.g. `~remove queen`)',
                             'randomroles': 'Toggles randomization of optional roles when starting a game.',
                             'fast': 'Toggles fast mode on, with reduced timer durations for all phases.\n\n\
 Voting: 1 min -> 30 secs\nExpedition selection: 5 min -> 2 min\nKidnap: 10 min -> 2 min',
@@ -2554,14 +2554,14 @@ If game has started: Brings up the current list of players, arranged in order of
                             'next':'Starts the next expedition after the previous expedition has ended.',
                             'pick':'The command used by the current Commander to select the expedition team (E.g. `~pick @armin`)',
                             'kidnap': 'Usable if the Soldiers reach the basement, any Warrior can use this command to pick who they think is the Coordinate (E.g. `~kidnap @eren`)',
-                            'status':'Brings up the current game status. This includes the number of players, the number of Warriors and Soldiers, the current progress towards the Basement \
+                            'status':'Brings up the state of the current game. This includes the number of players, the number of Warriors and Soldiers, the current progress towards the Basement \
 and status of the Walls, the results of previous expeditions and information on the current expedition.',
-                            'rules':'A breakdown of the game rules and information about each available role, as well as some common tips and strategies.',
-                            'profile':'Calls up the profile of a given person (E.g. `~profile @levi`).',
+                            'rules':'Provides a breakdown of the game rules and roles, as well as some common tips and strategies.',
+                            'profile':'Checks a person\'s profile (E.g. `~profile @levi`).',
                             'badges':'Checks the badges a given user has. Use just `~badges` to check your own badges.',
-                            'gamestats':'Brings up the past records of all games played.',
+                            'gamestats':'Brings up the records of all games played.',
                             'leaderboard/lb': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
-                            'role': 'Checks your role while in a game.',
+                            'role': 'Checks your current role with the bot.',
                             'roles': 'Shows the list of roles currently in the game.'}
 
             roles_dict = {'soldier': soldier_info,
