@@ -20,7 +20,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.reset_msg = discord.Embed(title = 'Game Reset!', description = 'Type **`~host`** to create a new lobby.\nType **`~intro`** for more information about the game.', colour=0x0013B4)
 
         self.start_msg = 'Assigning roles...'
-        self.roles_assigned_msg = 'Roles assigned!\n\nWhen everyone is ready, type **~next** to begin the first expedition.'
+        self.roles_assigned_msg = 'Roles assigned!\n\nWhen everyone is ready, type `~next` to begin the first expedition.'
 
         self.player_roles = {5: ['soldier','soldier','warrior','warrior','coordinate'], 
                              6: ['soldier','soldier','soldier','warrior','warrior','coordinate'],
