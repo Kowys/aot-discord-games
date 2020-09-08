@@ -2633,7 +2633,7 @@ and status of the Walls, the results of previous expeditions and information on 
             page_num = 1
 
         if page_num == 1:
-            tutorial1_intro = 'Warriors vs Soldiers is a party game for 5-10 players. It is based on the tabletop game Avalon/Resistance, ' + \
+            tutorial1_intro = 'Warriors vs Soldiers is a party game for 5-10 players. It is based on the tabletop game Avalon: The Resistance, ' + \
             'with a similar concept to other deception games like Werewolf, Mafia, and Among Us.\n\u200B'
             tutorial1_embed = discord.Embed(title = 'Rules Summary', description = tutorial1_intro, colour=0x0013B4)
 
