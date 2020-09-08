@@ -114,5 +114,10 @@ def config_bot(config_msg, client):
             embed_msg = 'All games have been disabled for this channel!'
         else:
             embed_msg = chosen_game + ' has been enabled for this channel!'
-        config_embed = discord.Embed(title = embed_msg, colour=0xE5D2BB)
+        
+        if chosen_game == 'Warriors vs Soldiers':
+            starting_commands = '❗Type **`~host`** to begin a new game.\n\n' + \
+            '❗Type **`~rules`** to view the game rules.\n\n' + \
+            '❗Type **`~help`** to see the full list of commands.'
+        config_embed = discord.Embed(title = embed_msg, description = starting_commands, colour=0xE5D2BB)
         return config_embed
