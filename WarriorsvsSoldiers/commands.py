@@ -408,7 +408,7 @@ class Game():
                     await message.channel.send(embed=msg)
 
             if message.content.startswith('~intro'):
-                await message.channel.send(self.state.intro_msg)
+                await message.channel.send(embed=self.state.intro_msg)
 
             # Check your own role
             if message.content == '~role':

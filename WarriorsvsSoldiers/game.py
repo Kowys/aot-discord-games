@@ -7,15 +7,18 @@ import sqlite3
 class State():
     def __init__(self):
         # Constants
-        self.intro_msg = 'Welcome to ⚔**Warriors vs Soldiers**🛡!\n\n\
-In this Attack on Titan themed game, the Soldiers of the Survey Corps embark on expeditions to reach the Basement, which they believe \
-holds the secrets about the world. However, the Titan shifters known as Warriors have infiltrated their ranks, and will do anything it takes to sabotage the expeditions and destroy the Walls.\n\n\
+        self.intro_msg = discord.Embed(
+            title = 'Welcome to ⚔ Warriors vs Soldiers 🛡!',
+            description = 'In this Attack on Titan themed party game for 5-10 players, the Soldiers of the Survey Corps embark on expeditions to reach the Basement, which they believe \
+holds the secrets about the world.\n\n\
+However, the Titan shifters known as Warriors have infiltrated their ranks, and will do anything it takes to sabotage the expeditions and destroy the Walls.\n\n\
 As a participant in this game, your abilities of logical deduction, deception, and teamwork will be put to the ultimate test.\n\n\
 Will the Soldiers reach the Basement and find out the truth about the world? \
 Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
-❗Type **`~host`** to begin a new game.\n\n\
-❗Type **`~rules`** to view the game rules.\n\n\
-❗Type **`~help`** to see the full list of commands.'
+❗Type `~host` to begin a new game.\n\n\
+❗Type `~rules` to view the game rules.\n\n\
+❗Type `~help` to see the full list of commands.',  
+            colour=0x0013B4)
 
         self.reset_msg = discord.Embed(title = 'Game Reset!', description = 'Type **`~host`** to create a new lobby.\nType **`~intro`** for more information about the game.', colour=0x0013B4)
 
