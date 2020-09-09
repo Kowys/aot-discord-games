@@ -2540,10 +2540,10 @@ Enabling this effect could help reduce the frequency of gridlocks while adding a
         if command_query:
             commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
                             'join':'Joins an existing lobby.',
-                            'leave':'Leave your current lobby',
-                            'kick':'Removes a player from the lobby (Only the host can kick)',
-                            'start':'Starts the game (requires 5-10 players)',
-                            'reset':'Stops the existing game or clears the current lobby (only the host can reset once the game starts)',
+                            'leave':'Leave your current lobby.',
+                            'kick':'Removes a player from the lobby (Only the host can kick).',
+                            'start':'Starts the game (requires 5-10 players).',
+                            'reset':'Stops the existing game or clears the current lobby (only the host can reset once the game starts).',
                             'add':'Adds the specified optional role to the game. (E.g. `~add queen`)',
                             'remove':'Removes the specified optional role from the game. (E.g. `~remove queen`)',
                             'randomroles': 'Toggles randomization of optional roles when starting a game.',
@@ -2552,20 +2552,21 @@ Voting: 1 min -> 30 secs\nExpedition selection: 5 min -> 2 min\nKidnap: 10 min -
                             'normal': 'Toggles normal mode on, with standard timer durations for all phases.',
                             'casual': 'Toggles casual mode on. SR or badges will not be awarded at the end of a game.',
                             'ranked': 'Toggles ranked mode on, with SR and badges being awarded as usual.',
-                            'players':'If game hasn\'t started yet: Brings up the current list of players in the lobby.\n\
+                            'players':'If game hasn\'t started yet: Brings up the current list of players in the lobby.\n\n\
 If game has started: Brings up the current list of players, arranged in order of their position in the queue to be Commander.',
                             'next':'Starts the next expedition after the previous expedition has ended.',
-                            'pick':'The command used by the current Commander to select the expedition team (E.g. `~pick @armin`)',
-                            'kidnap': 'Usable if the Soldiers reach the basement, any Warrior can use this command to pick who they think is the Coordinate (E.g. `~kidnap @eren`)',
+                            'pick':'The command used by the current Commander to select the expedition team. (E.g. `~pick @armin`)',
+                            'kidnap': 'Usable if the Soldiers reach the basement, any Warrior can use this command to pick who they think is the Coordinate. (E.g. `~kidnap @eren`)',
                             'status':'Brings up the state of the current game. This includes the number of players, the number of Warriors and Soldiers, the current progress towards the Basement \
 and status of the Walls, the results of previous expeditions and information on the current expedition.',
                             'rules':'Provides a breakdown of the game rules and roles, as well as some common tips and strategies.',
                             'profile':'Checks a person\'s profile (E.g. `~profile @levi`).',
                             'badges':'Checks the badges a given user has. Use just `~badges` to check your own badges.',
                             'gamestats':'Brings up the records of all games played.',
-                            'leaderboard/lb': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
+                            'leaderboard': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
+                            'lb': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
                             'role': 'Checks your current role with the bot.',
-                            'roles': 'Shows the list of roles currently in the game.'}
+                            'roles': 'If game hasn\'t started yet: Shows the full list of available roles.\n\nIf game has started: Shows the list of roles currently in the game.'}
 
             roles_dict = {'soldier': soldier_info,
                         'warrior': warrior_info,
@@ -2586,38 +2587,40 @@ and status of the Walls, the results of previous expeditions and information on 
                         'funds': funds_info}
 
             if command_query[0] in commands_dict:
-                return discord.Embed(title = '~' + command_query[0], description = commands_dict[command_query[0]], colour = 0x0013B4)
+                return discord.Embed(title = '`~' + command_query[0] + '`', description = commands_dict[command_query[0]], colour = 0x0013B4)
             elif command_query[0] in roles_dict:
                 return discord.Embed(description = roles_dict[command_query[0]], colour = 0x0013B4)
 
         else:
-            lobby_commands = '~host\n\
-~join\n\
-~leave\n\
-~kick <@person>\n\
-~start\n\
-~reset\n\
-~add <role>\n\
-~remove <role>\n\
-~randomroles\n\
-~fast\n\
-~normal\n\
-~casual\n\
-~ranked\n\
-~players\n\
-~rules\n\
-~profile <@person>\n\
-~badges <@person>\n\
-~gamestats\n\
-~leaderboard'
+            lobby_commands = '`~host`\n\
+`~join`\n\
+`~leave`\n\
+`~kick <@person>`\n\
+`~start`\n\
+`~reset`\n\
+`~add <role>`\n\
+`~remove <role>`\n\
+`~roles`\n\
+`~randomroles`\n\
+`~fast`\n\
+`~normal`\n\
+`~casual`\n\
+`~ranked`\n\
+`~players`'
 
-            game_commands = '~role\n\
-~roles\n\
-~next\n\
-~pick <@person>\n\
-~kidnap <@person>\n\
-~status\n\
-~players'
+            game_commands = '`~role`\n\
+`~roles`\n\
+`~next`\n\
+`~pick <@person>`\n\
+`~kidnap <@person>`\n\
+`~status`\n\
+`~players`'
+
+            other_commands = '`~rules`\n\
+`~profile <@person>`\n\
+`~badges <@person>`\n\
+`~gamestats`\n\
+`~leaderboard`'
 
             commands = discord.Embed(title = 'List of commands for Warriors vs Soldiers', colour=0x0013B4)
             general_commands = '`~config` : Lets you select the game for each channel\n' + \
@@ -2627,6 +2630,7 @@ and status of the Walls, the results of previous expeditions and information on 
             commands.add_field(name = 'Warriors vs Soldiers', value = 'For more information about a specific command, type `~help <command>`. (E.g. `~help kidnap`)', inline = False)
             commands.add_field(name = 'Lobby commands', value = lobby_commands)
             commands.add_field(name = 'In-game commands', value = game_commands)
+            commands.add_field(name = 'Other commands', value = other_commands)
             return commands
 
     def tutorial(self, page_num):
