@@ -115,6 +115,7 @@ def config_bot(config_msg, client):
         else:
             embed_msg = chosen_game + ' has been enabled for this channel!'
         
+        starting_commands = ''
         if chosen_game == 'Warriors vs Soldiers':
             starting_commands = '❗Type **`~host`** to begin a new game.\n\n' + \
             '❗Type **`~rules`** to view the game rules.\n\n' + \
