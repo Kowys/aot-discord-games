@@ -43,13 +43,16 @@ class MyClient(discord.Client):
 
         # Config
         elif message.content.startswith('~config'):
-            if message.author.id == 238808836075421697 or message.author.guild_permissions.manage_guild:
+            if message.author.guild_permissions.manage_guild or message.author.id == 238808836075421697:
+                current_author_id = message.author.id
+                current_channel_id = message.channel.id
                 config_msg = botconfig.get_config_msg(cur_games)
                 config_embed = discord.Embed(title = config_msg, colour=0xE5D2BB)
                 await message.channel.send(embed = config_embed)
 
                 def options(my_msg):
-                    return (my_msg.author.guild_permissions.manage_guild or my_msg.author.id == 238808836075421697) \
+                    return (my_msg.author.id == current_author_id and my_msg.channel.id == current_channel_id) \
+                    and (my_msg.author.guild_permissions.manage_guild or my_msg.author.id == 238808836075421697) \
                     and my_msg.content in ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '0️⃣', '1', '2', '3', '4', '0']
                     
                 try:
