@@ -903,6 +903,7 @@ class Game():
                         times_up_msg = '**' + self.state.game_host.name + \
                             '** did not manage to start the next expedition in time! Resetting game...'
                         await self.state.game_channel.send(times_up_msg)
+                        self.state.reset_confirmation = True
                         msg = self.state.reset(self.state.game_host)
                         await self.state.game_channel.send(embed=msg)
 
