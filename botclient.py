@@ -37,6 +37,22 @@ class MyClient(discord.Client):
             print("Terminating")
             raise SystemExit
 
+        # Privacy policy
+        elif message.content.startswith('~privacy'):
+            privacy_msg = '**Where does the information go?**\n\n' + \
+            'All the information is stored in a local SQLite DB. If you want your information removed contact Entropi#3441.\n\n' + \
+            '**What information is collected?**\n\n' + \
+            '- Guild ID\n' + \
+            '- Channel ID\n' + \
+            '- User ID\n\n' + \
+            '**Why do we collect the information?**\n\n' + \
+            'We collect information to maintain game records for players to track their progress and compete on the leaderboards.\n\n' + \
+            '**Do we share any information?**\n\n' + \
+            'None of the data collected is shared nor ever will be shared.\n\n' + \
+            'Support? If you have any problems contact Entropi#3441. Or join the support server: https://discord.gg/sBjKwBp\n\n'
+            privacy_embed = discord.Embed(title = 'Privacy Policy for Warriors vs Soldiers', description = privacy_msg, colour=0xE5D2BB)
+            await message.channel.send(embed = privacy_embed)
+
         # Admin commands
         elif message.content.split(' ')[0] in admin.commands_list:
             await admin.message_handler(self, message, botconfig.instances)
