@@ -33,6 +33,9 @@ class MyClient(discord.Client):
         # Get cur_game, which is the game object consisting of commands and all other relevant states of the game
         cur_games = botconfig.get_cur_game(message)
 
+        if message.author.bot:
+            return
+
         if message.content == '~die' and message.author.id == 238808836075421697:
             print("Terminating")
             raise SystemExit
