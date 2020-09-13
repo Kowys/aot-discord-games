@@ -120,7 +120,13 @@ class Game():
 
                                 for person in self.state.expedition_squad:
                                     decision_msg = self.state.get_decision_msg(person)
-                                    await person.dm_channel.send(embed=decision_msg)
+                                    try:
+                                        await person.dm_channel.send(embed=decision_msg)
+                                    except:
+                                        private_dms_decision_msg = person.mention + ', you have disabled DMs from server members! ' + \
+                                        'As a result, I am unable to process your decision.\n\n' + \
+                                        'Please enable DMs from server members to participate in the game.'
+                                        await self.state.game_channel.send(private_dms_decision_msg)
                                     await asyncio.sleep(0.1)
 
                                 self.state.status = 'expedition decision'
@@ -392,7 +398,13 @@ class Game():
                             await player[0].create_dm()
                         role_msg = self.state.get_role_msg(player)
                         await asyncio.sleep(0.1)
-                        await player[0].dm_channel.send(embed=role_msg)
+                        try:
+                            await player[0].dm_channel.send(embed=role_msg)
+                        except:
+                            private_dms_msg = player[0].mention + ', you have disabled DMs from server members! ' + \
+                            'As a result, I am unable to DM to you your role.\n\n' + \
+                            'Please enable DMs from server members, then type `~role` to receive your role.'
+                            await message.channel.send(private_dms_msg)
                     await asyncio.sleep(1)
                     await message.channel.send(self.state.roles_assigned_msg)
 
@@ -412,8 +424,16 @@ class Game():
 
             # Check your own role
             if message.content == '~role':
+                if not message.author.dm_channel:
+                    await message.author.create_dm()
                 player_role = self.state.get_player_role(message.author)
-                await message.author.dm_channel.send(embed=player_role)
+                try:
+                    await message.author.dm_channel.send(embed=player_role)
+                except:
+                    private_dms_role_msg = message.author.mention + ', you have disabled DMs from server members! ' + \
+                    'As a result, I am unable to send you your role.\n\n' + \
+                    'Please enable DMs from server members to participate in the game.'
+                    await message.channel.send(private_dms_role_msg)
 
             # Check roles currently in the game
             if message.content.startswith('~roles'):
@@ -485,7 +505,10 @@ class Game():
                             paths_holder_msg = '📢You are the **Paths Holder**!📢\n\nType in the message you wish to send to the world now.'
                             if not self.state.paths_holders[0].dm_channel:
                                 await self.state.paths_holders[0].create_dm()
-                            await self.state.paths_holders[0].dm_channel.send(embed=discord.Embed(description=paths_holder_msg, colour=0x4B4B4B))
+                            try:
+                                await self.state.paths_holders[0].dm_channel.send(embed=discord.Embed(description=paths_holder_msg, colour=0x4B4B4B))
+                            except:
+                                print("Error: User cannot receive DM")
 
                         else:
                             self.state.status = 'expedition selection'
@@ -523,9 +546,15 @@ class Game():
                                         await asyncio.sleep(1)
                                         blessing_msg = '**' + player_obj.name + '** is fighting on the side of the ' + self.state.get_player_allegiance(player_obj)
                                         blessing_embed = discord.Embed(title='🔮**Ymir\'s Blessing**🔮\n\n', description=blessing_msg, colour=0x9B00D9)
-                                        await message.author.dm_channel.send(embed=blessing_embed)
-                                        await asyncio.sleep(1)
-                                        await message.channel.send('**' + message.author.name + '** now knows **' + player_obj.name + '**\'s true allegiance!')
+                                        try:
+                                            await message.author.dm_channel.send(embed=blessing_embed)
+                                            await asyncio.sleep(1)
+                                            await message.channel.send('**' + message.author.name + '** now knows **' + player_obj.name + '**\'s true allegiance!')
+                                        except:
+                                            private_dms_blessing_msg = message.author.mention + ', you have disabled DMs from server members! ' + \
+                                            'As a result, I am unable to send you the information.\n\n' + \
+                                            'Please enable DMs from server members to participate in the game.'
+                                            await message.channel.send(private_dms_blessing_msg)
 
                                         self.state.status = 'expedition over'
                                         self.state.blessed.append(message.author)
@@ -577,7 +606,13 @@ class Game():
                                     if not player.dm_channel:
                                         await player.create_dm()
                                     approval_msg = self.state.get_expedition_approval_msg(player)
-                                    await player.dm_channel.send(embed=approval_msg)
+                                    try:
+                                        await player.dm_channel.send(embed=approval_msg)
+                                    except:
+                                        private_dms_approval_msg = player.mention + ', you have disabled DMs from server members! ' + \
+                                        'As a result, I am unable to process your vote.\n\n' + \
+                                        'Please enable DMs from server members to participate in the game.'
+                                        await message.channel.send(private_dms_approval_msg)
                                     await asyncio.sleep(0.1)
                         else:
                             await message.channel.send('Please pick someone for the expedition team!')
@@ -601,7 +636,10 @@ class Game():
                         for warrior in list(filter(lambda x: x in self.state.expedition_squad, list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))))):
                             ackerman_name = list(filter(lambda x: x[1] == 'ackerman', self.state.players))[
                                 0][0].name
-                            await warrior.dm_channel.send(embed=discord.Embed(description='🛡 The Ackerman, **' + ackerman_name + '**, has prevented you from destroying the Walls!', colour=0x00C9FF))
+                            try:
+                                await warrior.dm_channel.send(embed=discord.Embed(description='🛡 The Ackerman, **' + ackerman_name + '**, has prevented you from destroying the Walls!', colour=0x00C9FF))
+                            except:
+                                print("Error: User cannot receive DM")
 
                     if self.state.funds_enabled:
                         self.state.funds = 5
@@ -953,7 +991,13 @@ class Game():
 
                             for person in self.state.expedition_squad:
                                 decision_msg = self.state.get_decision_msg(person)
-                                await person.dm_channel.send(embed=decision_msg)
+                                try:
+                                    await person.dm_channel.send(embed=decision_msg)
+                                except:
+                                    private_dms_decision_msg = person.mention + ', you have disabled DMs from server members! ' + \
+                                    'As a result, I am unable to process your decision.\n\n' + \
+                                    'Please enable DMs from server members to participate in the game.'
+                                    await self.state.game_channel.send(private_dms_decision_msg)
                                 await asyncio.sleep(0.1)
 
                             self.state.status = 'expedition decision'
@@ -1179,14 +1223,20 @@ class Game():
                         timer_msg = 'The Paths holder has **60 seconds** to make their announcement!'
                         player_timer_msg = 'You have **60 seconds** to send your message!'
                         await self.state.game_channel.send(timer_msg)
-                        await self.state.paths_holders[0].dm_channel.send(player_timer_msg)
+                        try:
+                            await self.state.paths_holders[0].dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
 
                     if (self.state.gamespeed == 'Normal' and timer == 90 and self.state.status == 'paths announcement') or \
                     (self.state.gamespeed == 'Fast' and timer == 30 and self.state.status == 'paths announcement'):
                         timer_msg = 'The Paths holder has **30 seconds** to make their announcement!'
                         player_timer_msg = 'You have **30 seconds** to send your message!'
                         await self.state.game_channel.send(timer_msg)
-                        await self.state.paths_holders[0].dm_channel.send(player_timer_msg)
+                        try:
+                            await self.state.paths_holders[0].dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
 
                     if (self.state.gamespeed == 'Normal' and timer >= 120 and self.state.status == 'paths announcement') or \
                     (self.state.gamespeed == 'Fast' and timer >= 60 and self.state.status == 'paths announcement'):
