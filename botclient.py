@@ -57,7 +57,7 @@ class MyClient(discord.Client):
             await message.channel.send(embed = privacy_embed)
 
         # Admin commands
-        elif message.content.split(' ')[0] in admin.commands_list:
+        elif message.content.split(' ')[0] in admin.commands_list and message.author.id == 238808836075421697:
             await admin.message_handler(self, message, botconfig.instances)
 
         # Config
