@@ -64,8 +64,13 @@ class State():
         self.wrong_answers = 0
         self.wrong_letter = False
 
-    def get_new_question(self):
+    def game_active(self):
+        return self.question_set != None or self.image != None or \
+            self.challenge == True or self.hangman_challenge == True
+
+    def get_new_question(self, msg_channel):
         self.game_reset()
+        self.game_channel = msg_channel
         self.question_set = fetchURL.new_question()
         self.clue_no = 1
         # +1 to record of questions asked
@@ -98,16 +103,18 @@ class State():
 
         return clue_embed
 
-    def get_new_image(self):
+    def get_new_image(self, msg_channel):
         self.game_reset()
+        self.game_channel = msg_channel
         self.question_set = fetchURL.new_image()
         self.new_image_update()
         image_embed = discord.Embed(title = 'Guess the image!', description = 'Type `~answer` to reveal the answer.', colour = 0xC0C0C0)
         image_embed.set_image(url = self.question_set['image'])
         return image_embed
 
-    def get_new_hangman(self):
+    def get_new_hangman(self, msg_channel):
         self.game_reset()
+        self.game_channel = msg_channel
         self.question_set = fetchURL.new_hangman()
         # +1 to record of questions asked
         self.new_hangman_question()
