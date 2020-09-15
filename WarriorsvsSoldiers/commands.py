@@ -303,18 +303,20 @@ class Game():
             if message.content.startswith('~kick'):
                 # (Host only) Removes a player from the lobby
                 messagebox = message.content.split(' ')
-                if len(messagebox) > 1:
+                if message.mentions:
                     player_profile = message.mentions[0]
-                kick_msg = self.state.kick(message.author, player_profile)
-                await message.channel.send(kick_msg)
-                if 'removed from the lobby' in kick_msg and len(self.state.players) >= 1:
-                    lobby = self.state.display_lobby()
-                    self.state.message_box.append(await message.channel.send(embed=lobby))
-                    # Delete previous lobby messages
-                    if len(self.state.message_box) > 1:
-                        for _ in range(len(self.state.message_box) - 1):
-                            delete_msg = self.state.message_box.pop(0)
-                            await delete_msg.delete()
+                    kick_msg = self.state.kick(message.author, player_profile)
+                    await message.channel.send(kick_msg)
+                    if 'removed from the lobby' in kick_msg and len(self.state.players) >= 1:
+                        lobby = self.state.display_lobby()
+                        self.state.message_box.append(await message.channel.send(embed=lobby))
+                        # Delete previous lobby messages
+                        if len(self.state.message_box) > 1:
+                            for _ in range(len(self.state.message_box) - 1):
+                                delete_msg = self.state.message_box.pop(0)
+                                await delete_msg.delete()
+                else:
+                    await message.channel.send('Please specify a player to kick!')
 
             if message.content.startswith('~add') or message.content.startswith('~remove'):
                 # Adds or removes an optional role
@@ -341,6 +343,8 @@ class Game():
                             for _ in range(len(self.state.message_box) - 1):
                                 delete_msg = self.state.message_box.pop(0)
                                 await delete_msg.delete()
+                else:
+                    await message.channel.send('Please specify a role to add or remove! E.g. `~add queen`')
 
             if message.content.lower().startswith('~randomroles') or message.content.lower().startswith('~random roles'):
                 randomroles_msg = self.state.toggle_randomroles(message.author)
@@ -618,6 +622,8 @@ class Game():
                             await message.channel.send('Please pick someone for the expedition team!')
                     else:
                         await message.channel.send('You are not the Commander!')
+                else:
+                    await message.channel.send('You may only pick an expedition team during the selection phase of an expedition!')
 
             if message.content.startswith('~result') and self.state.status == 'awaiting result':
                 if self.state.status != 'awaiting result':
