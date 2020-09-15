@@ -93,7 +93,7 @@ class MyClient(discord.Client):
             await message.channel.send('My prefix is `~`! E.g. type `~help` to see my list of commands.')
 
         elif message.content.startswith('~credits'):
-            credits_msg = 'I was made by Entropi#3441. For any suggestions/bug reports, please go to the support server: [Click here](https://discord.gg/FEN6sUM)'
+            credits_msg = 'I was made by Entropi#3441. For any suggestions/bug reports, please go to the official Warriors vs Soldiers server: [Click here](https://discord.gg/sBjKwBp)'
             credits_embed =  discord.Embed(title = 'Credits', description = credits_msg, colour=0xE5D2BB)
             await message.channel.send(embed=credits_embed)
 
