@@ -161,6 +161,7 @@ class Game():
                                             # Update roles in official WvS server
                                             for player in self.state.players:
                                                 await self.state.update_role(player[0], self.client)
+                                            await self.state.update_top_roles(self.client)
                                             await asyncio.sleep(2)
                                             await self.state.game_channel.send(embed=rating_changes)
                                             for achievements_msg in achievements_msgs:
@@ -701,6 +702,7 @@ class Game():
                                 # Update roles in official WvS server
                                 for player in self.state.players:
                                     await self.state.update_role(player[0], self.client)
+                                await self.state.update_top_roles(self.client)
                                 await asyncio.sleep(2)
                                 await message.channel.send(embed=rating_changes)
                                 for achievements_msg in achievements_msgs:
@@ -750,6 +752,7 @@ class Game():
                                     # Update roles in official WvS server
                                     for player in self.state.players:
                                         await self.state.update_role(player[0], self.client)
+                                    await self.state.update_top_roles(self.client)
                                     await asyncio.sleep(2)
                                     await message.channel.send(embed=rating_changes)
                                     for achievements_msg in achievements_msgs:
@@ -1038,6 +1041,7 @@ class Game():
                                         # Update roles in official WvS server
                                         for player in self.state.players:
                                             await self.state.update_role(player[0], self.client)
+                                        await self.state.update_top_roles(self.client)
                                         await asyncio.sleep(2)
                                         await self.state.game_channel.send(embed=rating_changes)
                                         for achievements_msg in achievements_msgs:
@@ -1314,6 +1318,7 @@ class Game():
                             # Update roles in official WvS server
                             for player in self.state.players:
                                 await self.state.update_role(player[0], self.client)
+                            await self.state.update_top_roles(self.client)
                             await asyncio.sleep(2)
                             await self.state.game_channel.send(embed=rating_changes)
                             for achievements_msg in achievements_msgs:

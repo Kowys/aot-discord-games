@@ -1774,6 +1774,53 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
             await member.add_roles(server.get_role(cur_role_id))
 
+    @staticmethod
+    async def update_top_roles(client):
+        # Updates #1 and top 10 roles
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        player_data_query = 'SELECT player, rating FROM players'
+        cursor.execute(player_data_query)
+        player_data = cursor.fetchall()
+
+        conn.close()
+
+        server = client.get_guild(748080644340318299)
+
+        player_rankings = {} # {player id: sr, ...}
+        # Put all players into a dictionary
+        for row in player_data:
+            player_rankings[row[0]] = row[1]
+
+        server_members = server.members
+        server_players = []
+        for member in server_members:
+            if member.id in player_rankings:
+                server_players.append([member, player_rankings[member.id]])
+        
+        # Sort by SR from biggest to smallest
+        server_players.sort(key = lambda x: x[1], reverse = True)
+
+        top_role = server.get_role(756429927200587888)
+        top10_role = server.get_role(756430896092938322)
+
+        # Update roles
+        for i, member in enumerate(server_players):
+            member_role_ids = [role.id for role in member[0].roles]
+            if i == 0:
+                if 756429927200587888 not in member_role_ids:
+                    await member[0].add_roles(top_role)
+            else:
+                if 756429927200587888 in member_role_ids:
+                    await member[0].remove_roles(top_role)
+                if i < 10:
+                    if 756430896092938322 not in member_role_ids:
+                        await member[0].add_roles(top10_role)
+                else:
+                    if 756430896092938322 in member_role_ids:
+                        await member[0].remove_roles(top10_role)
+
     def get_profile(self, player, server):
         # Returns the rating and game stats of given player in an embed
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')

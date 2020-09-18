@@ -144,6 +144,7 @@ class MyClient(discord.Client):
         if member.guild.id == 748080644340318299:
             # Assign role to member in WvS server
             await game.State.update_role(member, self, first_join=True)
+            await game.State.update_top_roles(self)
 
     async def on_guild_join(self, server):
         logs_channel = self.get_channel(742621514003644507)
