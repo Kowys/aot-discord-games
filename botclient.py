@@ -124,10 +124,14 @@ class MyClient(discord.Client):
                 await message.delete()
 
         elif cur_games:
+            if message.mentions and message.mentions[0] == self.user:
+                message.mentions = []
+                message.content = '~help'
+
             for game in cur_games:
                 await game.msg_handler(message)
         
-        elif message.content.startswith('~help'):
+        elif message.content.startswith('~help') or (message.mentions and message.mentions[0] == self.user):
             commands = discord.Embed(title = 'List of commands', description = 'Here is the list of available commands.', colour=0xE5D2BB)
             general_commands = '`~config` : Lets you select the game for each channel\n' + \
                 '`~credits` : Who made me/Get support\n' + \
