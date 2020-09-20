@@ -65,8 +65,7 @@ class MyClient(discord.Client):
             if message.author.guild_permissions.manage_guild or message.author.id == 238808836075421697:
                 current_author_id = message.author.id
                 current_channel_id = message.channel.id
-                config_msg = botconfig.get_config_msg(cur_games)
-                config_embed = discord.Embed(title = config_msg, colour=0xE5D2BB)
+                config_embed = botconfig.get_config_msg(cur_games)
                 await message.channel.send(embed = config_embed)
 
                 def options(my_msg):

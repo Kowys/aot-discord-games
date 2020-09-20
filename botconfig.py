@@ -52,14 +52,16 @@ def get_cur_game(message):
     return cur_games
 
 def get_config_msg(cur_games):
-    config_msg = 'Which game would you like to enable for this channel?'
-    config_msg += '\n(Current game: ' + (cur_games[0].game_name if cur_games else 'None') + ')'
-    config_msg += '\n\n:one: Choose Your Adventure (Locked)\n\n\
+    config_title = 'Which game would you like to enable for this channel?'
+    config_title += '\n(Current game: ' + (cur_games[0].game_name if cur_games else 'None') + ')'
+    config_msg = ':one: **Choose Your Adventure (Locked)\n\n\
 :two: Jaegermore (Locked)\n\n\
 :three: Warriors vs Soldiers\n\n\
 :four: Attack on Wikia (Locked)\n\n\
-:zero: None'
-    return config_msg
+:zero: None**'
+    config_embed = discord.Embed(title = config_title, description = config_msg, colour=0xE5D2BB)
+    config_embed.set_footer(text='Type in the corresponding number to select an option, e.g. \'3\' for Warriors vs Soldiers.')
+    return config_embed
 
 def config_bot(config_msg, client):
     # Configures bot for the channel and return embed message
