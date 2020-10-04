@@ -448,6 +448,12 @@ class Game():
                 else:
                     await message.channel.send(embed=player_roles)
 
+            # Checks the advantage of the current game or lobby
+            if message.content.startswith('~advantage'):
+                advantage_value = self.state.calculate_advantage()
+                advantage_embed = discord.Embed(title = 'Advantage', description = '⚖️ **Perfectly balanced!** ⚖️' if advantage_value == '**None**' else advantage_value, colour=0xF9FF41)
+                await message.channel.send(embed=advantage_embed)
+
             if message.content.startswith('~next'):
                 # Begin next expedition, commander to pick team
                 if (message.author in list(map(lambda x:x[0], self.state.players)) or message.author.id == 238808836075421697):
@@ -857,7 +863,7 @@ class Game():
                             
                     await asyncio.sleep(0.1)
 
-            if message.content.startswith('~help'):  # OK
+            if message.content.startswith('~help') or message.content.startswith('~info'):
                 helpbox = message.content.split(' ')
                 if len(helpbox) == 1:
                     # For list of commands

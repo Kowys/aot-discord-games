@@ -2613,7 +2613,11 @@ and status of the Walls, the results of previous expeditions and information on 
                             'leaderboard': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
                             'lb': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
                             'role': 'Checks your current role with the bot.',
-                            'roles': 'If game hasn\'t started yet: Shows the full list of available roles.\n\nIf game has started: Shows the list of roles currently in the game.'}
+                            'roles': 'If game hasn\'t started yet: Shows the full list of available roles.\n\nIf game has started: Shows the list of roles currently in the game.',
+                            'advantage': 'The advantage score tells you how powerful one side is relative to the other. It is calculated by a combination of the roles added and size of the game.\n\n' + \
+                                'At the end of the game, the side with the advantage will have the advantage score added to their team\'s average SR when calculating SR changes, ' + \
+                                'so as to reflect their stronger position.\n\n' \
+                                'This should help compensate for role imbalances by minimizing the penalty to the weaker side while rewarding them for an upset victory.'}
 
             roles_dict = {'soldier': soldier_info,
                         'warrior': warrior_info,
