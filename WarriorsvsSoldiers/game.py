@@ -2657,7 +2657,8 @@ and status of the Walls, the results of previous expeditions and information on 
 `~normal`\n\
 `~casual`\n\
 `~ranked`\n\
-`~players`'
+`~players`\n\
+`~advantage`'
 
             game_commands = '`~role`\n\
 `~roles`\n\
@@ -2665,7 +2666,8 @@ and status of the Walls, the results of previous expeditions and information on 
 `~pick <@person>`\n\
 `~kidnap <@person>`\n\
 `~status`\n\
-`~players`'
+`~players`\n\
+`~advantage`'
 
             other_commands = '`~rules`\n\
 `~profile <@person>`\n\
