@@ -9,6 +9,9 @@ import AttackonWikia.commands
 # Each instance contains server ID, channel ID, and client as attributes
 instances = []
 
+commands_list = ['~host', '~join', '~leave', '~kick', '~start', '~reset', '~add', '~remove', '~roles', '~randomroles', '~fast', '~normal', '~casual', '~ranked', '~players', '~advantage', 
+'~next', '~pick', '~kidnap', '~status', '~players', '~rules', '~profile', '~badges', '~gamestats', '~leaderboard', '~lb']
+
 class Instance():
     def __init__(self, server_id, channel_id, game_name, client):
         self.game_name = game_name

@@ -139,7 +139,7 @@ class MyClient(discord.Client):
             commands.add_field(name = 'General', value = general_commands)
             await message.channel.send(embed=commands)
 
-        elif message.content.startswith('~') and not '~~' in message.content:
+        elif message.content.lower() in botconfig.commands_list:
             msg = 'No game is currently enabled in this channel! Type `~config` to select a game.'
             await message.channel.send(embed=discord.Embed(description=msg, colour=0xE5D2BB))
 
