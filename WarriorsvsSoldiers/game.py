@@ -1490,6 +1490,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         else:
             rating_transfer = K * exp
 
+        rating_transfer = max(10, rating_transfer)
+
         # Apply rating transfers and update player records
         rating_changes = [] # [id, old rating, new rating, role]
         for player in ratings:
