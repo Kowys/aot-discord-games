@@ -1593,6 +1593,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                     win = True
 
             # Update consecutive wins and add SR, achievement msg if needed
+            player_sr = player_data[1]
             current_streak = player_data[2]
             best_streak = player_data[3]
             if win == True:
@@ -1612,8 +1613,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         # Add SR
                         update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
                         rating_gain = self.achievement_rewards[self.consecutive_wins_achievements[best_streak]]
-                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        player_sr += rating_gain
+                        update_rating = [player_sr, cur_player[0].id]
                         cursor.execute(update_rating_query, update_rating)
+                        conn.commit()
             else:
                 current_streak = 0
 
@@ -1636,7 +1639,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 # Add SR
                 update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
                 rating_gain = self.achievement_rewards[self.number_games_achievements[games_played]]
-                update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                player_sr += rating_gain
+                update_rating = [player_sr, cur_player[0].id]
                 cursor.execute(update_rating_query, update_rating)
                 conn.commit()
 
@@ -1655,7 +1659,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         # Add SR
                         update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
                         rating_gain = self.achievement_rewards[self.soldier_wins_achievements[soldier_wins]]
-                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        player_sr += rating_gain
+                        update_rating = [player_sr, cur_player[0].id]
                         cursor.execute(update_rating_query, update_rating)
                         conn.commit()
 
@@ -1672,7 +1677,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         # Add SR
                         update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
                         rating_gain = self.achievement_rewards[self.warrior_wins_achievements[warrior_wins]]
-                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        player_sr += rating_gain
+                        update_rating = [player_sr, cur_player[0].id]
                         cursor.execute(update_rating_query, update_rating)
                         conn.commit()
 
@@ -1689,7 +1695,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         # Add SR
                         update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
                         rating_gain = self.achievement_rewards[self.coordinate_wins_achievements[coordinate_wins]]
-                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        player_sr += rating_gain
+                        update_rating = [player_sr, cur_player[0].id]
                         cursor.execute(update_rating_query, update_rating)
                         conn.commit()
 
@@ -1707,7 +1714,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         # Add SR
                         update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
                         rating_gain = self.achievement_rewards[self.queen_wins_achievements[optional_soldier_wins]]
-                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        player_sr += rating_gain
+                        update_rating = [player_sr, cur_player[0].id]
                         cursor.execute(update_rating_query, update_rating)
                         conn.commit()
 
@@ -1724,13 +1732,33 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         # Add SR
                         update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
                         rating_gain = self.achievement_rewards[self.warchief_wins_achievements[optional_warrior_wins]]
-                        update_rating = [player_data[1] + rating_gain, cur_player[0].id]
+                        player_sr += rating_gain
+                        update_rating = [player_sr, cur_player[0].id]
                         cursor.execute(update_rating_query, update_rating)
                         conn.commit()
 
         conn.close()
 
         return achievements_msgs
+
+    def award_sr(self, player, awarded_sr):
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        player_data_query = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(player_data_query, (player.id,))
+        player_data = cursor.fetchone()
+        player_sr = player_data[1]
+
+        if player_data:
+            update_rating_query = 'UPDATE players SET rating = ? WHERE player = ?'
+            player_sr += awarded_sr
+            update_rating = [player_sr, player.id]
+            cursor.execute(update_rating_query, update_rating)
+            conn.commit()
+        
+        conn.close()
+        return '🏅 | ' + player.mention + ' has been awarded **' + ('+' if awarded_sr >= 0 else '') + str(awarded_sr) + ' SR!**'
 
     @staticmethod
     async def update_role(player, client, first_join=False):

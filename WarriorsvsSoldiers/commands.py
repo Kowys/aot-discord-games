@@ -904,6 +904,13 @@ class Game():
                     await rxn.remove(user)
                     await asyncio.sleep(0.1)
 
+            if message.content.startswith('~award'):
+                if message.mentions and message.author.id == 238808836075421697:
+                    sr_awarded = int(message.content.split(' ')[-1])
+                    player_profile = message.mentions[0]
+                    award_msg = self.state.award_sr(player_profile, sr_awarded)
+                    await message.channel.send(award_msg)
+
             # Testing command
             if message.content.startswith('~test') and message.author.id == 238808836075421697:
                 pings_msg = 'Type `y` if you want to be pinged.\nType `n` if you no longer want to be pinged.'
