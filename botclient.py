@@ -155,6 +155,9 @@ class MyClient(discord.Client):
         await logs_channel.send(embed=discord.Embed(title='Joined server: ' + server.name, description = server_info, colour=0xE5D2BB))
 
     async def on_guild_remove(self, server):
+        for instance in botconfig.instances:
+            if instance.server_id == server.id:
+                botconfig.instances.remove(instance)
         logs_channel = self.get_channel(742621514003644507)
         server_info = 'Server ID: ' + str(server.id) + '\n' + '# Members: ' + str(len(server.members))
         await logs_channel.send(embed=discord.Embed(title='Left server: ' + server.name, description = server_info, colour=0xE5D2BB))
