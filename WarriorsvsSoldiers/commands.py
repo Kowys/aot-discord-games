@@ -439,13 +439,16 @@ class Game():
                 if not message.author.dm_channel:
                     await message.author.create_dm()
                 player_role = self.state.get_player_role(message.author)
-                try:
-                    await message.author.dm_channel.send(embed=player_role)
-                except:
-                    private_dms_role_msg = message.author.mention + ', you have disabled DMs from server members! ' + \
-                    'As a result, I am unable to send you your role.\n\n' + \
-                    'Please enable DMs from server members to participate in the game.'
-                    await message.channel.send(private_dms_role_msg)
+                if type(player_role) != str:
+                    try:
+                        await message.author.dm_channel.send(embed=player_role)
+                    except:
+                        private_dms_role_msg = message.author.mention + ', you have disabled DMs from server members! ' + \
+                        'As a result, I am unable to send you your role.\n\n' + \
+                        'Please enable DMs from server members to participate in the game.'
+                        await message.channel.send(private_dms_role_msg)
+                else:
+                    await message.channel.send(player_role)
 
             # Check roles currently in the game
             if message.content.startswith('~roles'):
