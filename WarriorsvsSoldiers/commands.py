@@ -54,6 +54,11 @@ class Game():
                 players_msg = self.state.get_players()
                 await self.state.game_channel.send(embed=players_msg)
 
+                if self.state.kenny:
+                    await asyncio.sleep(2)
+                    kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                    await self.state.game_channel.send(embed=kenny_hit_list_msg)
+
                 await asyncio.sleep(1)
                 commander_msg2 = 'Commander **' + \
                     self.state.players[0][0].name + \
@@ -105,7 +110,7 @@ class Game():
                             await self.state.game_channel.send(embed=expedition_approval_result)
 
                             # Go to decision phase if vote passes, or back to selection phase otherwise
-                            if len(list(filter(lambda x: x[1] == 'yes', self.state.expedition_approval))) > 0.5 * len(self.state.expedition_approval):
+                            if len(list(filter(lambda x: x[1] == 'yes', self.state.expedition_approval))) > 0.5 * (len(self.state.expedition_approval) - self.state.num_targets):
                                 self.state.expedition_approval = []
                                 await self.state.game_channel.send('The proposal has passed!')
 
@@ -184,6 +189,11 @@ class Game():
                                     await asyncio.sleep(2)
                                     players_msg = self.state.get_players()
                                     await self.state.game_channel.send(embed=players_msg)
+
+                                    if self.state.kenny:
+                                        await asyncio.sleep(2)
+                                        kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                                        await self.state.game_channel.send(embed=kenny_hit_list_msg)
 
                                     await asyncio.sleep(2)
                                     commander_msg2 = 'Commander **' + \
@@ -323,10 +333,7 @@ class Game():
                 # Adds or removes an optional role
                 messagebox = message.content.split(' ')
                 if len(messagebox) >= 2:
-                    if len(messagebox) == 3:
-                        newrole = messagebox[1].lower() + ' ' + messagebox[2].lower()
-                    else:
-                        newrole = messagebox[1].lower()
+                    newrole = ' '.join(messagebox[1:]).lower()
                     if message.content.startswith('~add'):
                         if message.mentions and message.mentions[0].id == 188226672279945216:
                             newrole = 'mike'
@@ -489,6 +496,11 @@ class Game():
                             players_msg = self.state.get_players()
                             await message.channel.send(embed=players_msg)
 
+                            if self.state.kenny:
+                                await asyncio.sleep(2)
+                                kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                                await message.channel.send(embed=kenny_hit_list_msg)
+
                             await asyncio.sleep(1)
                             commander_msg2 = 'Commander **' + \
                                 self.state.players[0][0].name + \
@@ -536,6 +548,11 @@ class Game():
                             await asyncio.sleep(2)
                             players_msg = self.state.get_players()
                             await message.channel.send(embed=players_msg)
+
+                            if self.state.kenny:
+                                await asyncio.sleep(2)
+                                kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                                await message.channel.send(embed=kenny_hit_list_msg)
 
                             await asyncio.sleep(2)
                             commander_msg2 = 'Commander **' + \
@@ -613,6 +630,10 @@ class Game():
                                 await message.channel.send(approval_start)
                                 await asyncio.sleep(1)
                                 await message.channel.send('Receiving votes...')
+
+                                for player in self.state.kenny_hit_list[:self.state.num_targets]:
+                                    self.state.expedition_approval.append([player, 'none'])
+
                                 for player in list(map(lambda x: x[0], self.state.players)):
                                     if not player.dm_channel:
                                         await player.create_dm()
@@ -998,7 +1019,7 @@ class Game():
                         await self.state.game_channel.send(embed=expedition_approval_result)
 
                         # Go decision phase if vote passes, or back to selection phase otherwise
-                        if len(list(filter(lambda x: x[1] == 'yes', self.state.expedition_approval))) > 0.5 * len(self.state.expedition_approval):
+                        if len(list(filter(lambda x: x[1] == 'yes', self.state.expedition_approval))) > 0.5 * (len(self.state.expedition_approval) - self.state.num_targets):
                             self.state.expedition_approval = []
                             await self.state.game_channel.send('The proposal has passed!')
 
@@ -1078,6 +1099,11 @@ class Game():
                                 players_msg = self.state.get_players()
                                 await self.state.game_channel.send(embed=players_msg)
 
+                                if self.state.kenny:
+                                    await asyncio.sleep(2)
+                                    kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                                    await self.state.game_channel.send(embed=kenny_hit_list_msg)
+
                                 await asyncio.sleep(1)
                                 commander_msg2 = 'Commander **' + \
                                     self.state.players[0][0].name + \
@@ -1141,6 +1167,11 @@ class Game():
                             await asyncio.sleep(2)
                             players_msg = self.state.get_players()
                             await self.state.game_channel.send(embed=players_msg)
+                            
+                            if self.state.kenny:
+                                await asyncio.sleep(2)
+                                kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                                await self.state.game_channel.send(embed=kenny_hit_list_msg)
 
                             await asyncio.sleep(1)
                             commander_msg2 = 'Commander **' + \
@@ -1193,6 +1224,11 @@ class Game():
                         await asyncio.sleep(2)
                         players_msg = self.state.get_players()
                         await self.state.game_channel.send(embed=players_msg)
+
+                        if self.state.kenny:
+                            await asyncio.sleep(2)
+                            kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                            await self.state.game_channel.send(embed=kenny_hit_list_msg)
 
                         await asyncio.sleep(1)
                         commander_msg2 = 'Commander ' + \
@@ -1280,6 +1316,11 @@ class Game():
                         await asyncio.sleep(2)
                         players_msg = self.state.get_players()
                         await self.state.game_channel.send(embed=players_msg)
+
+                        if self.state.kenny:
+                            await asyncio.sleep(2)
+                            kenny_hit_list_msg = self.state.get_kenny_hit_list()
+                            await self.state.game_channel.send(embed=kenny_hit_list_msg)
 
                         await asyncio.sleep(1)
                         commander_msg2 = 'Commander **' + \

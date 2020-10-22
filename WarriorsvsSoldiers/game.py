@@ -77,6 +77,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.paths_holders = []
         self.funds_enabled = False
         self.funds = 5
+        self.kenny = False
+        self.kenny_hit_list = []
+        self.num_targets = 1
         
         self.cur_expedition = 0
         self.expedition_squad = []
@@ -118,6 +121,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.paths_holders = []
             self.funds_enabled = False
             self.funds = 5
+            self.kenny = False
+            self.kenny_hit_list = []
+            self.num_targets = 1
 
             self.cur_expedition = 0
             self.expedition_squad = []
@@ -302,6 +308,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                     else:
                         return '💰**Limited Funds**💰 for expeditions has already been enabled!'
 
+                elif role == 'kenny' or role == 'kenny the ripper':
+                    if self.kenny == False:
+                        self.kenny = True
+                        return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> has been enabled!'
+                    else:
+                        return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> has already been enabled!'
+
                 elif role == 'queen':
                     if role not in self.newroles:
                         return self.add_with_role_count_check('queen')
@@ -384,6 +397,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         return '💰**Limited Funds**💰 for expeditions has been disabled!'
                     else:
                         return '💰**Limited Funds**💰 for expeditions is not currently enabled!'
+
+                elif role == 'kenny' or role == 'kenny the ripper':
+                    if self.kenny == True:
+                        self.kenny = False
+                        return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> has been disabled!'
+                    else:
+                        return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> is not currently enabled!'
 
                 elif role == 'queen':
                     if role in self.newroles:
@@ -516,8 +536,11 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         lobby.add_field(name = '**' + str(len(self.players)) + '** player' + ('s' if len(self.players) > 1 else '') + ' in lobby', value = players_in_lobby, inline = False)
         lobby.add_field(name = 'Random Roles', value = '🎲' if self.randomroles else '⬛', inline=False)
         lobby.add_field(name = 'Optional Soldier Roles', value = self.get_newroles('soldier'))
+        lobby.add_field(name = '⠀', value = '⠀', inline = True)
         lobby.add_field(name = 'Optional Warrior Roles', value = self.get_newroles('warrior'))
-        lobby.add_field(name = 'In-Game Effects', value = self.get_newroles('game'), inline = False)
+        lobby.add_field(name = 'In-Game Effects', value = self.get_effects('effects1'), inline = True)
+        lobby.add_field(name = '⠀', value = '⠀', inline = True)
+        lobby.add_field(name = '⠀', value = self.get_effects('effects2'), inline = True)
         return lobby
 
     def get_newroles(self, team):
@@ -536,12 +559,17 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             spycheck = '✅' if 'spy' in self.newroles else '✖'
             role_msg = warchiefcheck + ' 🦹‍♂️**Warchief**🦹‍♂️\n\n' + falsekingcheck + ' 🕴**False King**🕴\n\n' + ymircheck + ' 🤷‍♀️**Ymir**🤷‍♀️\n\n' + spycheck + ' 🕵️‍♀️**Spy**🕵️‍♀️'
             return role_msg
-        else:
+    
+    def get_effects(self, effect):
+        if effect == 'effects1':
             ymirblessingcheck = '🔮' if self.ymir_blessing else '◼'
-            pathscheck = '📢' if self.paths else '◼'
             fundscheck = '💰' if self.funds_enabled else '◼'
-            role_msg = ymirblessingcheck + ' **Ymir\'s Blessing** ' + ymirblessingcheck + '\n\n' + pathscheck + ' **Paths** ' + pathscheck + \
-                '\n\n' + fundscheck + ' **Limited Funds** ' + fundscheck
+            role_msg = ymirblessingcheck + ' **Ymir\'s Blessing** ' + ymirblessingcheck + '\n\n' + fundscheck + ' **Limited Funds** ' + fundscheck
+            return role_msg
+        elif effect == 'effects2':
+            pathscheck = '📢' if self.paths else '◼'
+            kennycheck = '<:kennytheripper:768310628506402887>' if self.kenny else '◼'
+            role_msg = pathscheck + ' **Paths** ' + pathscheck + '\n\n' + kennycheck + ' **Kenny the Ripper** ' + kennycheck
             return role_msg
 
     def randomize_roles(self):
@@ -615,6 +643,12 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         self.paths_holders = list(map(lambda x: x[0], self.players))
                         self.paths_holders.sort(key = lambda x: random.randint(1,100))
 
+                    if self.kenny:
+                        self.kenny_hit_list = [player[0] for player in self.players]
+                        self.kenny_hit_list.sort(key = lambda x: random.randint(1,100))
+                        if len(self.players) >= 9:
+                            self.num_targets = 2
+
                     self.cur_expedition += 1
                     return 'Starting game with **' + str(len(self.players)) + '** players!'
 
@@ -652,6 +686,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.paths_holders = []
             self.funds_enabled = False
             self.funds = 5
+            self.kenny = False
+            self.kenny_hit_list = []
+            self.num_targets = 1
 
             self.cur_expedition = 0
             self.expedition_squad = []
@@ -1020,6 +1057,19 @@ Your fellow Warriors are:\n'
         prev_commander = self.players.pop(0)
         self.players.append(prev_commander)
         self.message_box = []
+        if self.kenny:
+            self.update_kenny_hit_list()
+
+    def update_kenny_hit_list(self):
+        for _ in range(self.num_targets):
+            prev_target = self.kenny_hit_list.pop(0)
+            self.kenny_hit_list.append(prev_target)
+
+        if len(self.players) == 7 or len(self.players) == 8:
+            if self.num_targets == 1:
+                self.num_targets = 2
+            elif self.num_targets == 2:
+                self.num_targets = 1
 
     def selection_players(self):
         players_in_expedition = ''
@@ -1035,6 +1085,11 @@ Your fellow Warriors are:\n'
         return '--**Expedition #' + str(self.cur_expedition) + ': Approval phase**--'
 
     def get_expedition_approval_msg(self, player):
+        if self.kenny and player in self.kenny_hit_list[:self.num_targets]:
+            kenny_targeted_msg = '💥 Bang! Bang! You have been targeted by Kenny, preventing you from voting!'
+            kenny_targeted_embed = discord.Embed(title = 'Expedition Approval', description = kenny_targeted_msg, colour=0xC0C0C0)
+            return kenny_targeted_embed
+            
         approval_msg = 'The proposed expedition team consists of the following members:\n'
 
         for member in self.expedition_squad:
@@ -1104,11 +1159,15 @@ Your fellow Warriors are:\n'
     def get_approval_result(self):
         self.reset_confirmation = False
         approval_result = ''
+        self.expedition_approval.sort(key = lambda x: random.randint(1,100))
         for player in self.expedition_approval:
             if player[1] == 'yes':
                 approval_result = approval_result + '**' + player[0].name + '** ✅\n'
             elif player[1] == 'no':
                 approval_result = approval_result + '**' + player[0].name + '** ❌\n'
+            elif player[1] == 'none':
+                approval_result = approval_result + '**' + player[0].name + '** ➖\n'
+        
         expedition_result = discord.Embed(title = 'Expedition approval result', description = approval_result, colour=0xF9FF41)
         return expedition_result
 
@@ -1279,6 +1338,16 @@ Expedition 5: **' + str(self.expedition_sizes[len(self.players)][4]) + '** membe
             return self.display_lobby()
         else:
             return None
+
+    def get_kenny_hit_list(self):
+        all_players = ''
+        for player in self.kenny_hit_list:
+            if player in self.kenny_hit_list[:self.num_targets]:
+                all_players = all_players + '**' + player.mention + '** <:crosshairs:768322832349528104>\n'
+            else:
+                all_players = all_players + '**' + player.mention + '**' + '\n'
+        players = discord.Embed(title = '<:kennytheripper:768310628506402887> Kenny\'s Hit List <:kennytheripper:768310628506402887>', description = all_players, colour=0xF9FF41)
+        return players
 
     def get_summary(self):
         summary = discord.Embed(title = 'Game Summary', description = 'Number of players: **' + str(len(self.players)) + '**\n**' + 
@@ -2613,6 +2682,13 @@ They will then be able to send a single message to the game channel without reve
 A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition. \
 If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.\n\n\
 Enabling this effect could help reduce the frequency of gridlocks while adding an additional element of strategy for both sides.'
+        kenny_info = '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887>\n\n\
+Kenny the Ripper is a serial mass-murderer who has the ability to hunt down anyone!\n\n\
+Kenny has a hit-list which rotates between players in the game. Each voting round, he will target a number of players from the top of the list, preventing them from voting.\n\n\
+The number of players Kenny will target depends on the size of the game:\n\n\
+5-6 players - 1 target\n\
+7-8 players - 1-2 targets\n\
+9-10 players - 2 targets'
 
         if command_query:
             commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
@@ -2665,7 +2741,9 @@ and status of the Walls, the results of previous expeditions and information on 
                         'blessing': blessing_info,
                         'paths': paths_info,
                         'limited funds': funds_info,
-                        'funds': funds_info}
+                        'funds': funds_info,
+                        'kenny': kenny_info,
+                        'kenny the ripper': kenny_info}
 
             if command_query[0] in commands_dict:
                 return discord.Embed(title = '`~' + command_query[0] + '`', description = commands_dict[command_query[0]], colour = 0x0013B4)
@@ -2718,8 +2796,8 @@ and status of the Walls, the results of previous expeditions and information on 
 
     def tutorial(self, page_num):
         if page_num < 1:
-            page_num = 16
-        elif page_num > 16:
+            page_num = 17
+        elif page_num > 17:
             page_num = 1
 
         if page_num == 1:
@@ -2942,15 +3020,25 @@ At the start of the 3rd expedition, a random player will be given Ymir\'s blessi
 They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
 Ymir\'s blessing will then be passed onto the player who was investigated, who can use it at the start of the next expedition, and so on. \
 Anyone who has had Ymir\'s blessing previously is granted immunity to being investigated by future holders of it.\n\u200B'
-            tutorial16_paths = 'The Paths ability allows players to make an announcement anonymously to everyone in the game. \
-When activated, a random person will be designated as the Paths holder at the start of every expedition. \
-They will then be able to send a single message to the game channel without revealing their role or identity.\n\u200B'
             tutorial16_funds = 'A more realistic take on the game, enabling this option will give the Soldiers limited funds for each expedition. \
 If 5 proposals in a row are rejected, the Soldiers will run out of funds for the next expedition, handing the win to the Warriors by default.\n\n\
 Enabling this effect could help reduce the frequency of gridlocks while adding an additional element of strategy for both sides.'
-
-            tutorial16_embed = discord.Embed(title='In-Game Effects', colour=0x0013B4)
+            tutorial16_embed = discord.Embed(title='In-Game Effects (1)', colour=0x0013B4)
             tutorial16_embed.add_field(name = '🔮Ymir\'s Blessing🔮', value = tutorial16_blessing, inline = False)
-            tutorial16_embed.add_field(name = '📢Paths📢', value = tutorial16_paths, inline = False)
             tutorial16_embed.add_field(name = '💰Limited Funds💰', value = tutorial16_funds, inline = False)
             return None, tutorial16_embed, page_num
+
+        elif page_num == 17:
+            tutorial17_paths = 'The Paths ability allows players to make an announcement anonymously to everyone in the game. \
+When activated, a random person will be designated as the Paths holder at the start of every expedition. \
+They will then be able to send a single message to the game channel without revealing their role or identity.\n\u200B'
+            tutorial17_kenny = 'Kenny the Ripper is a serial mass-murderer who has the ability to hunt down anyone!\n\n\
+Kenny has a hit-list which rotates between players in the game. Each voting round, he will target a number of players from the top of the list, preventing them from voting.\n\n\
+The number of players Kenny will target depends on the size of the game:\n\n\
+5-6 players - 1 target\n\
+7-8 players - 1-2 targets\n\
+9-10 players - 2 targets'
+            tutorial17_embed = discord.Embed(title='In-Game Effects (2)', colour=0x0013B4)
+            tutorial17_embed.add_field(name = '📢Paths📢', value = tutorial17_paths, inline = False)
+            tutorial17_embed.add_field(name = '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887>', value = tutorial17_kenny, inline = False)
+            return None, tutorial17_embed, page_num
