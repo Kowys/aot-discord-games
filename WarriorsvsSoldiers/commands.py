@@ -203,6 +203,8 @@ class Game():
                 else:
                     if response.startswith('f') and message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'spy', self.state.players)))):
                         await message.author.dm_channel.send('You\'ve already voted! You may no longer flip the votes.')
+                    elif self.state.kenny and message.author in self.state.kenny_hit_list[:self.state.num_targets]:
+                        await message.author.dm_channel.send('You may not vote while being targeted by Kenny!')
                     else:
                         await message.author.dm_channel.send('You\'ve already voted!')
 
