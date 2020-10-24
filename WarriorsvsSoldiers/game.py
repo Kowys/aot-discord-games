@@ -3013,7 +3013,7 @@ During the approval phase of the expeditions he is in, Mike will be told how man
 **Tip:** The knowledge of how many Titans are in an expedition can be very valuable to both Warriors and Soldiers. Be careful not to reveal information that might help the Warriors identify the Coordinate.\n\u200B'
             tutorial13_scout = 'The Scout is the guiding light of an expedition. If the Scout is in an expedition, they will automatically fire a signal flare, alerting everyone of their presence in the expedition.\n\n\
 **Tip:** The knowledge of the Scout\'s identity can benefit both sides in the game. The Scout should try to help the Soldiers identify them correctly, while working with their fellow Soldiers \
-to confuse the Warriors as to who they are.\n\n\'
+to confuse the Warriors as to who they are.\n\u200B'
             tutorial13_hunter = 'The Hunter possesses the unique ability of tracking a target in **one** expedition they are in. If their target sabotages the expedition, the Hunter will expose their identity \
 to everyone in the game.\n\n\
 **Tip:** Choosing the right time to use the Hunter\'s ability can be just as important as tracking the right person. Even if the wrong person is targeted, the Hunter can still gain valuable information.'
