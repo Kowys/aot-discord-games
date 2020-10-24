@@ -240,6 +240,21 @@ class Game():
                             else:
                                 await message.author.dm_channel.send('Only an Ackerman may secure the Walls!')
 
+                        elif response in ['1','2','3','4','5']:
+                            # Hunter only
+                            if message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'hunter', self.state.players)))):
+                                if self.state.hunter_used == False:
+                                    hunter_msg = self.state.track_person(message.author, response)
+                                    if hunter_msg.startswith('Response recorded!'):
+                                        self.state.expedition_result.append([message.author, 'yes'])
+                                        await message.author.dm_channel.send(embed=discord.Embed(description=hunter_msg, colour=0x2EFF00))
+                                    else:
+                                        await message.author.dm_channel.send(hunter_msg)
+                                else:
+                                    await message.author.dm_channel.send('You have already used your tracking ability!')
+                            else:
+                                await message.author.dm_channel.send('Only a Hunter may track people!')
+
                         expedition_decision_status = self.state.decision_players()
                         self.state.message_box.append(await self.state.game_channel.send(embed=expedition_decision_status))
                         # Delete previous decision messages
@@ -688,6 +703,14 @@ class Game():
                         await asyncio.sleep(2)
                         await message.channel.send(result_msg)
 
+                        if self.state.hunter_target != None:
+                            hunter_expose_msg = self.state.test_hunter_target()
+                            self.state.hunter_target = None
+                            if hunter_expose_msg:
+                                await asyncio.sleep(2)
+                                await message.channel.send(hunter_expose_msg)
+
+                        self.state.expedition_result = []
                         status = self.state.get_status()
                         await asyncio.sleep(2)
                         await message.channel.send(embed=status)
@@ -716,6 +739,14 @@ class Game():
                         await asyncio.sleep(2)
                         await message.channel.send(result_msg)
 
+                        if self.state.hunter_target != None:
+                            hunter_expose_msg = self.state.test_hunter_target()
+                            self.state.hunter_target = None
+                            if hunter_expose_msg:
+                                await asyncio.sleep(2)
+                                await message.channel.send(hunter_expose_msg)
+
+                        self.state.expedition_result = []
                         status = self.state.get_status()
                         await asyncio.sleep(2)
                         await message.channel.send(embed=status)
@@ -732,9 +763,12 @@ class Game():
                                 rating_changes = self.state.update_rating()
                                 achievements_msgs = self.state.update_achievements()
                                 # Update roles in official WvS server
-                                for player in self.state.players:
-                                    await self.state.update_role(player[0], self.client)
-                                await self.state.update_top_roles(self.client)
+                                try:
+                                    for player in self.state.players:
+                                        await self.state.update_role(player[0], self.client)
+                                    await self.state.update_top_roles(self.client)
+                                except Exception as e:
+                                    print(e)
                                 await asyncio.sleep(2)
                                 await message.channel.send(embed=rating_changes)
                                 for achievements_msg in achievements_msgs:
@@ -782,9 +816,12 @@ class Game():
                                     rating_changes = self.state.update_rating()
                                     achievements_msgs = self.state.update_achievements()
                                     # Update roles in official WvS server
-                                    for player in self.state.players:
-                                        await self.state.update_role(player[0], self.client)
-                                    await self.state.update_top_roles(self.client)
+                                    try:
+                                        for player in self.state.players:
+                                            await self.state.update_role(player[0], self.client)
+                                        await self.state.update_top_roles(self.client)
+                                    except Exception as e:
+                                        print(e)
                                     await asyncio.sleep(2)
                                     await message.channel.send(embed=rating_changes)
                                     for achievements_msg in achievements_msgs:
