@@ -2702,7 +2702,7 @@ She may only do this once, however, as everyone will be alerted that the votes h
         hunter_info = '🏹**Hunter**🏹\n\n\
 The Hunter possesses the unique ability of tracking a target in **one** expedition they are in. If their target sabotages the expedition, the Hunter will expose their identity \
 to everyone in the game.\n\n\
-**Tip:**Choosing the right time to use the Hunter\'s ability can be just as important as tracking the right person. Even if the wrong person is targeted, the Hunter can still gain valuable information.'
+**Tip:** Choosing the right time to use the Hunter\'s ability can be just as important as tracking the right person. Even if the wrong person is targeted, the Hunter can still gain valuable information.'
         blessing_info = '🔮**Ymir\'s Blessing**🔮\n\n\
 Ymir\'s Blessing allows a player who has it to check another player\'s true allegiance (Warriors or Soldiers). At the start of the 3rd expedition, a random player will be given Ymir\'s blessing. \
 They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
