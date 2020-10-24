@@ -241,14 +241,18 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         soldier_dict = {'queen': '👼**Queen**👼',
                         'ackerman': '💂**Ackerman**💂',
                         'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>',
-                        'scout': '🏇**Scout**🏇'}
+                        'scout': '🏇**Scout**🏇',
+                        'hunter': '🏹**Hunter**🏹'}
 
         warrior_dict = {'warchief': '🦹‍♂️**Warchief**🦹‍♂️',
                         'ymir': '🤷‍♀️**Ymir**🤷‍♀️',
                         'false king': '🕴**False King**🕴',
                         'spy': '🕵️‍♀️**Spy**🕵️‍♀️'}
-        
+
         if role in soldier_dict:
+            if role in self.newroles:
+                return 'The {} role is already in the game!'.format(soldier_dict[role])
+
             soldier_role_count = len(list(filter(lambda role:role not in self.warrior_roles, self.newroles)))
             if soldier_role_count >= 3:
                 if len(self.players) >= 8:
@@ -267,6 +271,12 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 return 'The role {} has been added to the game!'.format(soldier_dict[role])
 
         elif role in warrior_dict:
+            if role in self.newroles:
+                return 'The {} role is already in the game!'.format(warrior_dict[role])
+
+            if role == 'false king' and 'queen' not in self.newroles:
+                return 'The 👼**Queen**👼 role needs to be added first!'
+
             warrior_role_count = len(list(filter(lambda role:role in self.warrior_roles, self.newroles)))
             if warrior_role_count >= 3:
                 if len(self.players) >= 10:
@@ -285,6 +295,21 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 return 'The role {} has been added to the game!'.format(warrior_dict[role])
 
     def addrole(self, role, player, randomroles=False):
+        optional_roles_dict = {
+            'queen': 'queen',
+            'ackerman': 'ackerman',
+            'mike': 'mike',
+            'mike zacharias': 'mike',
+            'zacharias': 'mike',
+            'scout': 'scout',
+            'hunter': 'hunter',
+            'warchief': 'warchief',
+            'ymir': 'ymir',
+            'false king': 'false king',
+            'falseking': 'false king',
+            'spy': 'spy'
+        }
+
         if self.status == 'waiting for players' or randomroles == True:
             if player == self.game_host or player.id == 238808836075421697:
                 if role == 'blessing' or role == 'ymir\'s blessing' or role == 'ymirs blessing' or role == 'ymir blessing':
@@ -315,57 +340,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                     else:
                         return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> has already been enabled!'
 
-                elif role == 'queen':
-                    if role not in self.newroles:
-                        return self.add_with_role_count_check('queen')
-                    else:
-                        return 'The 👼**Queen**👼 role is already in the game!'
-
-                elif role == 'ackerman':
-                    if role not in self.newroles:
-                        return self.add_with_role_count_check('ackerman')
-                    else:
-                        return 'The 💂**Ackerman**💂 role is already in the game!'
-
-                elif role == 'mike' or role == 'mike zacharias' or role == 'zacharias':
-                    role = 'mike'
-                    if role not in self.newroles:
-                        return self.add_with_role_count_check('mike')
-                    else:
-                        return '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416> is already in the game!'
-
-                elif role == 'scout':
-                    if role not in self.newroles:
-                        return self.add_with_role_count_check('scout')
-                    else:
-                        return 'The 🏇**Scout**🏇 role is already in the game!'
-                    
-                elif role == 'warchief':
-                    if role not in self.newroles:
-                        return self.add_with_role_count_check('warchief')
-                    else:
-                        return 'The 🦹‍♂️**Warchief**🦹‍♂️ role is already in the game!'
-
-                elif role == 'ymir':
-                    if role not in self.newroles:
-                        return self.add_with_role_count_check('ymir')
-                    else:
-                        return 'The 🤷‍♀️**Ymir**🤷‍♀️ role is already in the game!'
-
-                elif role == 'false king':
-                    if role not in self.newroles:
-                        if 'queen' not in self.newroles:
-                            return 'The 👼**Queen**👼 role needs to be added first!'
-
-                        return self.add_with_role_count_check('false king')
-                    else:
-                        return 'The 🕴**False King**🕴 role is already in the game!'
-
-                elif role == 'spy':
-                    if role not in self.newroles:
-                        return self.add_with_role_count_check('spy')
-                    else:
-                        return 'The 🕵️‍♀️**Spy**🕵️‍♀️ role is already in the game!'
+                elif role in optional_roles_dict:
+                    return self.add_with_role_count_check(optional_roles_dict[role])
 
                 else:
                     return 'Invalid role!'
@@ -374,7 +350,43 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         else:
             return 'There is no open lobby at the moment!'
 
+    def remove_by_role(self, role):
+        all_roles_dict = {
+            'queen': '👼**Queen**👼',
+            'ackerman': '💂**Ackerman**💂',
+            'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>',
+            'scout': '🏇**Scout**🏇',
+            'hunter': '🏹**Hunter**🏹',
+            'warchief': '🦹‍♂️**Warchief**🦹‍♂️',
+            'ymir': '🤷‍♀️**Ymir**🤷‍♀️',
+            'false king': '🕴**False King**🕴',
+            'spy': '🕵️‍♀️**Spy**🕵️‍♀️'
+        }
+
+        if role not in self.newroles:
+            return 'The {} role is not in the game!'.format(all_roles_dict[role])
+        else:
+            self.newroles.remove(role)
+            if role == 'queen' and 'false king' in self.newroles:
+                self.newroles.remove('false king')
+            return 'The role {} has been removed from the game!'.format(all_roles_dict[role])
+
     def removerole(self, role, player):
+        optional_roles_dict = {
+            'queen': 'queen',
+            'ackerman': 'ackerman',
+            'mike': 'mike',
+            'mike zacharias': 'mike',
+            'zacharias': 'mike',
+            'scout': 'scout',
+            'hunter': 'hunter',
+            'warchief': 'warchief',
+            'ymir': 'ymir',
+            'false king': 'false king',
+            'falseking': 'false king',
+            'spy': 'spy'
+        }
+
         if self.status == 'waiting for players':
             if player == self.game_host or player.id == 238808836075421697:
                 if role == 'blessing' or role == 'ymir\'s blessing' or role == 'ymirs blessing' or role == 'ymir blessing':
@@ -405,64 +417,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                     else:
                         return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> is not currently enabled!'
 
-                elif role == 'queen':
-                    if role in self.newroles:
-                        self.newroles.remove('queen')
-                        if 'false king' in self.newroles:
-                            self.newroles.remove('false king')
-                        return 'The role 👼**Queen**👼 has been removed from the game!'
-                    else:
-                        return 'The 👼**Queen**👼 role is not in the game!'
-
-                elif role == 'ackerman':
-                    if role in self.newroles:
-                        self.newroles.remove('ackerman')
-                        return 'The role 💂**Ackerman**💂 has been removed from the game!'
-                    else:
-                        return 'The 💂**Ackerman**💂 role is not in the game!'
-
-                elif role == 'mike' or role == 'mike zacharias' or role == 'zacharias':
-                    role = 'mike'
-                    if role in self.newroles:
-                        self.newroles.remove('mike')
-                        return '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416> has been removed from the game!'
-                    else:
-                        return '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416> is not in the game!'
-
-                elif role == 'scout':
-                    if role in self.newroles:
-                        self.newroles.remove('scout')
-                        return 'The role 🏇**Scout**🏇 has been removed from the game!'
-                    else:
-                        return 'The 🏇**Scout**🏇 role is not in the game!'
-                    
-                elif role == 'warchief':
-                    if role in self.newroles:
-                        self.newroles.remove('warchief')
-                        return 'The role 🦹‍♂️**Warchief**🦹‍♂️ has been removed from the game!'
-                    else:
-                        return 'The 🦹‍♂️**Warchief**🦹‍♂️ role is not in the game!'
-
-                elif role == 'ymir':
-                    if role in self.newroles:
-                        self.newroles.remove('ymir')
-                        return 'The role 🤷‍♀️**Ymir**🤷‍♀️ has been removed from the game!'
-                    else:
-                        return 'The 🤷‍♀️**Ymir**🤷‍♀️ role is not in the game!'
-
-                elif role == 'false king':
-                    if role in self.newroles:
-                        self.newroles.remove('false king')
-                        return 'The role 🕴**False King**🕴 has been removed from the game!'
-                    else:
-                        return 'The 🕴**False King**🕴 role is not in the game!'
-
-                elif role == 'spy':
-                    if role in self.newroles:
-                        self.newroles.remove('spy')
-                        return 'The role 🕵️‍♀️**Spy**🕵️‍♀️ has been removed from the game!'
-                    else:
-                        return 'The 🕵️‍♀️**Spy**🕵️‍♀️ role is not in the game!'
+                elif role in optional_roles_dict:
+                    return self.remove_by_role(optional_roles_dict[role])
 
                 else:
                     return 'Invalid role!'
