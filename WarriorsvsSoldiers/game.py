@@ -2948,7 +2948,8 @@ and status of the Walls, the results of previous expeditions and information on 
             commands = discord.Embed(title = 'List of commands for Warriors vs Soldiers', colour=0x0013B4)
             general_commands = '`~config` : Lets you select the game for each channel\n' + \
                 '`~credits` : Who made me/Get support\n' + \
-                '`~invite` : Link to invite me'
+                '`~invite` : Link to invite me\n' + \
+                '`~patreon` : Support the creator!'
             commands.add_field(name = 'General', value = general_commands, inline = False)
             commands.add_field(name = 'Warriors vs Soldiers', value = 'For more information about a specific command, type `~help <command>`. (E.g. `~help kidnap`)', inline = False)
             commands.add_field(name = 'Lobby commands', value = lobby_commands)

@@ -271,7 +271,8 @@ class State():
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Jaegermore', colour = 0x5CFFE9)
-        general_commands = '`~credits` : Who made me/Get support'
+        general_commands = '`~credits` : Who made me/Get support\n' + \
+            '`~patreon` : Support the creator!'
         commands_list.add_field(name = 'General', value = general_commands, inline = False)
 
         jaegermore_commands = '`~start`\n Starts a new assessment. Use `~start full` to take the full assessment.\n' + \

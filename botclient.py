@@ -103,6 +103,11 @@ class MyClient(discord.Client):
             invite_embed.set_thumbnail(url=str(self.user.avatar_url))
             await message.channel.send(embed=invite_embed)
 
+        elif message.content.startswith('~patreon'):
+            patreon_msg = 'If you liked my games, considering supporting me on [Patreon](https://www.patreon.com/entropi)!'
+            patreon_embed =  discord.Embed(description = patreon_msg, colour=0xE5D2BB)
+            await message.channel.send(embed=patreon_embed)
+
         elif message.channel.id == 751466308079583262:
             if message.content.startswith('~pings') and message.author.id == 238808836075421697:
                 pings_msg = 'Type `y` if you want to be pinged.\nType `n` if you no longer want to be pinged.'

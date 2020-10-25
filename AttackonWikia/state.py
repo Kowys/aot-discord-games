@@ -1454,7 +1454,8 @@ class State():
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Attack on Wikia', colour = 0xC0C0C0)
-        general_commands = '`~credits` : Who made me/Get support'
+        general_commands = '`~credits` : Who made me/Get support\n' + \
+            '`~patreon` : Support the creator!'
         commands_list.add_field(name = 'General', value = general_commands, inline = False)
 
         aow_commands = '`~new`\n Starts a new puzzle.\n' + \
