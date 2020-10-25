@@ -13,6 +13,7 @@ class Game():
         self.next_expedition_timer_obj = self.client.loop.create_task(self.next_expedition_timer())
         self.blessing_timer_obj = self.client.loop.create_task(self.blessing_timer())
         self.paths_timer_obj = self.client.loop.create_task(self.paths_timer())
+        self.saboteur_timer_obj = self.client.loop.create_task(self.saboteur_timer())
         self.kidnap_timer_obj = self.client.loop.create_task(self.kidnap_timer())
 
     async def msg_handler(self, message):
@@ -24,6 +25,19 @@ class Game():
             if response.startswith('~role'):
                 player_role = self.state.get_player_role(message.author)
                 await message.author.dm_channel.send(embed=player_role)
+
+            # Saboteur
+            if self.state.status == 'saboteur selection':
+                saboteur_msg, public_msg = self.state.saboteur_select(response, message.author)
+                if type(saboteur_msg) != str:
+                    await message.author.dm_channel.send(embed=saboteur_msg)
+                    await self.state.game_channel.send(public_msg)
+                    await asyncio.sleep(2)
+                    await self.state.game_channel.send(embed=self.state.get_status())
+                    await asyncio.sleep(2)
+                    await self.state.game_channel.send('When everyone is ready, type `~next` to begin the first expedition.')
+                else:
+                    await message.author.dm_channel.send(saboteur_msg)
 
             # Paths phase
             if self.state.status == 'paths announcement' and message.author == self.state.paths_holders[0]:
@@ -409,12 +423,9 @@ class Game():
 
                 if start_msg.startswith('Starting game'):
                     self.state.game_channel = message.channel
-
                     self.reset_timers()
-
-                    status = self.state.get_status()
                     await asyncio.sleep(1)
-                    await message.channel.send(embed=status)
+                    await message.channel.send(embed=self.state.get_status())
                     await asyncio.sleep(2)
                     if self.state.randomroles:
                         await message.channel.send(embed=self.state.get_player_role())
@@ -435,7 +446,11 @@ class Game():
                             'Please enable DMs from server members, then type `~role` to receive your role.'
                             await message.channel.send(private_dms_msg)
                     await asyncio.sleep(1)
-                    await message.channel.send(self.state.roles_assigned_msg)
+                    await message.channel.send(self.state.get_roles_assigned_msg())
+
+                    if 'saboteur' in self.state.newroles:
+                        saboteur_player, saboteur_embed = self.state.get_saboteur_msg()
+                        await saboteur_player.dm_channel.send(embed=saboteur_embed)
 
             # In-game commands
             if message.content.startswith('~reset'):
@@ -484,55 +499,7 @@ class Game():
             if message.content.startswith('~next'):
                 # Begin next expedition, commander to pick team
                 if (message.author in list(map(lambda x:x[0], self.state.players)) or message.author.id == 238808836075421697):
-                    if message.content.startswith('~redo'):
-                        if (self.state.status == 'assigning roles' or self.state.status == 'expedition over'
-                            or self.state.status == 'expedition selection' or self.state.status == 'expedition decision'
-                            or self.state.status == 'awaiting result' or self.state.status == 'expedition approval'
-                            or self.state.status == ''):
-
-                            await message.channel.send('The host has reset the expedition!')
-                            await asyncio.sleep(2)
-
-                            self.state.message_box = []
-                            self.state.expedition_squad = []
-                            self.state.expedition_approval = []
-                            self.state.expedition_result = []
-
-                            self.state.status = 'expedition selection'
-
-                            # Reset timers at the start of each expedition
-                            self.reset_timers()
-
-                            expedition_msg = '--**Expedition #' + \
-                                str(self.state.cur_expedition) + ': Planning phase**--'
-                            await message.channel.send(expedition_msg)
-                            await asyncio.sleep(2)
-
-                            commander_msg = 'The commander for this expedition is **' + \
-                                self.state.players[0][0].mention + '**!'
-                            await message.channel.send(commander_msg)
-
-                            await asyncio.sleep(2)
-                            players_msg = self.state.get_players()
-                            await message.channel.send(embed=players_msg)
-
-                            if self.state.kenny:
-                                await asyncio.sleep(2)
-                                kenny_hit_list_msg = self.state.get_kenny_hit_list()
-                                await message.channel.send(embed=kenny_hit_list_msg)
-
-                            await asyncio.sleep(1)
-                            commander_msg2 = 'Commander **' + \
-                                self.state.players[0][0].name + \
-                                '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
-                            await message.channel.send(commander_msg2)
-
-                        else:
-                            await message.channel.send('You cannot redo the expedition at this time.')
-
-                    elif message.content.startswith('~next') and \
-                            (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
-
+                    if (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
                         # Reset timers at the start of each expedition
                         self.reset_timers()
 
@@ -994,6 +961,7 @@ class Game():
         self.blessing_timer_obj.cancel()
         self.paths_timer_obj.cancel()
         self.kidnap_timer_obj.cancel()
+        self.saboteur_timer_obj.cancel()
 
         self.approval_timer_obj = self.client.loop.create_task(self.approval_timer())
         self.decision_timer_obj = self.client.loop.create_task(self.decision_timer())
@@ -1001,6 +969,7 @@ class Game():
         self.next_expedition_timer_obj = self.client.loop.create_task(self.next_expedition_timer())
         self.blessing_timer_obj = self.client.loop.create_task(self.blessing_timer())
         self.paths_timer_obj = self.client.loop.create_task(self.paths_timer())
+        self.saboteur_timer_obj = self.client.loop.create_task(self.saboteur_timer())
         self.kidnap_timer_obj = self.client.loop.create_task(self.kidnap_timer())
 
     async def next_expedition_timer(self):
@@ -1369,6 +1338,42 @@ class Game():
                             self.state.players[0][0].name + \
                             '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                         await self.state.game_channel.send(commander_msg2)
+
+    async def saboteur_timer(self):
+        await self.client.wait_until_ready()
+        while not self.client.is_closed():
+            await asyncio.sleep(1)
+            if self.state.status == 'saboteur selection':
+                timer = 0
+                while self.state.status == 'saboteur selection':
+                    await asyncio.sleep(1)
+                    timer += 1
+                    if timer == 60 and self.state.status == 'saboteur selection':
+                        timer_msg = 'The Saboteur has **60 seconds** to sabotage an expedition!'
+                        player_timer_msg = 'You have **60 seconds** to sabotage an expedition!'
+                        await self.state.game_channel.send(timer_msg)
+                        try:
+                            saboteur_player = list(filter(lambda x: x[1] == 'saboteur', self.state.players))[0][0]
+                            await saboteur_player.dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
+                    
+                    if timer == 90 and self.state.status == 'saboteur selection':
+                        timer_msg = 'The Saboteur has **30 seconds** to sabotage an expedition!'
+                        player_timer_msg = 'You have **30 seconds** to sabotage an expedition!'
+                        await self.state.game_channel.send(timer_msg)
+                        try:
+                            saboteur_player = list(filter(lambda x: x[1] == 'saboteur', self.state.players))[0][0]
+                            await saboteur_player.dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
+
+                    if timer >= 120 and self.state.status == 'saboteur selection':
+                        times_up_msg = 'The Saboteur did not sabotage an expedition in time!'
+                        await self.state.game_channel.send(times_up_msg)
+                        self.state.status = 'assigning roles'
+                        await asyncio.sleep(2)
+                        await self.state.game_channel.send('When everyone is ready, type `~next` to begin the first expedition.')
 
     async def kidnap_timer(self):
         await self.client.wait_until_ready()
