@@ -31,7 +31,7 @@ def initialize_dbs():
             'warrior_wins integer', 'warrior_games integer', 'coordinate_wins integer', 'coordinate_games integer', 'queen_wins integer', 'queen_games integer', 
             'warchief_wins integer', 'warchief_games integer', 'ymir_wins integer', 'ymir_games integer', 'false_king_wins integer', 'false_king_games integer', 
             'ackerman_wins integer', 'ackerman_games integer', 'mike_wins integer', 'mike_games integer', 'scout_wins integer', 'scout_games integer', 'spy_wins integer', 'spy_games integer',
-            'hunter_wins integer', 'hunter_games integer']),
+            'hunter_wins integer', 'hunter_games integer', 'saboteur_wins integer', 'saboteur_games integer']),
             ('global', ['number_of_players integer', 'soldiers integer', 'warriors_walls integer', 'warriors_kidnap integer']),
             ('servers', ['server integer', 'soldiers_5 integer', 'warriors_walls_5 integer', 'warriors_kidnap_5 integer',
             'soldiers_6 integer', 'warriors_walls_6 integer', 'warriors_kidnap_6 integer',
@@ -42,7 +42,7 @@ def initialize_dbs():
             'soldier_wins integer', 'soldier_games integer', 'warrior_wins integer', 'warrior_games integer', 'coordinate_wins integer', 'coordinate_games integer',
             'queen_wins integer', 'queen_games integer', 'warchief_wins integer', 'warchief_games integer', 'ymir_wins integer', 'ymir_games integer',
             'false_king_wins integer', 'false_king_games integer', 'ackerman_wins integer', 'ackerman_games integer', 'mike_wins integer', 'mike_games integer',
-            'scout_wins integer', 'scout_games integer', 'spy_wins integer', 'spy_games integer', 'hunter_wins integer', 'hunter_games integer'])
+            'scout_wins integer', 'scout_games integer', 'spy_wins integer', 'spy_games integer', 'hunter_wins integer', 'hunter_games integer', 'saboteur_wins integer', 'saboteur_games integer'])
         ]
     }
 
