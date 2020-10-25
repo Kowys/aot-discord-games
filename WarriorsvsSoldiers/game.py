@@ -503,45 +503,52 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         lobby.add_field(name = '**' + str(len(self.players)) + '** player' + ('s' if len(self.players) > 1 else '') + ' in lobby', value = players_in_lobby, inline = False)
         lobby.add_field(name = 'Random Roles', value = '🎲' if self.randomroles else '⬛', inline=False)
         lobby.add_field(name = 'Optional Soldier Roles', value = self.get_newroles('soldier'))
-        lobby.add_field(name = '⠀', value = '⠀', inline = True)
         lobby.add_field(name = 'Optional Warrior Roles', value = self.get_newroles('warrior'))
-        lobby.add_field(name = 'In-Game Effects', value = self.get_effects('effects1'), inline = True)
-        lobby.add_field(name = '⠀', value = '⠀', inline = True)
-        lobby.add_field(name = '⠀', value = self.get_effects('effects2'), inline = True)
+        lobby.add_field(name = 'In-Game Effects', value = self.get_effects(), inline = False)
+        lobby.set_footer(text='Type ~roles to see the available roles and in-game effects.')
         return lobby
 
     def get_newroles(self, team):
+        role_msg = ''
         if team == 'soldier':
-            queencheck = '✅' if 'queen' in self.newroles else '✖'
-            ackermancheck = '✅' if 'ackerman' in self.newroles else '✖'
-            mikecheck = '✅' if 'mike' in self.newroles else '✖'
-            scoutcheck = '✅' if 'scout' in self.newroles else '✖'
-            huntercheck = '✅' if 'hunter' in self.newroles else '✖'
-            role_msg = queencheck + ' 👼**Queen**👼\n\n' + ackermancheck + ' 💂**Ackerman**💂\n\n' + \
-                mikecheck + ' <:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n' + scoutcheck + ' 🏇**Scout**🏇\n\n' + \
-                huntercheck + ' 🏹**Hunter**🏹'
-            return role_msg
+            if 'queen' in self.newroles:
+                role_msg += '✅ 👼**Queen**👼\n\n'
+            if 'ackerman' in self.newroles:
+                role_msg += '✅ 💂**Ackerman**💂\n\n'
+            if 'mike' in self.newroles:
+                role_msg += '✅ <:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>\n\n'
+            if 'scout' in self.newroles:
+                role_msg += '✅ 🏇**Scout**🏇\n\n'
+            if 'hunter' in self.newroles:
+                role_msg += '✅ 🏹**Hunter**🏹\n\n'
         elif team == 'warrior':
-            warchiefcheck = '✅' if 'warchief' in self.newroles else '✖'
-            falsekingcheck = '✅' if 'false king' in self.newroles else '✖'
-            ymircheck = '✅' if 'ymir' in self.newroles else '✖'
-            spycheck = '✅' if 'spy' in self.newroles else '✖'
-            saboteurcheck = '✅' if 'saboteur' in self.newroles else '✖'
-            role_msg = warchiefcheck + ' 🦹‍♂️**Warchief**🦹‍♂️\n\n' + falsekingcheck + ' 🕴**False King**🕴\n\n' + ymircheck + ' 🤷‍♀️**Ymir**🤷‍♀️\n\n' + spycheck + ' 🕵️‍♀️**Spy**🕵️‍♀️\n\n' + \
-                saboteurcheck + ' 🔨**Saboteur**🔨'
-            return role_msg
+            if 'warchief' in self.newroles:
+                role_msg += '✅ 🦹‍♂️**Warchief**🦹‍♂️\n\n'
+            if 'false king' in self.newroles:
+                role_msg += '✅ 🕴**False King**🕴\n\n'
+            if 'ymir' in self.newroles:
+                role_msg += '✅ 🤷‍♀️**Ymir**🤷‍♀️\n\n'
+            if 'spy' in self.newroles:
+                role_msg += '✅ 🕵️‍♀️**Spy**🕵️‍♀️\n\n'
+            if 'saboteur' in self.newroles:
+                role_msg += '✅ 🔨**Saboteur**🔨\n\n'
+        if role_msg == '':
+            role_msg = '-'
+        return role_msg
     
-    def get_effects(self, effect):
-        if effect == 'effects1':
-            ymirblessingcheck = '🔮' if self.ymir_blessing else '◼'
-            fundscheck = '💰' if self.funds_enabled else '◼'
-            role_msg = ymirblessingcheck + ' **Ymir\'s Blessing** ' + ymirblessingcheck + '\n\n' + fundscheck + ' **Limited Funds** ' + fundscheck
-            return role_msg
-        elif effect == 'effects2':
-            pathscheck = '📢' if self.paths else '◼'
-            kennycheck = '<:kennytheripper:768310628506402887>' if self.kenny else '◼'
-            role_msg = pathscheck + ' **Paths** ' + pathscheck + '\n\n' + kennycheck + ' **Kenny the Ripper** ' + kennycheck
-            return role_msg
+    def get_effects(self):
+        role_msg = ''
+        if self.ymir_blessing:
+            role_msg += '🔮 **Ymir\'s Blessing** 🔮\n\n'
+        if self.paths:
+            role_msg += '📢 **Paths** 📢\n\n'
+        if self.funds_enabled:
+            role_msg += '💰 **Limited Funds** 💰\n\n'
+        if self.kenny:
+            role_msg += '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887>\n\n'
+        if role_msg == '':
+            role_msg = '-'
+        return role_msg
 
     def randomize_roles(self):
         self.newroles = []
@@ -881,14 +888,18 @@ Your fellow Warriors are:\n'
         if player == None:
             # Game hasn't started yet
             if self.status == 'waiting for players' or self.status == 'waiting for game' or self.status.startswith('game ended'):
-                # Lists all roles available in the game
-                soldier_roles = '\n'.join(['🛡**Soldier**🛡', '🗺**Coordinate**🗺', '👼**Queen**👼', '💂**Ackerman**💂', 
-                '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>', '🏇**Scout**🏇', '🏹**Hunter**🏹'])
-                warrior_roles = '\n'.join(['⚔**Warrior**⚔', '🦹‍♂️**Warchief**🦹‍♂️', '🕴**False King**🕴', '🤷‍♀️**Ymir**🤷‍♀️', '🕵️‍♀️**Spy**🕵️‍♀️', '🔨**Saboteur**🔨'])
+                # Lists all roles + effects available in the game
+                basic_roles = '\n'.join(['🛡 Soldier 🛡', '🗺 Coordinate 🗺', '⚔ Warrior ⚔'])
+                soldier_roles = '\n'.join(['👼 Queen 👼', '💂 Ackerman 💂', '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>', '🏇 Scout 🏇', '🏹 Hunter 🏹'])
+                warrior_roles = '\n'.join(['🦹‍♂️ Warchief 🦹‍♂️', '🕴 False King 🕴', '🤷‍♀️ Ymir 🤷‍♀️', '🕵️‍♀️ Spy 🕵️‍♀️', '🔨 Saboteur 🔨'])
+                effects = '\n'.join(['🔮 Ymir\'s Blessing 🔮', '📢 Paths 📢', '💰 Limited Funds 💰', '<:kennytheripper:768310628506402887> Kenny the Ripper <:kennytheripper:768310628506402887>'])
                 
-                list_of_roles = discord.Embed(title = 'List of roles available', description = 'Type ~help <role> for more information about a role.', colour=0x0013B4)
-                list_of_roles.add_field(name = 'Soldier roles', value = soldier_roles, inline = True)
-                list_of_roles.add_field(name = 'Warrior roles', value = warrior_roles, inline = True)
+                roles_info = 'Type `~help <role>` to learn more about a role or effect.\nType `~add <role>` to add an optional role or effect into the game.'
+                list_of_roles = discord.Embed(title = 'List of roles available', description = roles_info, colour=0x0013B4)
+                list_of_roles.add_field(name = 'Basic roles', value = basic_roles, inline = False)
+                list_of_roles.add_field(name = 'Optional Soldier roles', value = soldier_roles, inline = False)
+                list_of_roles.add_field(name = 'Optional Warrior roles', value = warrior_roles, inline = False)
+                list_of_roles.add_field(name = 'In-Game Effects', value = effects, inline = False)
                 return list_of_roles
             else:
                 # Lists all roles currently in the game
