@@ -2827,9 +2827,9 @@ A highly skilled infiltrator, the Spy has the ability to flip the votes during t
 She may only do this once, however, as everyone will be alerted that the votes have been flipped.\n\n\
 **Tip:** The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.'
         saboteur_info = '🔨**Saboteur**🔨\n\n\
-Using their powers of persuasion, the Saboteur has the ability to increase the size of a chosen expedition by 1 at the start of the game.\n\n\
-**Tip:** Using this ability on the early expeditions might give the Warriors an early advantage, but also makes it easier for the Soldiers to find them.\n\n\
-On the other hand, using it on the later (and larger) expeditions would make it much easier to slip a Warrior inside, but is also a gamble as the Soldiers might win before that happens.'
+The Saboteur has the ability to increase the size of a chosen expedition by 1 at the start of the game, provided the expedition\'s size is smaller than the number of Soldiers in the game.\n\n\
+**Tip:** The best expedition to sabotage might change depending on the roles in the game. For example, if the Warchief is in the game, it might be better to sabotage a later expedition, when the Warchief \
+has gained the Soldiers\' trust.'
         blessing_info = '🔮**Ymir\'s Blessing**🔮\n\n\
 Ymir\'s Blessing allows a player who has it to check another player\'s true allegiance (Warriors or Soldiers). At the start of the 3rd expedition, a random player will be given Ymir\'s blessing. \
 They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
@@ -3175,9 +3175,10 @@ It is usually a good idea to wait until the later (and larger) expeditions to ma
             tutorial15_spy = 'A highly skilled infiltrator, the Spy has the ability to flip the votes during the approval phase of an expedition. \
 She may only do this once, however, as everyone will be alerted that the votes have been flipped.\n\n\
 **Tip:** The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.'
-            tutorial15_saboteur = 'Using their powers of persuasion, the Saboteur has the ability to increase the size of a chosen expedition by 1 at the start of the game.\n\n\
-**Tip:** Using this ability on the early expeditions might give the Warriors an early advantage, but also makes it easier for the Soldiers to find them.\n\n\
-On the other hand, using it on the later (and larger) expeditions would make it much easier to slip a Warrior inside, but is also a gamble as the Soldiers might win before that happens.'
+            tutorial15_saboteur = 'The Saboteur has the ability to increase the size of a chosen expedition by 1 at the start of the game, \
+provided the expedition\'s size is smaller than the number of Soldiers in the game.\n\n\
+**Tip:** The best expedition to sabotage might change depending on the roles in the game. For example, if the Warchief is in the game, it might be better to sabotage a later expedition, when the Warchief \
+has gained the Soldiers\' trust.'
 
             tutorial15_embed = discord.Embed(title='Optional Warrior Roles (2)', colour=0x0013B4)
             tutorial15_embed.add_field(name = '🤷‍♀️Ymir🤷‍♀️', value = tutorial15_ymir, inline = False)
