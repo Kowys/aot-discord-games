@@ -3174,7 +3174,7 @@ for potential comrades during expeditions.\n\n\
 It is usually a good idea to wait until the later (and larger) expeditions to make your move.\n\u200B'
             tutorial15_spy = 'A highly skilled infiltrator, the Spy has the ability to flip the votes during the approval phase of an expedition. \
 She may only do this once, however, as everyone will be alerted that the votes have been flipped.\n\n\
-**Tip:** The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.'
+**Tip:** The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.\n\u200B'
             tutorial15_saboteur = 'The Saboteur has the ability to increase the size of a chosen expedition by 1 at the start of the game, \
 provided the expedition\'s size is smaller than the number of Soldiers in the game.\n\n\
 **Tip:** The best expedition to sabotage might change depending on the roles in the game. For example, if the Warchief is in the game, it might be better to sabotage a later expedition, when the Warchief \
