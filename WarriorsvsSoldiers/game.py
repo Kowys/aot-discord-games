@@ -637,7 +637,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
                     if self.kenny:
                         self.kenny_hit_list = [player[0] for player in self.players]
-                        self.kenny_hit_list.sort(key = lambda x: random.randint(1,100))
+                        self.kenny_hit_list.sort(key = lambda x: random.randint(1,200))
                         if len(self.players) >= 9:
                             self.num_targets = 2
 
