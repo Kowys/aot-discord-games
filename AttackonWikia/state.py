@@ -1144,18 +1144,18 @@ class State():
         player_rankings = cursor.fetchall()
 
         # Get players in server
-        server_users = [member.id for member in server.members]
-        server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
-        total_players = len(server_players)
+        # server_users = [member.id for member in server.members]
+        # server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
+        # total_players = len(server_players)
 
         # Get ranking
-        i = 1
-        for person in server_players:
-            if person[0] == player.id:
-                rank = i
-                break
-            else:
-                i += 1
+        # i = 1
+        # for person in server_players:
+        #     if person[0] == player.id:
+        #         rank = i
+        #         break
+        #     else:
+        #         i += 1
 
         conn.close()
 
@@ -1163,7 +1163,7 @@ class State():
         player_profile.set_author(name = player.name, icon_url = player.avatar_url)
         player_profile.set_thumbnail(url = player.avatar_url)
 
-        player_profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
+        # player_profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
         player_profile.add_field(name = 'Questions answered correctly', value = str(player_info[2]), inline = False)
         player_profile.add_field(name = 'Hangman games won', value = str(player_info[5]), inline = False)
         player_profile.add_field(name = 'Images guessed correctly', value = str(player_info[6]), inline = False)

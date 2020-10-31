@@ -2075,24 +2075,24 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         player_rankings.sort(key = lambda x: x[1], reverse = True)
 
         # Get players in server
-        server_users = list(map(lambda y: y.id, server.members))
-        server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
-        total_players = len(server_players)
+        # server_users = list(map(lambda y: y.id, server.members))
+        # server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
+        # total_players = len(server_players)
 
         # Get ranking
-        i = 0
-        for person in server_players:
-            i += 1
-            if person[0] == player.id:
-                rank = i
-                break
+        # i = 0
+        # for person in server_players:
+        #     i += 1
+        #     if person[0] == player.id:
+        #         rank = i
+        #         break
 
         conn.close()
 
         profile = discord.Embed(title = player.name + '\'s Profile', description = 'Skill Rating (SR): **' + str(int(round(player_sr, 0))) + '**', colour=0x0013B4)
         profile.set_thumbnail(url = player.avatar_url)
 
-        profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
+        # profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
         profile.add_field(name = 'Games played', value = str(stats['games']))
         won_games = str(stats['wins'])
         if stats['games'] > 0:

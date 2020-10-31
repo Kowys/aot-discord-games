@@ -88,13 +88,14 @@ class Game():
 
         # Shows the leaderboard
         if message.content.startswith('~leaderboard') or message.content.startswith('~lb'):
-            messagebox = message.content.split(' ')
-            if len(messagebox) == 1:
-                leaderboard = self.state.get_leaderboard(message.guild)
-            else:
-                character = messagebox[1].lower()
-                leaderboard = self.state.get_leaderboard(message.guild, character=character)
-            await message.channel.send(embed = leaderboard)
+            await message.channel.send('🚧 | The leaderboard is no longer available due to restrictions on server members\' data imposed by Discord.')
+            # messagebox = message.content.split(' ')
+            # if len(messagebox) == 1:
+            #     leaderboard = self.state.get_leaderboard(message.guild)
+            # else:
+            #     character = messagebox[1].lower()
+            #     leaderboard = self.state.get_leaderboard(message.guild, character=character)
+            # await message.channel.send(embed = leaderboard)
 
         # Returns overall game statistics
         if message.content.startswith('~gamestats'):
