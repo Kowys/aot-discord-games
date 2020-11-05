@@ -410,26 +410,30 @@ class State():
         cursor.execute(player_endings_query)
         all_endings = cursor.fetchall()
 
-        server_users_ids = {member.id: [member.id, member.name] for member in server.members}
+        # server_users_ids = {member.id: [member.id, member.name] for member in server.members}
         server_endings = []
         for row in all_endings:
-            if row[0] in server_users_ids:
-                unique_ending_count = len(list(filter(lambda x: x > 0, row[1:])))
-                server_endings.append([server_users_ids[row[0]][0], server_users_ids[row[0]][1], unique_ending_count])
+            unique_ending_count = len(list(filter(lambda x: x > 0, row[1:])))
+            server_endings.append([row[0], unique_ending_count])
 
         conn.close()
 
         # Sort according to ending count
-        server_endings.sort(key = lambda x: x[2], reverse = True)
+        server_endings.sort(key = lambda x: x[1], reverse = True)
 
-        # Top 10x players
+        total_pages = math.ceil(len(server_endings) / 10)
+
+        # Sanitize page input
         try: 
             page_no = int(page)
         except:
             page_no = 1
 
+        # Clips inputs that are too high or too low
         if page_no < 1:
             page_no = 1
+        if page_no > total_pages:
+            page_no = total_pages
 
         # Get page_no of player rank
         if player:
@@ -440,19 +444,13 @@ class State():
                     break
             page_no = math.ceil(player_rank / 10)
 
-        total_pages = math.ceil(len(server_endings) / 10)
-        page_no = min(total_pages, page_no)
-
-        # Normalize to number of server users
-        page_no = min(math.ceil(len(server_endings) / 10), page_no)
-
         leaderboard = discord.Embed(title = '🏆 Leaderboard for Choose Your Adventure 🏆', colour=0xE5D2BB)
         leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
         if player:
             leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_endings)), inline = False)
 
         for rank in range((page_no - 1) * 10 + 1, min(len(server_endings) + 1, page_no * 10 + 1)):
-            ending_count = server_endings[rank-1][2]
+            ending_count = server_endings[rank-1][1]
             if ending_count == 0:
                 insignia = '🔸'
             elif ending_count == 1:
@@ -475,8 +473,9 @@ class State():
                 insignia = '🌟'
             elif ending_count == 24:
                 insignia = '👑'
-            leaderboard.add_field(name = insignia + ' | #' + str(rank) + '  ' + server_endings[rank-1][1], 
-                                  value = '# Endings: ￵**' + str(server_endings[rank-1][2]) + '**', inline = False)
+            leaderboard.add_field(name = insignia + ' | #' + str(rank) + ' | Endings: ￵**' + str(server_endings[rank-1][1]) + '**', 
+                                  value = '<@' + str(server_endings[rank-1][0]) + '>',
+                                  inline = False)
 
         return leaderboard
 
