@@ -1995,32 +1995,34 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         server = client.get_guild(748080644340318299)
 
-        player_rankings = {} # {player id: sr, ...}
-        # Put all players into a dictionary
-        for row in player_data:
-            player_rankings[row[0]] = row[1]
+        # player_rankings = {} # {player id: sr, ...}
+        # # Put all players into a dictionary
+        # for row in player_data:
+        #     player_rankings[row[0]] = row[1]
 
-        server_members = server.members
-        server_players = []
-        for member in server_members:
-            if member.id in player_rankings:
-                server_players.append([member, player_rankings[member.id]])
+        # server_members = server.members
+        # server_players = []
+        # for member in server_members:
+        #     if member.id in player_rankings:
+        #         server_players.append([member, player_rankings[member.id]])
         
         # Sort by SR from biggest to smallest
-        server_players.sort(key = lambda x: x[1], reverse = True)
+        player_data.sort(key = lambda x: x[1], reverse = True)
 
         top_role = server.get_role(756429927200587888)
         top10_role = server.get_role(756430896092938322)
 
         # Update roles
-        for i, member in enumerate(server_players):
-            member_role_ids = [role.id for role in member[0].roles]
-            if i == 0:
-                if 756429927200587888 not in member_role_ids:
-                    await member[0].add_roles(top_role)
-            else:
-                if 756429927200587888 in member_role_ids:
-                    await member[0].remove_roles(top_role)
+        for i, player_id in enumerate(player_data):
+            member = server.get_member(player_id)
+            if member:
+                member_role_ids = [role.id for role in member[0].roles]
+                if i == 0:
+                    if 756429927200587888 not in member_role_ids:
+                        await member[0].add_roles(top_role)
+                else:
+                    if 756429927200587888 in member_role_ids:
+                        await member[0].remove_roles(top_role)
                 if i < 10:
                     if 756430896092938322 not in member_role_ids:
                         await member[0].add_roles(top10_role)
@@ -2080,19 +2082,19 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         # total_players = len(server_players)
 
         # Get ranking
-        # i = 0
-        # for person in server_players:
-        #     i += 1
-        #     if person[0] == player.id:
-        #         rank = i
-        #         break
+        i = 0
+        for person in player_rankings:
+            i += 1
+            if person[0] == player.id:
+                rank = i
+                break
 
         conn.close()
 
         profile = discord.Embed(title = player.name + '\'s Profile', description = 'Skill Rating (SR): **' + str(int(round(player_sr, 0))) + '**', colour=0x0013B4)
         profile.set_thumbnail(url = player.avatar_url)
 
-        # profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
+        profile.add_field(name = 'Rank', value = str(rank) + '/' + str(len(player_rankings)), inline = False)
         profile.add_field(name = 'Games played', value = str(stats['games']))
         won_games = str(stats['wins'])
         if stats['games'] > 0:
@@ -2703,22 +2705,22 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         conn.close()
 
-        player_rankings = {} # {player id: sr, ...}
-        # Put all players into a dictionary
-        for row in player_data:
-            player_rankings[row[0]] = row[1]
+        # player_rankings = {} # {player id: sr, ...}
+        # # Put all players into a dictionary
+        # for row in player_data:
+        #     player_rankings[row[0]] = row[1]
 
-        server_users = server.members
-        server_players = []
-        for user in server_users:
-            if user.id in player_rankings:
-                server_players.append([user.mention, player_rankings[user.id]])
-        
+        # server_users = server.members
+        # server_players = []
+        # for user in server_users:
+        #     if user.id in player_rankings:
+        #         server_players.append([user.mention, player_rankings[user.id]])
+
         # Sort by SR from biggest to smallest
-        server_players.sort(key = lambda x: x[1], reverse = True)
+        player_data.sort(key = lambda x: x[1], reverse = True)
 
         # Get total number of pages
-        num_pages = math.ceil(len(server_players) / 10)
+        num_pages = math.ceil(len(player_data) / 10)
 
         # Top 10x players
         try: 
@@ -2735,9 +2737,9 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         # Get page_no of player rank
         if player:
             player_rank = 0
-            for person in server_players:
+            for person in player_data:
                 player_rank += 1
-                if person[0] == player.mention:
+                if person[0] == player.id:
                     break
             page_no = math.ceil(player_rank / 10)
 
@@ -2745,7 +2747,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         all_names = ''
         all_sr = ''
         nums = {1:'1⃣', 2:'2⃣', 3:'3⃣', 4:'4⃣', 5:'5⃣', 6:'6⃣', 7:'7⃣', 8:'8⃣', 9:'9⃣', 10:'🔟'}
-        for rank in range((page_no - 1) * 10 + 1, min(len(server_players) + 1, page_no * 10 + 1)):
+        for rank in range((page_no - 1) * 10 + 1, min(len(player_data) + 1, page_no * 10 + 1)):
             if rank == 1:
                 all_names += '🥇 '
             elif rank == 2:
@@ -2756,16 +2758,16 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 all_names += str(nums[rank]) + ' '
             else:
                 all_names += '#' + str(rank) + ' '
-            all_names += server_players[rank-1][0] + '\n'
+            all_names += '<@' + str(player_data[rank-1][0]) + '>\n'
             if rank <= 10:
-                all_sr += '￶￵ ￶￵  ￶￵ 🔹 ' + str(int(round(server_players[rank-1][1], 0))) + ' 🔹' + '\n'
+                all_sr += '￶￵ ￶￵  ￶￵ 🔹 ' + str(int(round(player_data[rank-1][1], 0))) + ' 🔹' + '\n'
             else:
-                all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
+                all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(player_data[rank-1][1], 0))) + '\n'
 
         lb_info = 'Page ' + str(page_no) + '/' + str(num_pages)
         leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = lb_info, colour=0x0013B4)
         if player:
-            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_players)), inline = False)
+            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(player_data)), inline = False)
         leaderboard.add_field(name = 'Player', value = all_names)
         leaderboard.add_field(name = 'Skill Rating (SR)', value = all_sr)
         return leaderboard, page_no

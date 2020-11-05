@@ -842,36 +842,36 @@ class Game():
                 await message.channel.send(embed=badges)
 
             if message.content.startswith('~leaderboard') or message.content.startswith('~lb'):
-                await message.channel.send('🚧 | The leaderboard is no longer available due to restrictions on server members\' data imposed by Discord.')
-                # messagebox = message.content.split(' ')
-                # if len(messagebox) == 1:
-                #     leaderboard, cur_page = self.state.get_leaderboard(message.guild)
-                # elif message.mentions:
-                #     player_profile = message.mentions[0]
-                #     leaderboard, cur_page = self.state.get_leaderboard(message.guild, player=player_profile)
-                # else:
-                #     page_no = messagebox[1]
-                #     leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=page_no)
-                # leaderboard_msg = await message.channel.send(embed=leaderboard)
+                # await message.channel.send('🚧 | The leaderboard is no longer available due to restrictions on server members\' data imposed by Discord.')
+                messagebox = message.content.split(' ')
+                if len(messagebox) == 1:
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild)
+                elif message.mentions:
+                    player_profile = message.mentions[0]
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, player=player_profile)
+                else:
+                    page_no = messagebox[1]
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=page_no)
+                leaderboard_msg = await message.channel.send(embed=leaderboard)
 
-                # def reaction_check(reaction, user):
-                #     return user != self.client.user and (reaction.emoji == '▶' or reaction.emoji == '◀') and (reaction.message.id == leaderboard_msg.id)
+                def reaction_check(reaction, user):
+                    return user != self.client.user and (reaction.emoji == '▶' or reaction.emoji == '◀') and (reaction.message.id == leaderboard_msg.id)
 
-                # await leaderboard_msg.add_reaction('◀')
-                # await leaderboard_msg.add_reaction('▶')
+                await leaderboard_msg.add_reaction('◀')
+                await leaderboard_msg.add_reaction('▶')
 
-                # while True:
-                #     rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
+                while True:
+                    rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
 
-                #     if rxn.emoji == '▶':
-                #         cur_page += 1
-                #     elif rxn.emoji == '◀':
-                #         cur_page -= 1
+                    if rxn.emoji == '▶':
+                        cur_page += 1
+                    elif rxn.emoji == '◀':
+                        cur_page -= 1
 
-                #     leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page)
-                #     await leaderboard_msg.edit(embed=leaderboard)
-                #     await rxn.remove(user)
-                #     await asyncio.sleep(0.1)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page)
+                    await leaderboard_msg.edit(embed=leaderboard)
+                    await rxn.remove(user)
+                    await asyncio.sleep(0.1)
 
             if message.content.startswith('~stats') or message.content.startswith('~gamestats'):
                 cur_stat_page = 1
@@ -944,15 +944,17 @@ class Game():
 
             # Testing command
             if message.content.startswith('~test') and message.author.id == 238808836075421697:
-                pings_msg = 'Type `y` if you want to be pinged.\nType `n` if you no longer want to be pinged.'
-                status = discord.Embed(title = 'Would you like to be pinged for games in this server?', description = pings_msg, colour=0x00C9FF)
+                server = self.client.get_guild(748080644340318299)
+                print('Server:', server)
+                member = server.get_member_named(message.author.name)
+                print('Member:', member)
 
                 # status.add_field(name = '\u200B', value='test')
                 # status.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/748958842087538748/annie_vs_kenneeh.PNG')
                 # status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png')
 #                 status = discord.Embed(title='⚔ Warrior ⚔', description=role_msg, colour=0xB23E00)
 #                 status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png')
-                await message.channel.send(embed=status)
+                # await message.channel.send(embed=status)
 
     def reset_timers(self):
         self.approval_timer_obj.cancel()
