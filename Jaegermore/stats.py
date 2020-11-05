@@ -176,13 +176,12 @@ class State():
         all_players_data = cursor.fetchall()
 
         # Get server players
-        server_users_ids = {member.id: [member.id, member.name] for member in server.members}
+        # server_users_ids = {member.id: [member.id, member.name] for member in server.members}
         server_players_data = []
         for row in all_players_data:
-            if row[0] in server_users_ids:
-                total_count = sum(row[1:])
-                player_name = server_users_ids[row[0]][1]
-                server_players_data.append([player_name] + list(row[1:]) + [total_count])
+            # if row[0] in server_users_ids:
+            total_count = sum(row[1:])
+            server_players_data.append([row[0]] + list(row[1:]) + [total_count])
 
         conn.close()
         
@@ -222,7 +221,7 @@ class State():
             player_affinities = ''
             char_count = ''
             for i, player in enumerate(char_rankings[1]):
-                player_names += '#' + str(i+1) + ' ' + player[0] + '\n'
+                player_names += '#' + str(i+1) + ' <@' + str(player[0]) + '>\n'
                 if char_index < 9:
                     player_affinities += str(player[1]) + '%\n'
                     char_count += str(player[2]) + '/' + str(player[3]) + '\n'
@@ -241,9 +240,9 @@ class State():
             leaderboard = discord.Embed(title = '👑 Leaderboard for Jaegermore 👑', colour=0x5CFFE9)
             for i, character_info in enumerate(highest_rankings):
                 if i < 9:
-                    leaderboard.add_field(name = character_info[0], value = character_info[1][0][0] + '\n' + 'Similarity: ' + str(character_info[1][0][1]) + '%')
+                    leaderboard.add_field(name = character_info[0], value = '<@' + str(character_info[1][0][0]) + '>' + '\n' + 'Similarity: ' + str(character_info[1][0][1]) + '%')
                 else:
-                    leaderboard.add_field(name = character_info[0], value = character_info[1][0][0] + '\n' + 'Count: ' + str(character_info[1][0][1]))
+                    leaderboard.add_field(name = character_info[0], value = '<@' + str(character_info[1][0][0]) + '>' + '\n' + 'Count: ' + str(character_info[1][0][1]))
             leaderboard.set_footer(text = 'Add a character name behind the ~lb command to see the leaderboard for each character, e.g. ~lb eren/~lb total.')
         
         return leaderboard
