@@ -249,17 +249,17 @@ class Game():
             await message.channel.send(embed = stats)
 
         if message.content.startswith('~leaderboard') or message.content.startswith('~lb'):
-            await message.channel.send('🚧 | The leaderboard is no longer available due to restrictions on server members\' data imposed by Discord.')
-        #     messagebox = message.content.split(' ')
-        #     if len(messagebox) == 1:
-        #         leaderboard = self.state.get_leaderboard(message.guild)
-        #     elif message.mentions:
-        #         player_profile = message.mentions[0]
-        #         leaderboard = self.state.get_leaderboard(message.guild, player=player_profile)
-        #     else:
-        #         page_no = messagebox[1]
-        #         leaderboard = self.state.get_leaderboard(message.guild, page=page_no)
-        #     await message.channel.send(embed = leaderboard)
+            # await message.channel.send('🚧 | The leaderboard is no longer available due to restrictions on server members\' data imposed by Discord.')
+            messagebox = message.content.split(' ')
+            if len(messagebox) == 1:
+                leaderboard = self.state.get_leaderboard(message.guild)
+            elif message.mentions:
+                player_profile = message.mentions[0]
+                leaderboard = self.state.get_leaderboard(message.guild, player=player_profile)
+            else:
+                page_no = messagebox[1]
+                leaderboard = self.state.get_leaderboard(message.guild, page=page_no)
+            await message.channel.send(embed = leaderboard)
 
         if message.content.startswith('~help') or message.content.startswith('~commands'):
             commands = self.state.get_commands()

@@ -1132,12 +1132,6 @@ class State():
         if len(self.levelling_system) > player_level:
             player_desc += ' (' + str(next_exp) + ' Exp to next level)'
 
-        # Get total players in server
-        player_rankings = [] # [[player id, exp], [...], ...]
-        
-        # Sort by Exp from biggest to smallest
-        player_rankings.sort(key = lambda x: x[1], reverse = True)
-
         # Get player records sorted by exp descending
         get_players_ranked = 'SELECT player, exp FROM players ORDER BY exp DESC'
         cursor.execute(get_players_ranked)
@@ -1149,13 +1143,13 @@ class State():
         # total_players = len(server_players)
 
         # Get ranking
-        # i = 1
-        # for person in server_players:
-        #     if person[0] == player.id:
-        #         rank = i
-        #         break
-        #     else:
-        #         i += 1
+        i = 1
+        for person in player_rankings:
+            if person[0] == player.id:
+                rank = i
+                break
+            else:
+                i += 1
 
         conn.close()
 
@@ -1163,7 +1157,7 @@ class State():
         player_profile.set_author(name = player.name, icon_url = player.avatar_url)
         player_profile.set_thumbnail(url = player.avatar_url)
 
-        # player_profile.add_field(name = 'Rank', value = str(rank) + '/' + str(total_players), inline = False)
+        player_profile.add_field(name = 'Rank', value = str(rank) + '/' + str(len(player_rankings)), inline = False)
         player_profile.add_field(name = 'Questions answered correctly', value = str(player_info[2]), inline = False)
         player_profile.add_field(name = 'Hangman games won', value = str(player_info[5]), inline = False)
         player_profile.add_field(name = 'Images guessed correctly', value = str(player_info[6]), inline = False)
@@ -1390,19 +1384,21 @@ class State():
                 conn.commit()
                 player_rankings.append(player_data)
 
-        player_rankings_map = {}
-        for player_rank in player_rankings:
-            player_rankings_map[player_rank[0]] = player_rank[1]
+        # player_rankings_map = {}
+        # for player_rank in player_rankings:
+        #     player_rankings_map[player_rank[0]] = player_rank[1]
 
-        server_players = []
-        for user in server.members:
-            if user.id in player_rankings_map:
-                server_players.append([user.mention, player_rankings_map[user.id]])
+        # server_players = []
+        # for user in server.members:
+        #     if user.id in player_rankings_map:
+        #         server_players.append([user.mention, player_rankings_map[user.id]])
 
         # Sort by Exp from biggest to smallest
-        server_players.sort(key = lambda x: x[1], reverse = True)
+        player_rankings.sort(key = lambda x: x[1], reverse = True)
 
         conn.close()
+
+        total_pages = math.ceil(len(player_rankings) / 10)
         
         # Sanitize page input
         try: 
@@ -1410,32 +1406,32 @@ class State():
         except:
             page_no = 1
 
+        # Clips inputs that are too high or too low
         if page_no < 1:
             page_no = 1
+        if page_no > total_pages:
+            page_no = total_pages
 
         # Get page_no of player rank
         if player:
             player_rank = 0
-            for person in server_players:
+            for person in player_rankings:
                 player_rank += 1
-                if person[0] == player.mention:
+                if person[0] == player.id:
                     break
             page_no = math.ceil(player_rank / 10)
 
-        total_pages = math.ceil(len(server_players) / 10)
-        page_no = min(total_pages, page_no)
-        
         # Put names into embed
         all_names = ''
         all_levels_exp = ''
-        for rank in range((page_no - 1) * 10 + 1, min(len(server_players) + 1, page_no * 10 + 1)):
-            all_names += str(rank) + '. ' + server_players[rank-1][0] + '\n'
+        for rank in range((page_no - 1) * 10 + 1, min(len(player_rankings) + 1, page_no * 10 + 1)):
+            all_names += str(rank) + '. <@' + str(player_rankings[rank-1][0]) + '>\n'
             for level in self.levelling_system:
-                if server_players[rank-1][1] < level[1]:
+                if player_rankings[rank-1][1] < level[1]:
                     next_level_exp = level[1]
                     break
                 player_level = level[0]
-            all_levels_exp += '**' + str(player_level) + '**' + ' (' + str(server_players[rank-1][1])
+            all_levels_exp += '**' + str(player_level) + '**' + ' (' + str(player_rankings[rank-1][1])
             if player_level < len(self.levelling_system):
                 all_levels_exp += '/' + str(next_level_exp)
             all_levels_exp += ')\n'
@@ -1444,7 +1440,7 @@ class State():
         if not player:
             leaderboard.add_field(name = 'Max Level', value = str(len(self.levelling_system)), inline = False)
         if player:
-            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_players)), inline = False)
+            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(player_rankings)), inline = False)
         leaderboard.add_field(name = 'Rank/Name', value = all_names)
         leaderboard.add_field(name = 'Level/Exp', value = all_levels_exp)
         leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
