@@ -2007,14 +2007,13 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 server_players.append([member, player_rankings[member.id]])
         
         # Sort by SR from biggest to smallest
-        player_data.sort(key = lambda x: x[1], reverse = True)
+        server_players.sort(key = lambda x: x[1], reverse = True)
 
         top_role = server.get_role(756429927200587888)
         top10_role = server.get_role(756430896092938322)
 
         # Update roles
-        for i, player_id in enumerate(player_data):
-            member = server.get_member(player_id)
+        for i, member in enumerate(server_players):
             if member:
                 member_role_ids = [role.id for role in member[0].roles]
                 if i == 0:
@@ -2741,7 +2740,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             player_rank = 0
             for person in server_players:
                 player_rank += 1
-                if person[0] == player.id:
+                if (all_servers and person[0] == player.id) or (not all_servers and person[0] == player.mention):
                     break
             page_no = math.ceil(player_rank / 10)
 
