@@ -1995,16 +1995,16 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         server = client.get_guild(748080644340318299)
 
-        # player_rankings = {} # {player id: sr, ...}
-        # # Put all players into a dictionary
-        # for row in player_data:
-        #     player_rankings[row[0]] = row[1]
+        player_rankings = {} # {player id: sr, ...}
+        # Put all players into a dictionary
+        for row in player_data:
+            player_rankings[row[0]] = row[1]
 
-        # server_members = server.members
-        # server_players = []
-        # for member in server_members:
-        #     if member.id in player_rankings:
-        #         server_players.append([member, player_rankings[member.id]])
+        server_members = server.members
+        server_players = []
+        for member in server_members:
+            if member.id in player_rankings:
+                server_players.append([member, player_rankings[member.id]])
         
         # Sort by SR from biggest to smallest
         player_data.sort(key = lambda x: x[1], reverse = True)
@@ -2077,13 +2077,12 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         player_rankings.sort(key = lambda x: x[1], reverse = True)
 
         # Get players in server
-        # server_users = list(map(lambda y: y.id, server.members))
-        # server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
-        # total_players = len(server_players)
+        server_users = list(map(lambda y: y.id, server.members))
+        server_players = list(filter(lambda x:x[0] in server_users, player_rankings))
 
         # Get ranking
         i = 0
-        for person in player_rankings:
+        for person in server_players:
             i += 1
             if person[0] == player.id:
                 rank = i
@@ -2094,7 +2093,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         profile = discord.Embed(title = player.name + '\'s Profile', description = 'Skill Rating (SR): **' + str(int(round(player_sr, 0))) + '**', colour=0x0013B4)
         profile.set_thumbnail(url = player.avatar_url)
 
-        profile.add_field(name = 'Rank', value = str(rank) + '/' + str(len(player_rankings)), inline = False)
+        profile.add_field(name = 'Rank', value = str(rank) + '/' + str(len(server_players)), inline = False)
         profile.add_field(name = 'Games played', value = str(stats['games']))
         won_games = str(stats['wins'])
         if stats['games'] > 0:
@@ -2680,7 +2679,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         return game_stats
 
-    def get_leaderboard(self, server, page=1, player=None):
+    def get_leaderboard(self, server, page=1, player=None, all_servers=False):
         # Returns the names of the top players, with 10 per page, in an embed
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
@@ -2705,22 +2704,25 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         conn.close()
 
-        # player_rankings = {} # {player id: sr, ...}
-        # # Put all players into a dictionary
-        # for row in player_data:
-        #     player_rankings[row[0]] = row[1]
+        if all_servers:
+            server_players = player_data
+        else:
+            player_rankings = {} # {player id: sr, ...}
+            # Put all players into a dictionary
+            for row in player_data:
+                player_rankings[row[0]] = row[1]
 
-        # server_users = server.members
-        # server_players = []
-        # for user in server_users:
-        #     if user.id in player_rankings:
-        #         server_players.append([user.mention, player_rankings[user.id]])
+            server_users = server.members
+            server_players = []
+            for user in server_users:
+                if user.id in player_rankings:
+                    server_players.append([user.mention, player_rankings[user.id]])
 
         # Sort by SR from biggest to smallest
-        player_data.sort(key = lambda x: x[1], reverse = True)
+        server_players.sort(key = lambda x: x[1], reverse = True)
 
         # Get total number of pages
-        num_pages = math.ceil(len(player_data) / 10)
+        num_pages = math.ceil(len(server_players) / 10)
 
         # Top 10x players
         try: 
@@ -2737,7 +2739,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         # Get page_no of player rank
         if player:
             player_rank = 0
-            for person in player_data:
+            for person in server_players:
                 player_rank += 1
                 if person[0] == player.id:
                     break
@@ -2747,7 +2749,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         all_names = ''
         all_sr = ''
         nums = {1:'1⃣', 2:'2⃣', 3:'3⃣', 4:'4⃣', 5:'5⃣', 6:'6⃣', 7:'7⃣', 8:'8⃣', 9:'9⃣', 10:'🔟'}
-        for rank in range((page_no - 1) * 10 + 1, min(len(player_data) + 1, page_no * 10 + 1)):
+        for rank in range((page_no - 1) * 10 + 1, min(len(server_players) + 1, page_no * 10 + 1)):
             if rank == 1:
                 all_names += '🥇 '
             elif rank == 2:
@@ -2758,16 +2760,22 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 all_names += str(nums[rank]) + ' '
             else:
                 all_names += '#' + str(rank) + ' '
-            all_names += '<@' + str(player_data[rank-1][0]) + '>\n'
-            if rank <= 10:
-                all_sr += '￶￵ ￶￵  ￶￵ 🔹 ' + str(int(round(player_data[rank-1][1], 0))) + ' 🔹' + '\n'
+
+            if all_servers:
+                all_names += '<@' + str(server_players[rank-1][0]) + '>\n'
             else:
-                all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(player_data[rank-1][1], 0))) + '\n'
+                all_names += server_players[rank-1][0] + '\n'
+
+            if rank <= 10:
+                all_sr += '￶￵ ￶￵  ￶￵ 🔹 ' + str(int(round(server_players[rank-1][1], 0))) + ' 🔹' + '\n'
+            else:
+                all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
 
         lb_info = 'Page ' + str(page_no) + '/' + str(num_pages)
-        leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers', description = lb_info, colour=0x0013B4)
+        lb_server = server.name if all_servers == False else 'Global'
+        leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers\n(' + lb_server + ')', description = lb_info, colour=0x0013B4)
         if player:
-            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(player_data)), inline = False)
+            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_players)), inline = False)
         leaderboard.add_field(name = 'Player', value = all_names)
         leaderboard.add_field(name = 'Skill Rating (SR)', value = all_sr)
         return leaderboard, page_no
@@ -2878,8 +2886,10 @@ and status of the Walls, the results of previous expeditions and information on 
                             'profile':'Checks a person\'s profile (E.g. `~profile @levi`).',
                             'badges':'Checks the badges a given user has. Use just `~badges` to check your own badges.',
                             'gamestats':'Brings up the records of all games played.',
-                            'leaderboard': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
-                            'lb': 'Brings up the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
+                            'leaderboard': 'Brings up the leaderboard, listing the top 10 players on the server.  Add `g` or `global` to see the global leaderboard. ' + \
+                                'Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
+                            'lb': 'Brings up the leaderboard, listing the top 10 players on the server.  Add `g` or `global` to see the global leaderboard. ' + \
+                                'Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
                             'role': 'Checks your current role with the bot.',
                             'roles': 'If game hasn\'t started yet: Shows the full list of available roles.\n\nIf game has started: Shows the list of roles currently in the game.',
                             'advantage': 'The advantage value tells you how powerful one side is relative to the other. It is calculated by a combination of the roles added and size of the game.\n\n' + \

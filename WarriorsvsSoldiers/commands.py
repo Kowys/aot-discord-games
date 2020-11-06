@@ -842,16 +842,20 @@ class Game():
                 await message.channel.send(embed=badges)
 
             if message.content.startswith('~leaderboard') or message.content.startswith('~lb'):
-                # await message.channel.send('🚧 | The leaderboard is no longer available due to restrictions on server members\' data imposed by Discord.')
                 messagebox = message.content.split(' ')
-                if len(messagebox) == 1:
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild)
+                if 'g' in messagebox or 'global' in messagebox:
+                    all_servers = True
+                else:
+                    all_servers = False
+
+                if len(messagebox) == 1 and all_servers == False or len(messagebox) == 2 and all_servers == True:
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, all_servers=all_servers)
                 elif message.mentions:
                     player_profile = message.mentions[0]
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, player=player_profile)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, player=player_profile, all_servers=all_servers)
                 else:
-                    page_no = messagebox[1]
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=page_no)
+                    page_no = messagebox[1] if all_servers == False else messagebox[2]
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=page_no, all_servers=all_servers)
                 leaderboard_msg = await message.channel.send(embed=leaderboard)
 
                 def reaction_check(reaction, user):
@@ -868,7 +872,7 @@ class Game():
                     elif rxn.emoji == '◀':
                         cur_page -= 1
 
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page, all_servers=all_servers)
                     await leaderboard_msg.edit(embed=leaderboard)
                     await rxn.remove(user)
                     await asyncio.sleep(0.1)
@@ -946,8 +950,8 @@ class Game():
             if message.content.startswith('~test') and message.author.id == 238808836075421697:
                 server = self.client.get_guild(748080644340318299)
                 print('Server:', server)
-                member = server.get_member_named(message.author.name)
-                print('Member:', member)
+                for member in server.members:
+                    print('Member:', member)
 
                 # status.add_field(name = '\u200B', value='test')
                 # status.set_image(url='https://cdn.discordapp.com/attachments/266949919821135872/748958842087538748/annie_vs_kenneeh.PNG')
