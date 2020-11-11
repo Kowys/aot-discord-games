@@ -80,7 +80,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.funds = 5
         self.kenny = False
         self.kenny_hit_list = []
-        self.num_targets = 1
+        self.num_targets = 0
         
         self.cur_expedition = 0
         self.expedition_squad = []
@@ -128,7 +128,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.funds = 5
             self.kenny = False
             self.kenny_hit_list = []
-            self.num_targets = 1
+            self.num_targets = 0
 
             self.cur_expedition = 0
             self.expedition_squad = []
@@ -640,6 +640,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         self.kenny_hit_list.sort(key = lambda x: random.randint(1,200))
                         if len(self.players) >= 9:
                             self.num_targets = 2
+                        else:
+                            self.num_targets = 1
 
                     self.cur_expedition += 1
                     return 'Starting game with **' + str(len(self.players)) + '** players!'
@@ -682,7 +684,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.funds = 5
             self.kenny = False
             self.kenny_hit_list = []
-            self.num_targets = 1
+            self.num_targets = 0
 
             self.cur_expedition = 0
             self.expedition_squad = []
