@@ -564,14 +564,14 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             if player == self.game_host or player.id == 238808836075421697:
                 if len(self.players) >= 5:
                     self.message_box = []
+                    # Randomize roles
+                    if self.randomroles:
+                        self.randomize_roles()
+
                     if 'saboteur' in self.newroles:
                         self.status = 'saboteur selection'
                     else:
                         self.status = 'assigning roles'
-
-                    # Randomize roles
-                    if self.randomroles:
-                        self.randomize_roles()
 
                     # Add optional roles
                     all_player_roles = self.player_roles[len(self.players)].copy()
