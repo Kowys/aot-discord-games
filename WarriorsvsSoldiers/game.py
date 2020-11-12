@@ -262,7 +262,15 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 return 'The {} role is already in the game!'.format(soldier_dict[role])
 
             soldier_role_count = len(list(filter(lambda role:role not in self.warrior_roles, self.newroles)))
-            if soldier_role_count >= 3:
+            if soldier_role_count >= 5:
+                return 'You have reached the maximum number of optional soldier roles!'
+            elif soldier_role_count >= 4:
+                if len(self.players) >= 9:
+                    self.newroles.append(role)
+                    return 'The role {} has been added to the game!'.format(soldier_dict[role])
+                else:
+                    return 'At least 9 players are needed to add another optional soldier role!'
+            elif soldier_role_count >= 3:
                 if len(self.players) >= 8:
                     self.newroles.append(role)
                     return 'The role {} has been added to the game!'.format(soldier_dict[role])
@@ -286,7 +294,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 return 'The 👼**Queen**👼 role needs to be added first!'
 
             warrior_role_count = len(list(filter(lambda role:role in self.warrior_roles, self.newroles)))
-            if warrior_role_count >= 3:
+            if warrior_role_count >= 4:
+                return 'You have reached the maximum number of optional warrior roles!'
+            elif warrior_role_count >= 3:
                 if len(self.players) >= 10:
                     self.newroles.append(role)
                     return 'The role {} has been added to the game!'.format(warrior_dict[role])
