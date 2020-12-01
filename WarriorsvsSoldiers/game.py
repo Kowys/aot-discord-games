@@ -58,11 +58,14 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.achievement_rewards = {'Bronze': 20, 'Silver': 40, 'Gold': 60, 'Platinum': 80, 'Diamond': 100, 'Master': 150, 'Grandmaster': 250}
         self.badge_emojis = {'Bronze': '🥉', 'Silver': '🥈', 'Gold': '🥇', 'Platinum': '💠', 'Diamond': '💎', 'Master': '👑', 'Grandmaster': '🎓'}
 
+        self.tournament_channel_ids = [783156184794005525, 783156236304384050]
+
         # Variables
         self.status = 'waiting for game' # waiting for players, assigning roles, expedition selection, expedition approval, expedition decision, expedition over, choose coordinate, game ended
 
         self.game_channel = None
         self.server = None
+        self.tournament = False
         self.game_host = None
         self.reset_confirmation = False
         self.gametype = 'Ranked'
@@ -96,7 +99,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.hunter_used = False
         self.hunter_target = None
 
-    def host(self, player, server, fast, ranked):
+    def host(self, player, server, channel, fast, ranked):
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
 
@@ -143,6 +146,10 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.wall_secured = False
             self.hunter_used = False
             self.hunter_target = None
+
+            if channel.id in self.tournament_channel_ids:
+                self.tournament = True
+                self.randomroles = True
 
             msg = '**' + player.name + '** has started a new lobby! Type `~join` to join the game!'
 
@@ -244,7 +251,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         else:
             return 'The game has already started!'
 
-    def add_with_role_count_check(self, role):
+    def add_with_role_count_check(self, role, randomroles):
         soldier_dict = {'queen': '👼**Queen**👼',
                         'ackerman': '💂**Ackerman**💂',
                         'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>',
@@ -256,6 +263,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         'false king': '🕴**False King**🕴',
                         'spy': '🕵️‍♀️**Spy**🕵️‍♀️',
                         'saboteur': '🔨**Saboteur**🔨'}
+
+        if self.tournament and randomroles == False:
+            return 'Random roles are enabled by default for this tournament!'
 
         if role in soldier_dict:
             if role in self.newroles:
@@ -331,6 +341,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
         if self.status == 'waiting for players' or randomroles == True:
             if player == self.game_host or player.id == 238808836075421697:
+                if role == 'randomroles' or role == 'random roles':
+                    return self.toggle_randomroles(player, action='add')
+
                 if role == 'blessing' or role == 'ymir\'s blessing' or role == 'ymirs blessing' or role == 'ymir blessing':
                     if self.ymir_blessing == False:
                         self.ymir_blessing = True
@@ -360,7 +373,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> has already been enabled!'
 
                 elif role in optional_roles_dict:
-                    return self.add_with_role_count_check(optional_roles_dict[role])
+                    return self.add_with_role_count_check(optional_roles_dict[role], randomroles)
 
                 else:
                     return 'Invalid role!'
@@ -382,6 +395,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             'spy': '🕵️‍♀️**Spy**🕵️‍♀️',
             'saboteur': '🔨**Saboteur**🔨'
         }
+
+        if self.tournament:
+            return 'Random roles are enabled by default for this tournament!'
 
         if role not in self.newroles:
             return 'The {} role is not in the game!'.format(all_roles_dict[role])
@@ -410,6 +426,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
         if self.status == 'waiting for players':
             if player == self.game_host or player.id == 238808836075421697:
+                if role == 'randomroles' or role == 'random roles':
+                    return self.toggle_randomroles(player, action='remove')
+                    
                 if role == 'blessing' or role == 'ymir\'s blessing' or role == 'ymirs blessing' or role == 'ymir blessing':
                     if self.ymir_blessing == True:
                         self.ymir_blessing = False
@@ -448,15 +467,24 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         else:
             return 'There is no open lobby at the moment!'
 
-    def toggle_randomroles(self, player):
+    def toggle_randomroles(self, player, action=None):
+        if self.tournament:
+            return 'Random roles are enabled by default for this tournament!'
+
         if self.status == 'waiting for players':
             if player == self.game_host or player.id == 238808836075421697:
                 if self.randomroles:
-                    self.randomroles = False
-                    return 'Random roles have been disabled!'
+                    if action == 'add':
+                        return 'Random roles have already been enabled!'
+                    else:
+                        self.randomroles = False
+                        return 'Random roles have been disabled!'
                 else:
-                    self.randomroles = True
-                    return 'Random roles have been enabled!'
+                    if action == 'remove':
+                        return 'Random roles have already been disabled!'
+                    else:
+                        self.randomroles = True
+                        return 'Random roles have been enabled!'
             else:
                 return 'Only the host can add or remove optional roles!'
         else:
@@ -465,6 +493,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
     def toggle_gametype(self, player, gametype):
         if self.status == 'waiting for players':
             if player == self.game_host or player.id == 238808836075421697:
+                if self.tournament:
+                    return 'This option is not available for this tournament!'
+
                 if gametype == 'fast':
                     if self.gamespeed == 'Fast':
                         return 'The game speed is already set to **Fast**!'
@@ -498,7 +529,6 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         else:
             return 'There is no open lobby at the moment!'
 
-
     def display_lobby(self):
         players_in_lobby = ''
         for person in self.players:
@@ -508,12 +538,16 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 players_in_lobby = players_in_lobby + '**' + person[0].mention + '**\n'
 
         lobby = discord.Embed(title = 'Current lobby', colour=0x0013B4)
-        lobby.add_field(name = 'Game Type', value = '**' + self.gamespeed + ' ' + self.gametype + '**')
-        lobby.add_field(name = 'Advantage', value = '⚖️ **Perfectly balanced!** ⚖️' if self.calculate_advantage() == '**None**' else self.calculate_advantage())
+        lobby.add_field(name = 'Game Type', value = '**' + self.gamespeed + ' ' + self.gametype + '**' if not self.tournament else '**Tournament**')
+        advantage_field = '⚖️ **Perfectly balanced!** ⚖️' if self.calculate_advantage() == '**None**' else self.calculate_advantage()
+        if self.tournament:
+            advantage_field = '❓ **Unknown** ❓'
+        lobby.add_field(name = 'Advantage', value = advantage_field)
         lobby.add_field(name = '**' + str(len(self.players)) + '** player' + ('s' if len(self.players) > 1 else '') + ' in lobby', value = players_in_lobby, inline = False)
         lobby.add_field(name = 'Random Roles', value = '🎲' if self.randomroles else '⬛', inline=False)
-        lobby.add_field(name = 'Optional Soldier Roles', value = self.get_newroles('soldier'))
-        lobby.add_field(name = 'Optional Warrior Roles', value = self.get_newroles('warrior'))
+        if not self.tournament:
+            lobby.add_field(name = 'Optional Soldier Roles', value = self.get_newroles('soldier'))
+            lobby.add_field(name = 'Optional Warrior Roles', value = self.get_newroles('warrior'))
         lobby.add_field(name = 'In-Game Effects', value = self.get_effects(), inline = False)
         lobby.set_footer(text='Type ~roles to see the available roles and in-game effects.')
         return lobby
@@ -573,6 +607,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         if self.status == 'waiting for players':
             if player == self.game_host or player.id == 238808836075421697:
                 if len(self.players) >= 5:
+                    self.status = 'assigning roles'
                     self.message_box = []
                     # Randomize roles
                     if self.randomroles:
@@ -580,8 +615,6 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
                     if 'saboteur' in self.newroles:
                         self.status = 'saboteur selection'
-                    else:
-                        self.status = 'assigning roles'
 
                     # Add optional roles
                     all_player_roles = self.player_roles[len(self.players)].copy()
@@ -677,6 +710,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
             self.status = 'waiting for game'
 
+            self.tournament = False
             self.game_host = None
             self.reset_confirmation = False
             self.gametype = 'Ranked'
@@ -1643,14 +1677,39 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             update_game_data_query = 'UPDATE global SET warriors_kidnap = ? WHERE number_of_players = ?'
             update_game_data = [game_data[num_players - 5][3] + 1, num_players]
             cursor.execute(update_game_data_query, update_game_data)
-
+        
         conn.commit()
+
+        # Update tournament records
+        if self.tournament:
+            get_game_data_query = 'SELECT * FROM tournament'
+            cursor.execute(get_game_data_query)
+            game_data = cursor.fetchall()
+
+            num_players = len(self.players)
+            if self.status == 'game ended soldiers':
+                update_game_data_query = 'UPDATE tournament SET soldiers = ? WHERE number_of_players = ?'
+                update_game_data = [game_data[num_players - 5][1] + 1, num_players]
+                cursor.execute(update_game_data_query, update_game_data)
+                
+            elif self.status == 'game ended warriors wall':
+                update_game_data_query = 'UPDATE tournament SET warriors_walls = ? WHERE number_of_players = ?'
+                update_game_data = [game_data[num_players - 5][2] + 1, num_players]
+                cursor.execute(update_game_data_query, update_game_data)
+
+            elif self.status == 'game ended warriors coord':
+                update_game_data_query = 'UPDATE tournament SET warriors_kidnap = ? WHERE number_of_players = ?'
+                update_game_data = [game_data[num_players - 5][3] + 1, num_players]
+                cursor.execute(update_game_data_query, update_game_data)
+
+            conn.commit()
 
         # Update player ratings
         ratings = []
         # Obtain original ratings
+        player_records = 'players' if not self.tournament else 'players_tournament'
         for player in self.players:
-            player_data_query = 'SELECT player, rating FROM players WHERE player = ?'
+            player_data_query = 'SELECT player, rating FROM {} WHERE player = ?'.format(player_records)
             cursor.execute(player_data_query, (player[0].id,))
             player_data = cursor.fetchone()
 
@@ -1658,7 +1717,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             if player_data:
                 ratings.append([player_data[0], player_data[1], player[1]]) 
             else:
-                insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 30))
+                insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 30))
                 insert_player_data = [player[0].id, 1500] + 28 * [0]
                 cursor.execute(insert_player_data_query, insert_player_data)
                 conn.commit()
@@ -1715,11 +1774,11 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 'spy': ['spy_wins', 'spy_games'],
                 'saboteur': ['saboteur_wins', 'saboteur_games']
             }
-            get_player_role_query = 'SELECT {},{} FROM players WHERE player = ?'.format(*role_to_column_map[player[2]])
+            get_player_role_query = 'SELECT {},{} FROM {} WHERE player = ?'.format(*role_to_column_map[player[2]], player_records)
             cursor.execute(get_player_role_query, (player[0],))
             player_role_columns = cursor.fetchone()
 
-            update_player_data_query = 'UPDATE players SET rating = ?, {} = ?, {} = ? WHERE player = ?'.format(*role_to_column_map[player[2]])
+            update_player_data_query = 'UPDATE {} SET rating = ?, {} = ?, {} = ? WHERE player = ?'.format(player_records, *role_to_column_map[player[2]])
             player_wins = player_role_columns[0]
             player_games = player_role_columns[1] + 1
             if win == True:
@@ -1761,6 +1820,9 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
     def update_achievements(self):
         achievements_msgs = []
+        if self.tournament:
+            return achievements_msgs
+            
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
 
@@ -2041,12 +2103,16 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                     if 756430896092938322 in member_role_ids:
                         await member[0].remove_roles(top10_role)
 
-    def get_profile(self, player, server):
+    def get_profile(self, player, server, channel):
         # Returns the rating and game stats of given player in an embed
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
 
-        player_data_query = 'SELECT * FROM players WHERE player = ?'
+        player_records = 'players'
+        if channel.id in self.tournament_channel_ids:
+            player_records = 'players_tournament'
+
+        player_data_query = 'SELECT * FROM {} WHERE player = ?'.format(player_records)
         cursor.execute(player_data_query, (player.id,))
         player_data = cursor.fetchone()
         
@@ -2069,7 +2135,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         else:
             # Add player data into player records
             player_sr = 1500
-            insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 30))
+            insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 30))
             insert_player_data = [player.id, 1500] + 28 * [0]
             cursor.execute(insert_player_data_query, insert_player_data)
             conn.commit()
@@ -2080,7 +2146,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             'win as hunter': 0, 'played as hunter': 0, 'win as saboteur': 0, 'played as saboteur': 0}
 
         # Get total players in server
-        player_rankings_query = 'SELECT player, rating FROM players'
+        player_rankings_query = 'SELECT player, rating FROM {}'.format(player_records)
         cursor.execute(player_rankings_query)
         player_rankings = cursor.fetchall()
         
@@ -2101,7 +2167,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         conn.close()
 
-        profile = discord.Embed(title = player.name + '\'s Profile', description = 'Skill Rating (SR): **' + str(int(round(player_sr, 0))) + '**', colour=0x0013B4)
+        profile_name = player.name + '\'s Profile'
+        if channel.id in self.tournament_channel_ids:
+            profile_name = '🏆 ' + player.name + '\'s Profile 🏆\n(Tournament)'
+        profile = discord.Embed(title = profile_name, description = 'Skill Rating (SR): **' + str(int(round(player_sr, 0))) + '**', colour=0x0013B4)
         profile.set_thumbnail(url = player.avatar_url)
 
         profile.add_field(name = 'Rank', value = str(rank) + '/' + str(len(server_players)), inline = False)
@@ -2308,7 +2377,11 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         return player_achievements
 
-    def get_game_stats(self, page_no, server):
+    def get_game_stats(self, page_no, server, channel):
+        # Return tournament stats
+        if channel.id in self.tournament_channel_ids:
+            return self.get_tournament_stats(page_no)
+
         # Returns past game statistics
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
@@ -2690,24 +2763,209 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         return game_stats
 
-    def get_leaderboard(self, server, page=1, player=None, all_servers=False):
+    def get_tournament_stats(self, page_no):
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        get_game_data_query = 'SELECT * FROM tournament'
+        cursor.execute(get_game_data_query)
+        game_data = cursor.fetchall()
+
+        get_player_data_query = 'SELECT * FROM players_tournament'
+        cursor.execute(get_player_data_query)
+        player_data = cursor.fetchall()
+
+        page_descriptions = {1: '🏆 Game Stats (Tournament) 🏆', 2: '🏆 Role Stats (Tournament) 🏆'}
+
+        game_stats = discord.Embed(title = page_descriptions[page_no], colour=0x0013B4)
+
+        # Game stats
+        if page_no == 1:
+            soldiers_wins = sum([row[1] for row in game_data])
+            warriors_wins =  sum([row[2] + row[3] for row in game_data])
+            warriors_walls = sum([row[2] for row in game_data])
+            warriors_kidnap = sum([row[3] for row in game_data])
+            games_played = 'Soldiers: ' + str(soldiers_wins)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * soldiers_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+            games_played += '\nWarriors: ' + str(warriors_wins)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * warriors_wins / (warriors_wins + soldiers_wins), 1)) + '%)'
+            games_played += '\n - Walls: ' + str(warriors_walls)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * warriors_walls / (warriors_wins + soldiers_wins), 1)) + '%)'
+            games_played += '\n - Kidnap: ' + str(warriors_kidnap)
+            if (warriors_wins + soldiers_wins) > 0:
+                games_played += ' (' + str(round(100 * warriors_kidnap / (warriors_wins + soldiers_wins), 1)) + '%)'
+            game_stats.add_field(name = 'Total games played: ' + str(warriors_wins + soldiers_wins), value = games_played, inline = False)
+
+            for i in range(6):
+                soldiers_wins_n = game_data[i][1]
+                warriors_wins_n =  game_data[i][2] + game_data[i][3]
+                warriors_walls_n = game_data[i][2]
+                warriors_kidnap_n = game_data[i][3]
+                num_players_stats = 'Soldiers: ' + str(soldiers_wins_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * soldiers_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                num_players_stats += '\nWarriors: ' + str(warriors_wins_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * warriors_wins_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                num_players_stats += '\n - Walls: ' + str(warriors_walls_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * warriors_walls_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                num_players_stats += '\n - Kidnap: ' + str(warriors_kidnap_n)
+                if (warriors_wins_n + soldiers_wins_n) > 0:
+                    num_players_stats += ' (' + str(round(100 * warriors_kidnap_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
+                game_stats.add_field(name = str(i + 5) + ' Players: ' + str(warriors_wins_n + soldiers_wins_n), value = num_players_stats)
+
+        # Role stats
+        elif page_no == 2:
+            soldier_wins, soldier_games = 0, 0
+            warrior_wins, warrior_games = 0, 0
+            coordinate_wins, coordinate_games = 0, 0
+            queen_wins, queen_games = 0, 0
+            warchief_wins, warchief_games = 0, 0
+            ymir_wins, ymir_games = 0, 0
+            falseking_wins, falseking_games = 0, 0
+            ackerman_wins, ackerman_games = 0, 0
+            mike_wins, mike_games = 0, 0
+            scout_wins, scout_games = 0, 0
+            spy_wins, spy_games = 0, 0
+            hunter_wins, hunter_games = 0, 0
+            saboteur_wins, saboteur_games = 0, 0
+
+            for row in player_data:
+                soldier_wins += row[4]
+                soldier_games += row[5]
+                warrior_wins += row[6]
+                warrior_games += row[7]
+                coordinate_wins += row[8]
+                coordinate_games += row[9]
+                queen_wins += row[10]
+                queen_games += row[11]
+                warchief_wins += row[12]
+                warchief_games += row[13]
+                ymir_wins += row[14]
+                ymir_games += row[15]
+                falseking_wins += row[16]
+                falseking_games += row[17]
+                ackerman_wins += row[18]
+                ackerman_games += row[19]
+                mike_wins += row[20]
+                mike_games += row[21]
+                scout_wins += row[22]
+                scout_games += row[23]
+                spy_wins += row[24]
+                spy_games += row[25]
+                hunter_wins += row[26]
+                hunter_games += row[27]
+                saboteur_wins += row[28]
+                saboteur_games += row[29]
+
+            soldier_stats = 'Games: ' + str(soldier_games)
+            soldier_stats += '\nWins: ' + str(soldier_wins)
+            if soldier_wins > 0:
+                soldier_stats += ' (' + str(round(100 * soldier_wins / soldier_games, 1)) + '%)'
+            game_stats.add_field(name = '🛡Soldier🛡', value = soldier_stats)
+
+            warrior_stats = 'Games: ' + str(warrior_games)
+            warrior_stats += '\nWins: ' + str(warrior_wins)
+            if warrior_wins > 0:
+                warrior_stats += ' (' + str(round(100 * warrior_wins / warrior_games, 1)) + '%)'
+            game_stats.add_field(name = '⚔Warrior⚔', value = warrior_stats)
+
+            coordinate_stats = 'Games: ' + str(coordinate_games)
+            coordinate_stats += '\nWins: ' + str(coordinate_wins)
+            if coordinate_wins > 0:
+                coordinate_stats += ' (' + str(round(100 * coordinate_wins / coordinate_games, 1)) + '%)'
+            game_stats.add_field(name = '🗺Coordinate🗺', value = coordinate_stats)
+
+            queen_stats = 'Games: ' + str(queen_games)
+            queen_stats += '\nWins: ' + str(queen_wins)
+            if queen_wins > 0:
+                queen_stats += ' (' + str(round(100 * queen_wins / queen_games, 1)) + '%)'
+            game_stats.add_field(name = '👼Queen👼', value = queen_stats)
+
+            warchief_stats = 'Games: ' + str(warchief_games)
+            warchief_stats += '\nWins: ' + str(warchief_wins)
+            if warchief_wins > 0:
+                warchief_stats += ' (' + str(round(100 * warchief_wins / warchief_games, 1)) + '%)'
+            game_stats.add_field(name = '🦹‍♂️Warchief🦹‍♂️', value = warchief_stats)
+
+            ymir_stats = 'Games: ' + str(ymir_games)
+            ymir_stats += '\nWins: ' + str(ymir_wins)
+            if ymir_wins > 0:
+                ymir_stats += ' (' + str(round(100 * ymir_wins / ymir_games, 1)) + '%)'
+            game_stats.add_field(name = '🤷‍♀️Ymir🤷‍♀️', value = ymir_stats)
+
+            falseking_stats = 'Games: ' + str(falseking_games)
+            falseking_stats += '\nWins: ' + str(falseking_wins)
+            if falseking_wins > 0:
+                falseking_stats += ' (' + str(round(100 * falseking_wins / falseking_games, 1)) + '%)'
+            game_stats.add_field(name = '🕴False King🕴', value = falseking_stats)
+
+            ackerman_stats = 'Games: ' + str(ackerman_games)
+            ackerman_stats += '\nWins: ' + str(ackerman_wins)
+            if ackerman_wins > 0:
+                ackerman_stats += ' (' + str(round(100 * ackerman_wins / ackerman_games, 1)) + '%)'
+            game_stats.add_field(name = '💂Ackerman💂', value = ackerman_stats)
+
+            mike_stats = 'Games: ' + str(mike_games)
+            mike_stats += '\nWins: ' + str(mike_wins)
+            if mike_wins > 0:
+                mike_stats += ' (' + str(round(100 * mike_wins / mike_games, 1)) + '%)'
+            game_stats.add_field(name = '<:aotSmirk:571740978377916416>Mike Zacharias <:aotSmirk:571740978377916416>', value = mike_stats)
+
+            scout_stats = 'Games: ' + str(scout_games)
+            scout_stats += '\nWins: ' + str(scout_wins)
+            if scout_wins > 0:
+                scout_stats += ' (' + str(round(100 * scout_wins / scout_games, 1)) + '%)'
+            game_stats.add_field(name = '🏇Scout🏇', value = scout_stats)
+
+            spy_stats = 'Games: ' + str(spy_games)
+            spy_stats += '\nWins: ' + str(spy_wins)
+            if spy_wins > 0:
+                spy_stats += ' (' + str(round(100 * spy_wins / spy_games, 1)) + '%)'
+            game_stats.add_field(name = '🕵️‍♀️Spy🕵️‍♀️', value = spy_stats)
+
+            hunter_stats = 'Games: ' + str(hunter_games)
+            hunter_stats += '\nWins: ' + str(hunter_wins)
+            if hunter_wins > 0:
+                hunter_stats += ' (' + str(round(100 * hunter_wins / hunter_games, 1)) + '%)'
+            game_stats.add_field(name = '🏹Hunter🏹', value = hunter_stats)
+
+            saboteur_stats = 'Games: ' + str(saboteur_games)
+            saboteur_stats += '\nWins: ' + str(saboteur_wins)
+            if saboteur_wins > 0:
+                saboteur_stats += ' (' + str(round(100 * saboteur_wins / saboteur_games, 1)) + '%)'
+            game_stats.add_field(name = '🔨Saboteur🔨', value = saboteur_stats)
+
+        conn.close()
+
+        return game_stats
+
+    def get_leaderboard(self, server, channel, page=1, player=None, all_servers=False):
         # Returns the names of the top players, with 10 per page, in an embed
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
 
+        player_records = 'players'
+        if channel.id in self.tournament_channel_ids:
+            player_records = 'players_tournament'
+
         # Get total players in server
-        player_rankings_query = 'SELECT player, rating FROM players'
+        player_rankings_query = 'SELECT player, rating FROM {}'.format(player_records)
         cursor.execute(player_rankings_query)
         player_data = cursor.fetchall()
 
         if player:
             # Check if player exists in db
-            player_check_query = 'SELECT * FROM players WHERE player = ?'
+            player_check_query = 'SELECT * FROM {} WHERE player = ?'.format(player_records)
             cursor.execute(player_check_query, (player.id,))
             player_check = cursor.fetchone()
             if player_check is None:
                 # Add player data into player records
-                insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 30))
+                insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 30))
                 insert_player_data = [player.id, 1500] + 28 * [0]
                 cursor.execute(insert_player_data_query, insert_player_data)
                 conn.commit()
@@ -2783,8 +3041,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
 
         lb_info = 'Page ' + str(page_no) + '/' + str(num_pages)
-        lb_server = server.name if all_servers == False else 'Global'
-        leaderboard = discord.Embed(title = 'Leaderboard for Warriors vs Soldiers\n(' + lb_server + ')', description = lb_info, colour=0x0013B4)
+        lb_server = 'Leaderboard for Warriors vs Soldiers\n(' + server.name if all_servers == False else 'Global' + ')' 
+        if channel.id in self.tournament_channel_ids:
+            lb_server = '🏆 Leaderboard for Warriors vs Soldiers 🏆\n(Tournament)'
+        leaderboard = discord.Embed(title = lb_server, description = lb_info, colour=0x0013B4)
         if player:
             leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_players)), inline = False)
         leaderboard.add_field(name = 'Player', value = all_names)

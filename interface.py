@@ -1,3 +1,4 @@
+import discord
 import asyncio
 import time
 import yaml
@@ -30,7 +31,9 @@ def load_token():
     else:
         raise Exception('Please add a bot token to secrets.yml!')
 
-client = MyClient()
+intents = discord.Intents.default()
+intents.members = True
+client = MyClient(intents=intents)
 bot_token = load_token()
 
 while True:

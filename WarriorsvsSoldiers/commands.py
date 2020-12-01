@@ -305,7 +305,7 @@ class Game():
                     if 'casual' in [word.lower() for word in messagebox]:
                         ranked = False
                 
-                msg = self.state.host(message.author, message.guild, fast, ranked)
+                msg = self.state.host(message.author, message.guild, message.channel, fast, ranked)
                 await message.channel.send(msg)
                 if 'has started' in msg:
                     lobby = self.state.display_lobby()
@@ -374,7 +374,7 @@ class Game():
                             newrole = 'mike'
                         rolemsg = self.state.removerole(newrole, message.author)
                     await message.channel.send(rolemsg)
-                    if 'has been' in rolemsg:
+                    if 'has been' in rolemsg or 'have been' in rolemsg:
                         lobby = self.state.display_lobby()
                         self.state.message_box.append(await message.channel.send(embed=lobby))
                         # Delete previous lobby messages
@@ -829,7 +829,7 @@ class Game():
                     player_profile = message.mentions[0]
                 else:
                     player_profile = message.author
-                profile = self.state.get_profile(player_profile, message.guild)
+                profile = self.state.get_profile(player_profile, message.guild, message.channel)
                 await message.channel.send(embed=profile)
 
             if message.content.startswith('~badges') or message.content.startswith('~achievements'):
@@ -849,13 +849,13 @@ class Game():
                     all_servers = False
 
                 if len(messagebox) == 1 and all_servers == False or len(messagebox) == 2 and all_servers == True:
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, all_servers=all_servers)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, message.channel, all_servers=all_servers)
                 elif message.mentions:
                     player_profile = message.mentions[0]
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, player=player_profile, all_servers=all_servers)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, message.channel, player=player_profile, all_servers=all_servers)
                 else:
                     page_no = messagebox[1] if all_servers == False else messagebox[2]
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=page_no, all_servers=all_servers)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, message.channel, page=page_no, all_servers=all_servers)
                 leaderboard_msg = await message.channel.send(embed=leaderboard)
 
                 def reaction_check(reaction, user):
@@ -872,16 +872,19 @@ class Game():
                     elif rxn.emoji == '◀':
                         cur_page -= 1
 
-                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page, all_servers=all_servers)
+                    leaderboard, cur_page = self.state.get_leaderboard(message.guild, message.channel, page=cur_page, all_servers=all_servers)
                     await leaderboard_msg.edit(embed=leaderboard)
                     await rxn.remove(user)
                     await asyncio.sleep(0.1)
 
             if message.content.startswith('~stats') or message.content.startswith('~gamestats'):
                 cur_stat_page = 1
-                game_stats_msg = await message.channel.send(embed=self.state.get_game_stats(cur_stat_page, message.guild))
+                game_stats_msg = await message.channel.send(embed=self.state.get_game_stats(cur_stat_page, message.guild, message.channel))
                 stats_emojis = {1:'1️⃣', 2:'2️⃣', 3:'3️⃣', 4:'4️⃣'}
                 stats_emojis_rev = {'1️⃣':1, '2️⃣':2, '3️⃣':3, '4️⃣':4}
+                if message.channel.id in self.state.tournament_channel_ids:
+                    stats_emojis = {1:'1️⃣', 2:'2️⃣'}
+                    stats_emojis_rev = {'1️⃣':1, '2️⃣':2}
                 for emoji in stats_emojis_rev:
                     await game_stats_msg.add_reaction(emoji)
 
@@ -893,7 +896,7 @@ class Game():
 
                     if rxn.emoji != stats_emojis[cur_stat_page]:
                         cur_stat_page = stats_emojis_rev[rxn.emoji]
-                        await game_stats_msg.edit(embed=self.state.get_game_stats(cur_stat_page, message.guild))
+                        await game_stats_msg.edit(embed=self.state.get_game_stats(cur_stat_page, message.guild, message.channel))
                         await rxn.remove(user)
                             
                     await asyncio.sleep(0.1)
