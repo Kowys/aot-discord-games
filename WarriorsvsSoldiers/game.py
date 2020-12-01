@@ -1746,11 +1746,17 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                     new_rating = player[1] + rating_transfer
                     win = True
                 else:
-                    new_rating = player[1] - rating_transfer
+                    if self.tournament:
+                        new_rating = player[1] - min(32, rating_transfer)
+                    else:
+                        new_rating = player[1] - rating_transfer
                     win = False
             else:
                 if player[2] not in self.warrior_roles:
-                    new_rating = player[1] - rating_transfer
+                    if self.tournament:
+                        new_rating = player[1] - min(32, rating_transfer)
+                    else:
+                        new_rating = player[1] - rating_transfer
                     win = False
                 else:
                     new_rating = player[1] + rating_transfer
@@ -1798,21 +1804,22 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         soldier_ratings = ''
         warrior_ratings = ''
         for player in self.players:
+            player_info = list(filter(lambda x:x[0] == player[0].id, rating_changes))[0]
             if player[1] not in self.warrior_roles:
-                player_info = list(filter(lambda x:x[0] == player[0].id, rating_changes))[0]
                 if self.status == 'game ended soldiers':
                     sign = '+'
                 else:
                     sign = '-'
-                soldier_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + str(int(round(rating_transfer, 0))) + ')\n'
+                soldier_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + \
+                    str(abs(int(round(player_info[2], 0)) - int(round(player_info[1], 0)))) + ')\n'
 
             else:
-                player_info = list(filter(lambda x:x[0] == player[0].id, rating_changes))[0]
                 if self.status == 'game ended soldiers':
                     sign = '-'
                 else:
                     sign = '+'
-                warrior_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + str(int(round(rating_transfer, 0))) + ')\n'
+                warrior_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + \
+                    str(abs(int(round(player_info[2], 0)) - int(round(player_info[1], 0)))) + ')\n'
 
         new_ratings.add_field(name = '🛡Soldiers🛡', value = soldier_ratings, inline = False)
         new_ratings.add_field(name = '⚔Warriors⚔', value = warrior_ratings, inline = False)
