@@ -80,51 +80,47 @@ class Flags():
 class State():
     def __init__(self):
         # Initialize as Book 1
+        self.book = book.Book(self)
+        self.book_no = 1
         self.affinities = Affinities(1)
         self.statuses = Statuses(1)
         self.flags = Flags(1)
-        self.book = book.Book(self)
-        self.book_no = 1
         self.cur_player_id = None
         self.select_book = False
         self.timer = 0
         self.game_channel = None
 
     def reset_game(self):
+        self.book = book.Book(self)
+        self.book_no = 1
         self.affinities = Affinities(1)
         self.statuses = Statuses(1)
         self.flags = Flags(1)
-        self.book = book.Book(self)
-        self.book_no = 1
         self.cur_player_id = None
         self.select_book = False
         self.timer = 0
         self.game_channel = None
-        
-    
-    # def check_book(self, player):
-    #     wb = load_workbook("ChooseYourAdventure/player data.xlsx")
-    #     player_data = wb['Endings']
-    #     my_endings = []
-    #     for line in player_data:
-    #         if player.id == line[0].value and line[1].value not in my_endings:
-    #             my_endings.append(line[1].value)
 
-    #     good_endings = ['An Ordinary Moment of Happiness', 'Jean Kirstein of the Survey Corps', 'A Narrow Victory', 'Armin Arlert\'s Dream', 'Captain Levi\'s Recruit', 'Mikasa\'s True Face', 'Nameless Hero', 
-    #     'Eren Yeager\'s Hand', 'Sasha Blouse\'s Promise', 'The Girl Who Hid Her True Self', 'No Regrets', 'Jean of the Military Police', 'Joining the Garrison']
+    def switch_book(self, book_num):
+        books = {1:book, 2:book2}
+        self.book = books[book_num].Book(self)
+        self.book_no = book_num
+        self.affinities = Affinities(book_num)
+        self.statuses = Statuses(book_num)
+        self.flags = Flags(book_num)
 
-    #     for ending in my_endings:
-    #         if ending in good_endings:
-    #             return True
+    def check_book(self, player):
+        conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
+        cursor = conn.cursor()
 
-    #     return False
+        get_endings_query = 'SELECT * FROM endings WHERE player = ?'
+        cursor.execute(get_endings_query, (player.id,))
+        endings_data = cursor.fetchone()
 
-    # def switch_book(self):
-    #     self.affinities = Affinities(2)
-    #     self.statuses = Statuses(2)
-    #     self.flags = Flags(2)
-    #     self.book = book2.Book(self)
-    #     self.book_no = 2
+        if endings_data and sum(endings_data[1:]) > 0:
+            return True
+
+        return False
 
     def get_annie_secrets(self, user_obj):
         conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
@@ -339,8 +335,6 @@ class State():
             cursor.execute(insert_player_query, [user_obj.id] + my_endings)
             conn.commit()
 
-        # if user_obj.id == '238808836075421697':
-        #     my_rank = '**Commander 👑**'
         if ending_count == 0:
             my_rank = '**Trainee 🔸**'
         elif ending_count == 1:
