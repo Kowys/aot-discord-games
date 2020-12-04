@@ -84,6 +84,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.kenny = False
         self.kenny_hit_list = []
         self.num_targets = 0
+        self.titan_scream = False
+        self.warriors_shouted = []
         
         self.cur_expedition = 0
         self.expedition_squad = []
@@ -132,6 +134,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.kenny = False
             self.kenny_hit_list = []
             self.num_targets = 0
+            self.titan_scream = False
+            self.warriors_shouted = []
 
             self.cur_expedition = 0
             self.expedition_squad = []
@@ -372,6 +376,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                     else:
                         return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> has already been enabled!'
 
+                elif role == 'scream' or role == 'titanscream' or role == 'titan scream':
+                    if self.titan_scream == False:
+                        self.titan_scream = True
+                        return '🗣 **Titan Scream** 🗣 has been enabled!'
+                    else:
+                        return '🗣 **Titan Scream** 🗣 has already been enabled!'
+
                 elif role in optional_roles_dict:
                     return self.add_with_role_count_check(optional_roles_dict[role], randomroles)
 
@@ -456,6 +467,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> has been disabled!'
                     else:
                         return '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887> is not currently enabled!'
+
+                elif role == 'scream' or role == 'titanscream' or role == 'titan scream':
+                    if self.titan_scream == True:
+                        self.titan_scream = False
+                        return '🗣 **Titan Scream** 🗣 has been disabled!'
+                    else:
+                        return '🗣 **Titan Scream** 🗣 is not currently enabled!'
 
                 elif role in optional_roles_dict:
                     return self.remove_by_role(optional_roles_dict[role])
@@ -590,6 +608,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             role_msg += '💰 **Limited Funds** 💰\n\n'
         if self.kenny:
             role_msg += '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887>\n\n'
+        if self.titan_scream:
+            role_msg += '🗣 **Titan Scream** 🗣\n\n'
         if role_msg == '':
             role_msg = '-'
         return role_msg
@@ -729,6 +749,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.kenny = False
             self.kenny_hit_list = []
             self.num_targets = 0
+            self.titan_scream = False
+            self.warriors_shouted = []
 
             self.cur_expedition = 0
             self.expedition_squad = []
@@ -768,6 +790,8 @@ Your fellow Warriors are:\n'
                 warrior_msg = warrior_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
             warrior_msg = warrior_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+        if self.titan_scream:
+            warrior_msg = warrior_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         coordinate_msg = 'You are the **Coordinate**!\n\n\
 You possess the special ability to sense Titan powers, which allows you to know who the Warriors are. However, due to the powers you possess, \
@@ -824,11 +848,15 @@ Your fellow Warriors are:\n'
                 warchief_msg = warchief_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
             warchief_msg = warchief_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+        if self.titan_scream:
+            warchief_msg = warchief_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         ymir_msg = 'You are **Ymir**!\n\n\
 While you are on the Warriors\' side, you do not know of their identities, nor do they know of yours. To achieve success, be sure to keep a close watch \
 for potential comrades during expeditions.\n\n\
 Your task is to identify your fellow Warriors, and work with them to destroy the Walls.'
+        if self.titan_scream:
+            ymir_msg = ymir_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         falseking_msg = 'You are the **False King**!\n\n\
 You appear as the Coordinate to the Queen, in addition to the real Coordinate. Use this ability to confuse her by acting as the Coordinate, to \
@@ -842,6 +870,8 @@ Your fellow Warriors are:\n'
                 falseking_msg = falseking_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
             falseking_msg = falseking_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+        if self.titan_scream:
+            falseking_msg = falseking_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         spy_msg = 'You are the **Spy**!\n\n\
 As the Warriors\' most skilled infiltrator, you have the ability to flip the votes during the approval phase of an expedition once.\n\n\
@@ -854,6 +884,8 @@ Your fellow Warriors are:\n'
                 spy_msg = spy_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
             spy_msg = spy_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+        if self.titan_scream:
+            spy_msg = spy_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         saboteur_msg = 'You are the **Saboteur**!\n\n\
 Using your powers of persuasion, you have the ability to increase the size of an expedition by 1 at the start of the game.\n\n\
@@ -866,6 +898,8 @@ Your fellow Warriors are:\n'
                 saboteur_msg = saboteur_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
             saboteur_msg = saboteur_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+        if self.titan_scream:
+            saboteur_msg = saboteur_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         player_role = player_lst[1]
         role_msgs = {
@@ -938,7 +972,8 @@ Your fellow Warriors are:\n'
                 basic_roles = '\n'.join(['🛡 Soldier 🛡', '🗺 Coordinate 🗺', '⚔ Warrior ⚔'])
                 soldier_roles = '\n'.join(['👼 Queen 👼', '💂 Ackerman 💂', '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>', '🏇 Scout 🏇', '🏹 Hunter 🏹'])
                 warrior_roles = '\n'.join(['🦹‍♂️ Warchief 🦹‍♂️', '🕴 False King 🕴', '🤷‍♀️ Ymir 🤷‍♀️', '🕵️‍♀️ Spy 🕵️‍♀️', '🔨 Saboteur 🔨'])
-                effects = '\n'.join(['🔮 Ymir\'s Blessing 🔮', '📢 Paths 📢', '💰 Limited Funds 💰', '<:kennytheripper:768310628506402887> Kenny the Ripper <:kennytheripper:768310628506402887>'])
+                effects = '\n'.join(['🔮 Ymir\'s Blessing 🔮', '📢 Paths 📢', '💰 Limited Funds 💰', '<:kennytheripper:768310628506402887> Kenny the Ripper <:kennytheripper:768310628506402887>',
+                '🗣 Titan Scream 🗣'])
                 
                 roles_info = 'Type `~help <role>` to learn more about a role or effect.\nType `~add <role>` to add an optional role or effect into the game.'
                 list_of_roles = discord.Embed(title = 'List of roles available', description = roles_info, colour=0x0013B4)
@@ -1154,6 +1189,43 @@ Your fellow Warriors are:\n'
         saboteur_embed = discord.Embed(description = saboteur_msg, colour=0xF9FF41)
         public_msg = '🔨 The Saboteur has increased the size of **Expedition {}** by 1! 🔨'.format(selected_expo)
         return saboteur_embed, public_msg
+
+    def titan_scream_activation(self, message):
+        if self.status not in ['assigning roles', 'saboteur selection', 'paths announcement', 'expedition selection', 'expedition approval', 'expedition decision', 'awaiting result',' expedition over',
+        'ymir\'s blessing','choose coordinate'] or message.author not in list(map(lambda x: x[0], self.players)):
+            return 'You may only use the Titan Scream ability while in a game!', None
+        
+        if not self.titan_scream:
+            return 'The Titan Scream ability is not enabled for this game!', None
+
+        if message.author not in list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.warrior_roles, self.players)))):
+            return 'You have to be a Warrior to use the Titan Scream ability!', None
+
+        if message.author in self.warriors_shouted:
+            return 'You have already used the Titan Scream ability!', None
+
+        messagebox = message.content.split(' ')
+        if len(messagebox) < 2:
+            return 'Please write a message to send!', None
+
+        self.warriors_shouted.append(message.author)
+
+        scream_response = discord.Embed(description='Your message has been sent!', colour=0x4B4B4B)
+
+        warrior_mapping = {
+            'warrior': ['a ⚔**Warrior**⚔!', 'The **Warrior** says:\n'],
+            'warchief': ['the 🦹‍♂️**Warchief**🦹‍♂️!', 'The **Warchief** says:\n'],
+            'ymir': ['🤷‍♀️**Ymir**🤷‍♀️!', '**Ymir** says:\n'],
+            'false king': ['the 🕴**False King**🕴!', 'The **False King** says:\n'],
+            'spy': ['the 🕵️‍♀️**Spy**🕵️‍♀️!', 'The **Spy** says:\n'],
+            'saboteur': ['the 🔨**Saboteur**🔨!', 'The **Saboteur** says:\n']
+        }
+        author_role = list(filter(lambda x:x[0] == message.author, self.players))[0][1]
+        preface_msg = 'A scream is heard from ' + warrior_mapping[author_role][0]
+        scream_msg =  warrior_mapping[author_role][1] + '🗣 ' + ' '.join(messagebox[1:])
+        scream_msgs = [preface_msg, scream_msg]
+
+        return scream_response, scream_msgs
 
     def pick(self, player):
         if player in list(map(lambda x: x[0], self.players)):
@@ -1547,6 +1619,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             advantage_score += self.blessing_advantages[num_players]
         if self.funds_enabled:
             advantage_score += self.funds_advantages[num_players]
+        if self.titan_scream:
+            advantage_score += -100
 
         if write == False:
             return advantage_score
@@ -3138,6 +3212,9 @@ The number of players Kenny will target depends on the size of the game:\n\n\
 5-6 players - 1 target\n\
 7-8 players - 1-2 targets\n\
 9-10 players - 2 targets'
+        scream_info = '🗣**Titan Scream**🗣\n\n\
+In their Titan form, the Warriors have the ability to communicate with their comrades or even enemies with a powerful scream that can be heard over long distances.\n\n\
+This ability allows for all Warriors to send a public message to everyone in the game as their assigned role, but without revealing their identity. Each Warrior may use this ability only once per game.'
 
         if command_query:
             commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
@@ -3196,7 +3273,10 @@ and status of the Walls, the results of previous expeditions and information on 
                         'limited funds': funds_info,
                         'funds': funds_info,
                         'kenny': kenny_info,
-                        'kenny the ripper': kenny_info}
+                        'kenny the ripper': kenny_info,
+                        'titan scream': scream_info,
+                        'titanscream': scream_info,
+                        'scream': scream_info}
 
             if command_query[0] in commands_dict:
                 return discord.Embed(title = '`~' + command_query[0] + '`', description = commands_dict[command_query[0]], colour = 0x0013B4)
@@ -3495,6 +3575,8 @@ Enabling this effect could help reduce the frequency of gridlocks while adding a
             tutorial17_paths = 'The Paths ability allows players to make an announcement anonymously to everyone in the game. \
 When activated, a random person will be designated as the Paths holder at the start of every expedition. \
 They will then be able to send a single message to the game channel without revealing their role or identity.\n\u200B'
+            tutorial17_scream = 'In their Titan form, the Warriors have the ability to communicate with their comrades or even enemies with a powerful scream that can be heard over long distances.\n\n\
+This ability allows for all Warriors to send a public message to everyone in the game as their assigned role, but without revealing their identity. Each Warrior may use this ability only once per game.\n\u200B'
             tutorial17_kenny = 'Kenny the Ripper is a serial mass-murderer who has the ability to hunt down anyone!\n\n\
 Kenny has a hit-list which rotates between players in the game. Each voting round, he will target a number of players from the top of the list, preventing them from voting.\n\n\
 The number of players Kenny will target depends on the size of the game:\n\n\
@@ -3503,5 +3585,6 @@ The number of players Kenny will target depends on the size of the game:\n\n\
 9-10 players - 2 targets'
             tutorial17_embed = discord.Embed(title='In-Game Effects (2)', colour=0x0013B4)
             tutorial17_embed.add_field(name = '📢Paths📢', value = tutorial17_paths, inline = False)
+            tutorial17_embed.add_field(name = '🗣Titan Scream🗣', value = tutorial17_scream, inline = False)
             tutorial17_embed.add_field(name = '<:kennytheripper:768310628506402887> **Kenny the Ripper** <:kennytheripper:768310628506402887>', value = tutorial17_kenny, inline = False)
             return None, tutorial17_embed, page_num

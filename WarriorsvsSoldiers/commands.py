@@ -79,6 +79,17 @@ class Game():
                     '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                 await self.state.game_channel.send(commander_msg2)
 
+            # Titan scream command
+            if message.content.startswith('~say'):
+                scream_response, scream_msgs = self.state.titan_scream_activation(message)
+                if type(scream_response) == str:
+                    await message.author.dm_channel.send(scream_response)
+                else:
+                    await message.author.dm_channel.send(embed=scream_response)
+                    await self.state.game_channel.send(scream_msgs[0])
+                    await asyncio.sleep(2)
+                    await self.state.game_channel.send(scream_msgs[1])
+
             # Expedition voting phase
             if self.state.status == 'expedition approval':
                 if message.author not in list(map(lambda x: x[0], self.state.expedition_approval)):
