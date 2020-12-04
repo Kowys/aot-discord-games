@@ -1736,7 +1736,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         else:
             rating_transfer = K * exp
 
-        rating_transfer = max(10, rating_transfer)
+        rating_transfer = round(max(10, rating_transfer), 0)
 
         # Apply rating transfers and update player records
         rating_changes = [] # [id, old rating, new rating, role]
@@ -1811,7 +1811,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 else:
                     sign = '-'
                 soldier_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + \
-                    str(abs(int(round(player_info[2], 0)) - int(round(player_info[1], 0)))) + ')\n'
+                    str(int(rating_transfer)) + ')\n'
 
             else:
                 if self.status == 'game ended soldiers':
@@ -1819,7 +1819,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 else:
                     sign = '+'
                 warrior_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + \
-                    str(abs(int(round(player_info[2], 0)) - int(round(player_info[1], 0)))) + ')\n'
+                    str(int(rating_transfer)) + ')\n'
 
         new_ratings.add_field(name = '🛡Soldiers🛡', value = soldier_ratings, inline = False)
         new_ratings.add_field(name = '⚔Warriors⚔', value = warrior_ratings, inline = False)
@@ -3048,7 +3048,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 all_sr += ' ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵  ￶￵ ￶￵ ￶￵ ￶￵ ' + str(int(round(server_players[rank-1][1], 0))) + '\n'
 
         lb_info = 'Page ' + str(page_no) + '/' + str(num_pages)
-        lb_server = 'Leaderboard for Warriors vs Soldiers\n(' + server.name if all_servers == False else 'Global' + ')' 
+        lb_server_name = server.name if all_servers == False else 'Global'
+        lb_server = 'Leaderboard for Warriors vs Soldiers\n(' + lb_server_name + ')'
         if channel.id in self.tournament_channel_ids:
             lb_server = '🏆 Leaderboard for Warriors vs Soldiers 🏆\n(Tournament)'
         leaderboard = discord.Embed(title = lb_server, description = lb_info, colour=0x0013B4)
