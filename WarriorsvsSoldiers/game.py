@@ -1620,7 +1620,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         if self.funds_enabled:
             advantage_score += self.funds_advantages[num_players]
         if self.titan_scream:
-            advantage_score += -100
+            advantage_score += -50
 
         if write == False:
             return advantage_score
