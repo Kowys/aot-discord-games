@@ -1885,7 +1885,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 else:
                     sign = '-'
                 soldier_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + \
-                    str(int(rating_transfer)) + ')\n'
+                    str(abs(int(round(player_info[2], 0)) - int(round(player_info[1], 0)))) + ')\n'
 
             else:
                 if self.status == 'game ended soldiers':
@@ -1893,7 +1893,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 else:
                     sign = '+'
                 warrior_ratings += player[0].name + ': **' + str(int(round(player_info[1], 0))) + '** -> **' + str(int(round(player_info[2], 0))) + '** (' + sign + \
-                    str(int(rating_transfer)) + ')\n'
+                    str(abs(int(round(player_info[2], 0)) - int(round(player_info[1], 0)))) + ')\n'
 
         new_ratings.add_field(name = '🛡Soldiers🛡', value = soldier_ratings, inline = False)
         new_ratings.add_field(name = '⚔Warriors⚔', value = warrior_ratings, inline = False)
