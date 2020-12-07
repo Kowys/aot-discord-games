@@ -158,7 +158,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             msg = '**' + player.name + '** has started a new lobby! Type `~join` to join the game!'
 
             # Get total players in server
-            player_rankings_query = 'SELECT player, rating FROM players'
+            player_records = 'players' if not self.tournament else 'players_tournament'
+            player_rankings_query = 'SELECT player, rating FROM {}'.format(player_records)
             cursor.execute(player_rankings_query)
             player_rankings = cursor.fetchall()
             
@@ -194,7 +195,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 msg = '**' + player.name + '** has joined the game!'
 
                 # Get total players in server
-                player_rankings_query = 'SELECT player, rating FROM players'
+                player_records = 'players' if not self.tournament else 'players_tournament'
+                player_rankings_query = 'SELECT player, rating FROM {}'.format(player_records)
                 cursor.execute(player_rankings_query)
                 player_rankings = cursor.fetchall()
                 
@@ -856,7 +858,7 @@ While you are on the Warriors\' side, you do not know of their identities, nor d
 for potential comrades during expeditions.\n\n\
 Your task is to identify your fellow Warriors, and work with them to destroy the Walls.'
         if self.titan_scream:
-            ymir_msg = ymir_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
+            ymir_msg = ymir_msg + '\n\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         falseking_msg = 'You are the **False King**!\n\n\
 You appear as the Coordinate to the Queen, in addition to the real Coordinate. Use this ability to confuse her by acting as the Coordinate, to \
