@@ -7,14 +7,14 @@ class Game():
     def __init__(self, client):
         self.client = client
         self.state = game.State()
-        self.approval_timer_obj = self.client.loop.create_task(self.approval_timer())
-        self.decision_timer_obj = self.client.loop.create_task(self.decision_timer())
-        self.selection_timer_obj = self.client.loop.create_task(self.selection_timer())
-        self.next_expedition_timer_obj = self.client.loop.create_task(self.next_expedition_timer())
-        self.blessing_timer_obj = self.client.loop.create_task(self.blessing_timer())
-        self.paths_timer_obj = self.client.loop.create_task(self.paths_timer())
-        self.saboteur_timer_obj = self.client.loop.create_task(self.saboteur_timer())
-        self.kidnap_timer_obj = self.client.loop.create_task(self.kidnap_timer())
+        self.approval_timer_obj = None
+        self.decision_timer_obj = None
+        self.selection_timer_obj = None
+        self.next_expedition_timer_obj = None
+        self.blessing_timer_obj = None
+        self.paths_timer_obj = None
+        self.saboteur_timer_obj = None
+        self.kidnap_timer_obj = None
 
     async def msg_handler(self, message):
         # Private messages
@@ -434,7 +434,7 @@ class Game():
 
                 if start_msg.startswith('Starting game'):
                     self.state.game_channel = message.channel
-                    self.reset_timers()
+                    self.init_timers()
                     await asyncio.sleep(1)
                     await message.channel.send(embed=self.state.get_status())
                     await asyncio.sleep(2)
@@ -470,8 +470,7 @@ class Game():
                 if type(msg) == str:
                     await message.channel.send(msg)
                 else:
-                    self.reset_timers()
-
+                    self.cancel_timers()
                     await message.channel.send(embed=msg)
 
             if message.content.startswith('~intro'):
@@ -974,7 +973,17 @@ class Game():
 #                 status.set_thumbnail(url='https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/crossed-swords_2694.png')
                 # await message.channel.send(embed=status)
 
-    def reset_timers(self):
+    def init_timers(self):
+        self.approval_timer_obj = self.client.loop.create_task(self.approval_timer())
+        self.decision_timer_obj = self.client.loop.create_task(self.decision_timer())
+        self.selection_timer_obj = self.client.loop.create_task(self.selection_timer())
+        self.next_expedition_timer_obj = self.client.loop.create_task(self.next_expedition_timer())
+        self.blessing_timer_obj = self.client.loop.create_task(self.blessing_timer())
+        self.paths_timer_obj = self.client.loop.create_task(self.paths_timer())
+        self.saboteur_timer_obj = self.client.loop.create_task(self.saboteur_timer())
+        self.kidnap_timer_obj = self.client.loop.create_task(self.kidnap_timer())
+
+    def cancel_timers(self):
         self.approval_timer_obj.cancel()
         self.decision_timer_obj.cancel()
         self.selection_timer_obj.cancel()
@@ -984,14 +993,18 @@ class Game():
         self.kidnap_timer_obj.cancel()
         self.saboteur_timer_obj.cancel()
 
-        self.approval_timer_obj = self.client.loop.create_task(self.approval_timer())
-        self.decision_timer_obj = self.client.loop.create_task(self.decision_timer())
-        self.selection_timer_obj = self.client.loop.create_task(self.selection_timer())
-        self.next_expedition_timer_obj = self.client.loop.create_task(self.next_expedition_timer())
-        self.blessing_timer_obj = self.client.loop.create_task(self.blessing_timer())
-        self.paths_timer_obj = self.client.loop.create_task(self.paths_timer())
-        self.saboteur_timer_obj = self.client.loop.create_task(self.saboteur_timer())
-        self.kidnap_timer_obj = self.client.loop.create_task(self.kidnap_timer())
+        self.approval_timer_obj = None
+        self.decision_timer_obj = None
+        self.selection_timer_obj = None
+        self.next_expedition_timer_obj = None
+        self.blessing_timer_obj = None
+        self.paths_timer_obj = None
+        self.saboteur_timer_obj = None
+        self.kidnap_timer_obj = None
+
+    def reset_timers(self):
+        self.cancel_timers()
+        self.init_timers()
 
     async def next_expedition_timer(self):
         await self.client.wait_until_ready()
