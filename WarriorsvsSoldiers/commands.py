@@ -26,8 +26,19 @@ class Game():
                 player_role = self.state.get_player_role(message.author)
                 await message.author.dm_channel.send(embed=player_role)
 
+            # Titan scream command
+            if message.content.startswith('~say'):
+                scream_response, scream_msgs = self.state.titan_scream_activation(message)
+                if type(scream_response) == str:
+                    await message.author.dm_channel.send(scream_response)
+                else:
+                    await message.author.dm_channel.send(embed=scream_response)
+                    await self.state.game_channel.send(scream_msgs[0])
+                    await asyncio.sleep(2)
+                    await self.state.game_channel.send(scream_msgs[1])
+
             # Saboteur
-            if self.state.status == 'saboteur selection':
+            elif self.state.status == 'saboteur selection':
                 saboteur_msg, public_msg = self.state.saboteur_select(response, message.author)
                 if type(saboteur_msg) != str:
                     await message.author.dm_channel.send(embed=saboteur_msg)
@@ -40,7 +51,7 @@ class Game():
                     await message.author.dm_channel.send(saboteur_msg)
 
             # Paths phase
-            if self.state.status == 'paths announcement' and message.author == self.state.paths_holders[0]:
+            elif self.state.status == 'paths announcement' and message.author == self.state.paths_holders[0]:
                 self.state.status = 'expedition selection'
                 self.state.paths_holders.pop(0)
 
@@ -79,19 +90,8 @@ class Game():
                     '**, please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                 await self.state.game_channel.send(commander_msg2)
 
-            # Titan scream command
-            if message.content.startswith('~say'):
-                scream_response, scream_msgs = self.state.titan_scream_activation(message)
-                if type(scream_response) == str:
-                    await message.author.dm_channel.send(scream_response)
-                else:
-                    await message.author.dm_channel.send(embed=scream_response)
-                    await self.state.game_channel.send(scream_msgs[0])
-                    await asyncio.sleep(2)
-                    await self.state.game_channel.send(scream_msgs[1])
-
             # Expedition voting phase
-            if self.state.status == 'expedition approval':
+            elif self.state.status == 'expedition approval':
                 if message.author not in list(map(lambda x: x[0], self.state.expedition_approval)):
                     if response.startswith('y'):
                         self.state.expedition_approval.append([message.author, 'yes'])
