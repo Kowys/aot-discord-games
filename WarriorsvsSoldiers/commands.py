@@ -181,6 +181,7 @@ class Game():
                                         await asyncio.sleep(2)
                                         await self.state.game_channel.send(warriors_win_msg)
 
+                                        self.cancel_timers()
                                         end_summary = self.state.get_summary()
                                         await asyncio.sleep(2)
                                         await self.state.game_channel.send(embed=end_summary)
@@ -434,7 +435,7 @@ class Game():
 
                 if start_msg.startswith('Starting game'):
                     self.state.game_channel = message.channel
-                    self.init_timers()
+                    self.reset_timers()
                     await asyncio.sleep(1)
                     await message.channel.send(embed=self.state.get_status())
                     await asyncio.sleep(2)
@@ -732,6 +733,7 @@ class Game():
                             self.state.status = 'game ended warriors wall'
                             warriors_win_msg = '⚔All the Walls have been destroyed and humanity has been wiped out. Warriors win!⚔'
                             await message.channel.send(warriors_win_msg)
+                            self.cancel_timers()
                             end_summary = self.state.get_summary()
                             await asyncio.sleep(2)
                             await message.channel.send(embed=end_summary)
@@ -785,6 +787,7 @@ class Game():
                                     soldiers_win = '🛡The Warriors did not manage to identify the Coordinate. Soldiers win!🛡'
                                     await message.channel.send(soldiers_win)
 
+                                self.cancel_timers()
                                 end_summary = self.state.get_summary()
                                 await asyncio.sleep(2)
                                 await message.channel.send(embed=end_summary)
@@ -984,23 +987,27 @@ class Game():
         self.kidnap_timer_obj = self.client.loop.create_task(self.kidnap_timer())
 
     def cancel_timers(self):
-        self.approval_timer_obj.cancel()
-        self.decision_timer_obj.cancel()
-        self.selection_timer_obj.cancel()
-        self.next_expedition_timer_obj.cancel()
-        self.blessing_timer_obj.cancel()
-        self.paths_timer_obj.cancel()
-        self.kidnap_timer_obj.cancel()
-        self.saboteur_timer_obj.cancel()
+        try:
+            self.approval_timer_obj.cancel()
+            self.decision_timer_obj.cancel()
+            self.selection_timer_obj.cancel()
+            self.next_expedition_timer_obj.cancel()
+            self.blessing_timer_obj.cancel()
+            self.paths_timer_obj.cancel()
+            self.kidnap_timer_obj.cancel()
+            self.saboteur_timer_obj.cancel()
 
-        self.approval_timer_obj = None
-        self.decision_timer_obj = None
-        self.selection_timer_obj = None
-        self.next_expedition_timer_obj = None
-        self.blessing_timer_obj = None
-        self.paths_timer_obj = None
-        self.saboteur_timer_obj = None
-        self.kidnap_timer_obj = None
+            self.approval_timer_obj = None
+            self.decision_timer_obj = None
+            self.selection_timer_obj = None
+            self.next_expedition_timer_obj = None
+            self.blessing_timer_obj = None
+            self.paths_timer_obj = None
+            self.saboteur_timer_obj = None
+            self.kidnap_timer_obj = None
+
+        except:
+            pass
 
     def reset_timers(self):
         self.cancel_timers()
@@ -1110,6 +1117,7 @@ class Game():
                                     await asyncio.sleep(2)
                                     await self.state.game_channel.send(warriors_win_msg)
 
+                                    self.cancel_timers()
                                     end_summary = self.state.get_summary()
                                     await asyncio.sleep(2)
                                     await self.state.game_channel.send(embed=end_summary)
@@ -1443,6 +1451,7 @@ class Game():
                         times_up_msg = '🛡The Warriors did not manage to kidnap the Coordinate in time. Soldiers win!🛡'
                         await self.state.game_channel.send(times_up_msg)
 
+                        self.cancel_timers()
                         end_summary = self.state.get_summary()
                         await asyncio.sleep(2)
                         await self.state.game_channel.send(embed=end_summary)
