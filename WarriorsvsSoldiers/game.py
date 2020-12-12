@@ -1195,7 +1195,7 @@ Your fellow Warriors are:\n'
     def titan_scream_activation(self, message):
         if self.status not in ['assigning roles', 'saboteur selection', 'paths announcement', 'expedition selection', 'expedition approval', 'expedition decision', 'awaiting result',' expedition over',
         'ymir\'s blessing','choose coordinate', ''] or message.author not in list(map(lambda x: x[0], self.players)):
-            return 'You may only use the Titan Scream ability while in a game!', None
+            return None, None
         
         if not self.titan_scream:
             return 'The Titan Scream ability is not enabled for this game!', None

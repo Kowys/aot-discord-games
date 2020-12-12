@@ -29,7 +29,9 @@ class Game():
             # Titan scream command
             if message.content.startswith('~say'):
                 scream_response, scream_msgs = self.state.titan_scream_activation(message)
-                if type(scream_response) == str:
+                if scream_response is None:
+                    pass
+                elif type(scream_response) == str:
                     await message.author.dm_channel.send(scream_response)
                 else:
                     await message.author.dm_channel.send(embed=scream_response)
