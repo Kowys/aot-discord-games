@@ -726,7 +726,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             if not ((self.game_host == None) or (self.status == 'waiting for players') or (self.status.startswith('game ended'))) and \
                 (player == self.game_host or player.id == 238808836075421697) and self.reset_confirmation == False:
                 self.reset_confirmation = True
+                if self.tournament:
+                    return player.mention + ', are you sure you want to reset the game? **You will lose 50 SR and everyone else in the game will lose 20 SR.**\n\nType `~reset` again to confirm.'
                 return player.mention + ', are you sure you want to reset the game? Type `~reset` again to confirm.'
+
+            if self.tournament and not ((self.game_host == None) or (self.status == 'waiting for players') or (self.status.startswith('game ended'))) and \
+                (player == self.game_host or player.id == 238808836075421697):
+                self.tournament_penalty()
 
             self.expedition_sizes = {5:[2,3,2,3,3], 6:[2,3,4,3,4], 7:[2,3,3,4,4], 8:[3,3,4,4,5], 9:[3,4,4,5,5], 10:[3,3,4,5,5]}
 
@@ -772,6 +778,30 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
         else:
             return 'Only the host of the current game, **' + self.game_host.name + '**, can reset the game!'
+
+    def tournament_penalty(self):
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        player_records = 'players_tournament'
+        for player in self.players:
+            player_data_query = 'SELECT player, rating FROM {} WHERE player = ?'.format(player_records)
+            cursor.execute(player_data_query, (player[0].id,))
+            player_data = cursor.fetchone()
+
+            if player_data:
+                if player[0].id == self.game_host.id:
+                    rating_change = -50
+                else:
+                    rating_change = -20
+                new_rating = player_data[1] + rating_change
+                update_player_data_query = 'UPDATE {} SET rating = ? WHERE player = ?'.format(player_records)
+
+                update_player_data = [new_rating, player[0].id]
+                cursor.execute(update_player_data_query, update_player_data)
+                conn.commit()
+        
+        conn.close()
 
     def get_role_msg(self, player_lst):
         soldier_msg = 'You are a **Soldier**!\n\n\
@@ -1823,14 +1853,14 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                     win = True
                 else:
                     if self.tournament:
-                        new_rating = player[1] - min(32, rating_transfer)
+                        new_rating = player[1] - min(20, rating_transfer)
                     else:
                         new_rating = player[1] - rating_transfer
                     win = False
             else:
                 if player[2] not in self.warrior_roles:
                     if self.tournament:
-                        new_rating = player[1] - min(32, rating_transfer)
+                        new_rating = player[1] - min(20, rating_transfer)
                     else:
                         new_rating = player[1] - rating_transfer
                     win = False
