@@ -5194,7 +5194,7 @@ You…\n\n\
 1️⃣ Get on a horse and accompany the soldiers around you\n\n\
 2️⃣ Take the retreat order to your friends stationed around the forest, and withdraw with them\n\n\
 3️⃣ Go inform Squad Levi and Eren, who are standing guard some distance away, of the situation'
-            self.choices[0] = [1]
+            self.choices[0] = [1,2,3]
             return response
         elif option[0] == 1:
             self.cur_page[0] = 134
