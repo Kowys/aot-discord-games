@@ -211,10 +211,11 @@ class State():
             'Hange Zoë’s Truth': 'hange_zoes_truth', 'Armin Arlert’s Dream': 'armin_arlerts_dream', 'Captain Levi’s Scars': 'captain_levis_scars', 'A Soldier of the Survey Corps': 'a_soldier_of_the_survey_corps'}
 
         update_index = ending_map[ending]
-        if self.book_no == 2: # TODO: Do this for book 1 when it goes live (after removing "Total" row)
-            update_index -= 1
         update_global_query = 'UPDATE {} SET count = ? WHERE ending = ?'.format(global_table)
-        cursor.execute(update_global_query, [global_stats[update_index][1] + 1, ending])
+        if self.book_no == 2: # TODO: Do this for book 1 when it goes live (after removing "Total" row)
+            cursor.execute(update_global_query, [global_stats[update_index - 1][1] + 1, ending])
+        else:
+            cursor.execute(update_global_query, [global_stats[update_index][1] + 1, ending])
         conn.commit()
 
         # Logs the ending the player achieved

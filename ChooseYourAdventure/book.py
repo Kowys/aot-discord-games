@@ -77,6 +77,7 @@ victory. You may even save some of your friends who otherwise would be fated to 
         self.choices = [[]]
         self.response2 = ['']
         self.state = state
+        self.new_msg = None
 
     def page_flipper(self, option):
         self.all_pages[self.cur_page[0]](option)

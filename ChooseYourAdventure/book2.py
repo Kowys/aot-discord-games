@@ -9,14 +9,16 @@ This is Book 2.\n\n\
 
         self.reset_msg = discord.Embed(title = 'Game Reset!', description = 'Type **`~start`** to start a new game.\nType **`~intro`** for more information about the game.', colour=0xE5D2BB)
 
-        self.EC = {'0️⃣':0, '1️⃣':1, '2️⃣':2, '3️⃣':3, '4️⃣':4, '5️⃣':5, '6️⃣':6, '7️⃣':7, '8️⃣':8, '9️⃣':9, '🔟':10, '⏩':11, '㊙':'s'}
-        self.EC2 = {0:'0️⃣', 1:'1️⃣', 2:'2️⃣', 3:'3️⃣', 4:'4️⃣', 5:'5️⃣', 6:'6️⃣', 7:'7️⃣', 8:'8️⃣', 9:'9️⃣', 10:'🔟', 11:'⏩', 's':'㊙'}
+        self.EC = {'0️⃣':0, '1️⃣':1, '2️⃣':2, '3️⃣':3, '4️⃣':4, '5️⃣':5, '6️⃣':6, '7️⃣':7, '8️⃣':8, '9️⃣':9, '🔟':10, '⏩':11, '㊙️':'s'}
+        self.EC2 = {0:'0️⃣', 1:'1️⃣', 2:'2️⃣', 3:'3️⃣', 4:'4️⃣', 5:'5️⃣', 6:'6️⃣', 7:'7️⃣', 8:'8️⃣', 9:'9️⃣', 10:'🔟', 11:'⏩', 's':'㊙️'}
 
         self.secrets = {
             'take a close look': 44,
             'take their conversation at face value': 92,
             'become exceptional soldiers': 9601,
             'she knows how to fight': 222}
+
+        self.annie_secrets = {}
 
         self.all_pages = {1:self.P1, 1001:self.P1001, 2:self.P2, 3:self.P3, 4:self.P4, 5:self.P5, 6:self.P6, 8:self.P8, 9:self.P9, 11:self.P11, 12:self.P12, 
         13:self.P13, 15:self.P15, 16:self.P16, 18:self.P18, 19:self.P19, 21:self.P21, 22:self.P22,
@@ -65,6 +67,7 @@ This is Book 2.\n\n\
         self.choices = [[]]
         self.response2 = ['']
         self.state = state
+        self.new_msg = None
 
     def page_flipper(self, option):
         self.all_pages[self.cur_page[0]](option)
@@ -308,7 +311,7 @@ Type 1️⃣ to continue.'
 Reiner, however, looks thoughtful. He seems to be choosing his words carefully. “Hm. Annie Leonhart? We’re not very close, but I’m confident she’s a good soldier. \
 I remember she threw me in combat training once like I was light as a feather.”\n\n\
 Maybe it’s that memory that makes his shoulders slump. Reiner is no slouch himself in hand-to-hand combat, so Annie must be quite a fighter. \
-Bertolt/Bertholdt adds, almost as though apologizing for her, “She’s… Sh-She’s not a bad person. She keeps her comrades at arm’s length, but I think she just isn’t very social…” \n\n\
+Bertolt adds, almost as though apologizing for her, “She’s… Sh-She’s not a bad person. She keeps her comrades at arm’s length, but I think she just isn’t very social…” \n\n\
 If you ask them what unit they’re going to join, type 1️⃣.\n\n\
 If you go somewhere else, type 2️⃣.'
             self.choices[0] = [1,2]

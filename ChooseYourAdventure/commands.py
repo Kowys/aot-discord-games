@@ -21,16 +21,16 @@ class Game():
                         if msg_content.startswith('Nice'):
                             await message.channel.send(msg_content)
                         else:
-                            book.new_msg = await message.channel.send(msg_content)
+                            self.state.book.new_msg = await message.channel.send(msg_content)
 
                     # Flips page normally
                     else:
                         msg_content = self.state.book.page_flipper(chosen_option)
-                        book.new_msg = await message.channel.send(msg_content)
+                        self.state.book.new_msg = await message.channel.send(msg_content)
 
                     # Adds choices as reactions
                     for option in self.state.book.choices[0]:
-                        await book.new_msg.add_reaction(self.state.book.EC2[option])
+                        await self.state.book.new_msg.add_reaction(self.state.book.EC2[option])
 
                     # Logs the ending the player achieved, if any
                     if self.state.book.cur_page[0] in self.state.book.endings:
@@ -109,7 +109,7 @@ class Game():
         if message.content.lower() in self.state.book.secrets:
             if self.state.book.secrets[message.content.lower()] == self.state.book.cur_page[0]:
                 self.state.book.choices[0].append('s')
-                await book.new_msg.add_reaction(self.state.book.EC2['s'])
+                await self.state.book.new_msg.add_reaction(self.state.book.EC2['s'])
         
         # INFORMATION
         # Displays the current game state
