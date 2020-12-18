@@ -498,10 +498,10 @@ If the Survey Corps can continue to study their two captives, there’s a lot th
 and that thought gives you hope.\n\n\
 “Anyways, I’ve got to get back to my experiments!”\n\n\
 Hange is finally done talking.\n\n'
-            if self.state.hange_explanation == False:
+            if self.state.flags.hange_explanation == False:
                 response += '**Your Affinity with Hange has increased by 1!**\n\n'
                 self.state.affinities.hange += 1
-                self.state.hange_explanation = True
+                self.state.flags.hange_explanation = True
             response += 'Type 1️⃣ to choose a new destination.'
             self.choices[0] = [1]
             return response
@@ -619,10 +619,10 @@ In the end, Annie works you over; her last strike sends you flying.\n\n\
 Her fighting skills are incredible. You never had a chance of winning.\n\n\
 “You put up a halfway decent fight. Feel free to ask for another lesson sometime.”\n\n\
 Annie smiles a little, and walks away in good spirits.\n\n'
-            if self.state.annie_training == False:
+            if self.state.flags.annie_training == False:
                 response += '**Your Affinity with Annie has increased by 1!**\n\n'
                 self.state.affinities.annie += 1
-                self.state.annie_training = True
+                self.state.flags.annie_training = True
             response += 'Type 1️⃣ to continue.'
             self.choices[0] = [1]
             return response
@@ -780,10 +780,10 @@ Otherwise, type 2️⃣.'
             response = 'You hurry to help Eren. His hand detaches from the massive arm with a popping sound.\n\n\
 “Th-Thanks,” he says. The gigantic arm lies on the ground, blowing out steam until it was all but dissolved.\n\n\
 Hange dashes up to the two of you, exclaiming, “No! I wanted to study that!”\n\n'
-            if self.state.eren_hand == False:
+            if self.state.flags.eren_hand == False:
                 response += '**Your Affinity with Eren has increased by 1!**\n\n'
                 self.state.affinities.eren += 1
-                self.state.eren_hand = True
+                self.state.flags.eren_hand = True
             response += 'Type 1️⃣ to continue.'
             self.choices[0] = [1]
             return response
@@ -968,10 +968,10 @@ The members of Squad Levi call out to you:\n\n\
 You hear them, but you don’t move.\n\n\
 In the meantime, Eren withdraws his own arm from the Titan arm. As the massive appendage begins to waste away, the armed soldiers at last begin to relax. Only Hange is upset, crying, “No! My Titan arm!”\n\n\
 After it’s all over, Captain Levi says, “I told you to remain calm. This trainee seems to have a cooler head than anyone else here.”\n\n'
-            if self.state.levi_hand == False:
+            if self.state.flags.levi_hand == False:
                 response += '**Your Affinity with Levi has increased by 1!**\n\n'
                 self.state.affinities.levi += 1
-                self.state.levi_hand = True
+                self.state.flags.levi_hand = True
             response += 'Type 1️⃣ to continue.'
             self.choices[0] = [1]
             return response
@@ -1006,10 +1006,10 @@ Type 1️⃣ to choose a new destination.'
 “Hey, that’s dangerous!” the soldiers are yelling. “Get away from him, trainee!” But you, instead, call out to Eren.\n\n\
 Maybe it’s the presence of a familiar classmate, the fact that he finally has an ally, but Eren starts to grow calmer. Once the soldiers realize he’s not going to do any harm, they relax, too.\n\n\
 “Good work! Eren, don’t move! Let me see your arm!” Only Hange seems downright excited by this turn of events, and spends the next hour studying and experimenting on the arm until it finally vanishes.\n\n'
-            if self.state.hange_hand == False:
+            if self.state.flags.hange_hand == False:
                 response += '**Your Affinity with Hange has increased by 1!**\n\n'
                 self.state.affinities.hange += 1
-                self.state.hange_hand = True
+                self.state.flags.hange_hand = True
             response += 'Type 1️⃣ to continue.'
             self.choices[0] = [1]
             return response
@@ -1131,10 +1131,10 @@ Type 1️⃣ to choose a new destination.'
             response = 'Annie proceeds to land a flurry of kicks on you, finishing with a sweep that takes your legs out from under you and sends you sprawling on the ground.\n\n\
 Her fighting technique is astonishing. You had no hope of winning.\n\n\
 “Looks like you’re not going to challenge me anything soon. Points for effort, though,” Annie says with the slightest hint of a smile. “Feel free to ask for another lesson sometime.”\n\n'
-            if self.state.annie_training == False:
+            if self.state.flags.annie_training == False:
                 response += '**Your Affinity with Annie has increased by 1!**\n\n'
                 self.state.affinities.annie += 1
-                self.state.annie_training = True
+                self.state.flags.annie_training = True
             response += 'If you challenge Annie again, type 1️⃣.\n\n\
 If you’ve had enough, type 2️⃣ to choose a new destination.'
             self.choices[0] = [1,2]
