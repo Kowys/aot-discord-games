@@ -746,7 +746,7 @@ You…\n\n\
     def P45(self, *option):
         if option == ():
             response = 'You come to an old well. The water has been long since dried up.\n\n'
-            if self.state.seen_well == False:
+            if self.state.flags.seen_well == False:
                 response += 'If you were with Eren after the Battle of Trost, type 1️⃣.\n\n\
 Otherwise, type 2️⃣.'
                 self.choices[0] = [1,2]
@@ -755,9 +755,9 @@ Otherwise, type 2️⃣.'
                 self.choices[0] = [1]
             return response
         elif option[0] == 1:
-            if self.state.seen_well == False:
+            if self.state.flags.seen_well == False:
                 self.cur_page[0] = 39
-                self.state.seen_well = True
+                self.state.flags.seen_well = True
             else:
                 self.cur_page[0] = 70
         elif option[0] == 2:
