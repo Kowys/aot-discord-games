@@ -19,8 +19,13 @@ def initialize_dbs():
             'the_girl_who_hid_her_true_self integer', 'no_regrets integer', 'jean_of_the_military_police integer', 'trial_of_eren_and_mikasa integer', 'a_soldiers_duty integer', 
             'failure_of_the_reclamation_plan integer', 'a_regular_soldier integer', 'annihilated_at_hq integer', 'the_fall_of_wall_rose integer', 'failure_to_reclaim_trost_district integer', 
             'a_moments_peace integer', 'eren_flees integer', 'the_death_of_a_merchant integer', 'junior_high integer']),
+            ('endings2', ['player integer', 'a_cruel_world integer', 'destruction_of_the_survey_corps integer', 'traitors_friend integer', 'a_soldier_in_the_trost_district_garrison integer',
+            'a_silver_of_hope integer', 'beyond_the_walls integer', 'eren_yeagers_choice integer', 'jean_kirsteins_vow integer', 'flight_of_the_female_titan integer', 'the_true_face_of_sasha_blouse integer',
+            'the_girl_who_hid_herself integer', 'a_world_beautiful_and_cruel integer', 'hange_zoes_truth integer', 'armin_arlerts_dream integer', 'captain_levis_scars integer', 
+            'a_soldier_of_the_survey_corps integer']),
             ('annie_progress', ['player integer', 'progress integer']),
-            ('global', ['ending text', 'count integer'])
+            ('global', ['ending text', 'count integer']),
+            ('global2', ['ending text', 'count integer'])
         ],
         'Jaegermore/jaegermore_db.db': [
             ('players', ['player integer', 'eren integer', 'mikasa integer', 'armin integer', 'jean integer', 'krista integer', 'sasha integer', 'levi integer', 'annie integer', 'erwin integer']),
@@ -93,7 +98,6 @@ def init_cya_global():
     if len(global_stats) == 0:
         insert_cya_global_query = 'INSERT INTO global VALUES ({})'.format(','.join('?' * 2))
         insert_cya_global_data = [
-            ['Total', 0], 
             ['Joining the Garrison', 0], 
             ['An Ordinary Moment of Happiness', 0],
             ['Jean Kirstein of the Survey Corps', 0],
@@ -123,7 +127,37 @@ def init_cya_global():
             cursor.execute(insert_cya_global_query, row)
 
         conn.commit()
-        conn.close()
+    
+    select_cya_global_query2 = 'SELECT * FROM global2'
+    cursor.execute(select_cya_global_query2)
+    global_stats2 = cursor.fetchall()
+
+    if len(global_stats2) == 0:
+        insert_cya_global_query2 = 'INSERT INTO global2 VALUES ({})'.format(','.join('?' * 2))
+        insert_cya_global_data2 = [
+            ['A Cruel World', 0], 
+            ['Destruction of the Survey Corps', 0],
+            ['Traitor’s Friend', 0],
+            ['A Soldier in the Trost District Garrison', 0],
+            ['A Sliver of Hope', 0],
+            ['Beyond the Walls', 0],
+            ['Eren Yeager’s Choice', 0],
+            ['Jean Kirstein’s Vow', 0],
+            ['Flight of the Female Titan', 0],
+            ['The True Face of Sasha Blouse', 0],
+            ['The Girl Who Hid Herself', 0],
+            ['A World Beautiful and Cruel', 0],
+            ['Hange Zoë’s Truth', 0],
+            ['Armin Arlert’s Dream', 0],
+            ['Captain Levi’s Scars', 0],
+            ['A Soldier of the Survey Corps', 0]
+        ]
+        for row in insert_cya_global_data2:
+            cursor.execute(insert_cya_global_query2, row)
+
+        conn.commit()
+    
+    conn.close()
 
 def init_jaegermore_global():
     conn = sqlite3.connect('Jaegermore/jaegermore_db.db')

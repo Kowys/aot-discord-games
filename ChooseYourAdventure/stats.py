@@ -21,7 +21,7 @@ class Affinities():
             self.jean = 0
             self.krista = 0
             self.sasha = 0
-            self.hanji = 0
+            self.hange = 0
             self.levi = 0
             self.annie = 0
 
@@ -50,7 +50,7 @@ class Statuses():
             self.krista = 'Alive'
             self.sasha = 'Alive'
             self.levi = 'Alive'
-            self.hanji = 'Alive'
+            self.hange = 'Alive'
             self.annie = 'Alive'
             self.petra = 'Alive'
             self.oluo = 'Alive'
@@ -76,6 +76,17 @@ class Flags():
             self.keyR = 'No'
             self.keyS = 'No'
             self.killcount = 0
+            self.hange_explanation = False
+            self.hange_hand = False
+            self.eren_hand = False
+            self.levi_hand = False
+            self.seen_well = False
+            self.annie_training = False
+            self.stay_behind = False
+            self.mikasa_help = False
+            self.levi_watch = False
+            self.krista_ending = False
+            self.sasha_ending = False
 
 class State():
     def __init__(self):
@@ -165,18 +176,21 @@ class State():
     def log_ending(self, author):
         conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
         cursor = conn.cursor()
+        global_table = 'global' if self.book_no == 1 else 'global2'
+        endings_table = 'endings' if self.book_no == 1 else 'endings2'
 
         # Add ending to game statistics
-        get_global_query = 'SELECT * FROM global'
+        get_global_query = 'SELECT * FROM {}'.format(global_table)
         cursor.execute(get_global_query)
         global_stats = cursor.fetchall()
         
         ending = self.book.endings[self.book.cur_page[0]]
+
         ending_map = {'Trial of Eren and Mikasa': 14, 'A Soldier\'s Duty': 15, 'An Ordinary Moment of Happiness': 2, 'Failure of the Reclamation Plan': 16, 'Jean Kirstein of the Survey Corps': 3, 
         'A Narrow Victory': 4, 'Armin Arlert\'s Dream': 5, 'A Regular Soldier': 17, '104th Annihilated at HQ': 18, 'Junior High': 24, 'The Fall of Wall Rose': 19, 
         'Failure to Reclaim Trost District': 20, 'A Moment\'s Peace': 21, 'Eren Flees': 22, 'Captain Levi\'s Recruit': 6, 'Mikasa\'s True Face': 7, 'Nameless Hero': 8, 'Eren Yeager\'s Hand': 9, 
         'Sasha Blouse\'s Promise': 10, 'The Girl Who Hid Her True Self': 11, 'The Death of a Merchant': 23, 'No Regrets': 12, 'Jean of the Military Police': 13, 'Joining the Garrison': 1}
-
+        
         endings_db_map = {'Joining the Garrison':'joining_the_garrison', 'An Ordinary Moment of Happiness':'an_ordinary_moment_of_happiness', 
         'Jean Kirstein of the Survey Corps':'jean_kirstein_of_the_survey_corps', 'A Narrow Victory':'a_narrow_victory', 'Armin Arlert\'s Dream':'armin_arlerts_dream',
         'Captain Levi\'s Recruit':'captain_levis_recruit', 'Mikasa\'s True Face':'mikasas_true_face', 'Nameless Hero':'nameless_hero', 'Eren Yeager\'s Hand':'eren_yeagers_hand', 
@@ -186,13 +200,25 @@ class State():
         'The Fall of Wall Rose':'the_fall_of_wall_rose', 'Failure to Reclaim Trost District':'failure_to_reclaim_trost_district', 'A Moment\'s Peace':'a_moments_peace', 
         'Eren Flees':'eren_flees', 'The Death of a Merchant':'the_death_of_a_merchant','Junior High':'junior_high'}
 
+        if self.book_no == 2:
+            ending_map = {'A Cruel World': 1, 'Destruction of the Survey Corps': 2, 'Traitor’s Friend': 3, 'A Soldier in the Trost District Garrison': 4, 'A Sliver of Hope': 5, 
+            'Beyond the Walls': 6, 'Eren Yeager’s Choice': 7, 'Jean Kirstein’s Vow': 8, 'Flight of the Female Titan': 9, 'The True Face of Sasha Blouse': 10, 'The Girl Who Hid Herself': 11, 
+            'A World Beautiful and Cruel': 12, 'Hange Zoë’s Truth': 13, 'Armin Arlert’s Dream': 14, 'Captain Levi’s Scars': 15, 'A Soldier of the Survey Corps': 16}
+            endings_db_map = {'A Cruel World': 'a_cruel_world', 'Destruction of the Survey Corps': 'destruction_of_the_survey_corps', 'Traitor’s Friend': 'traitors_friend', 
+            'A Soldier in the Trost District Garrison': 'a_soldier_in_the_trost_district_garrison', 'A Sliver of Hope': 'a_silver_of_hope', 
+            'Beyond the Walls': 'beyond_the_walls', 'Eren Yeager’s Choice': 'eren_yeagers_choice', 'Jean Kirstein’s Vow': 'jean_kirsteins_vow', 'Flight of the Female Titan': 'flight_of_the_female_titan', 
+            'The True Face of Sasha Blouse': 'the_true_face_of_sasha_blouse', 'The Girl Who Hid Herself': 'the_girl_who_hid_herself', 'A World Beautiful and Cruel': 'a_world_beautiful_and_cruel', 
+            'Hange Zoë’s Truth': 'hange_zoes_truth', 'Armin Arlert’s Dream': 'armin_arlerts_dream', 'Captain Levi’s Scars': 'captain_levis_scars', 'A Soldier of the Survey Corps': 'a_soldier_of_the_survey_corps'}
+
         update_index = ending_map[ending]
-        update_global_query = 'UPDATE global SET count = ? WHERE ending = ?'
+        if self.book_no == 2: # TODO: Do this for book 1 when it goes live (after removing "Total" row)
+            update_index -= 1
+        update_global_query = 'UPDATE {} SET count = ? WHERE ending = ?'.format(global_table)
         cursor.execute(update_global_query, [global_stats[update_index][1] + 1, ending])
         conn.commit()
 
         # Logs the ending the player achieved
-        get_player_query = 'SELECT * FROM endings WHERE player = ?'
+        get_player_query = 'SELECT * FROM {} WHERE player = ?'.format(endings_table)
         cursor.execute(get_player_query, (author.id,))
         raw_player_endings = cursor.fetchone()
 
@@ -202,7 +228,7 @@ class State():
 
             # Add ending the player got
             update_ending = endings_db_map[ending]
-            update_player_query = 'UPDATE endings SET {} = ? WHERE player = ?'.format(update_ending)
+            update_player_query = 'UPDATE {} SET {} = ? WHERE player = ?'.format(endings_table, update_ending)
 
             new_ending_value = raw_player_endings[update_index] + 1
             update_player = [new_ending_value, author.id]
@@ -212,15 +238,15 @@ class State():
         else:
             former_ending_count = 0
 
-            insert_ending_query = 'INSERT INTO endings VALUES ({})'.format(','.join('?' * 25))
+            insert_ending_query = 'INSERT INTO {} VALUES ({})'.format(endings_table, ','.join('?' * (len(ending_map) + 1)))
             insert_position = update_index - 1
-            insert_data = [author.id] + [0] * insert_position + [1] + [0] * (25 - 2 - insert_position)
+            insert_data = [author.id] + [0] * insert_position + [1] + [0] * ((len(ending_map) + 1) - 2 - insert_position)
             cursor.execute(insert_ending_query, insert_data)
 
         conn.commit()
 
         # Inform player of rank ups
-        get_player_query = 'SELECT * FROM endings WHERE player = ?'
+        get_player_query = 'SELECT * FROM {} WHERE player = ?'.format(endings_table)
         cursor.execute(get_player_query, (author.id,))
         raw_player_endings = cursor.fetchone()
         player_endings = raw_player_endings[1:]
@@ -230,6 +256,10 @@ class State():
 
         rank_ups = {1: ['Trainee', 'Recruit'], 2: ['Recruit', 'Private'], 3: ['Private', 'Soldier'], 5: ['Soldier', 'Elite Soldier'], 8: ['Elite Soldier', 'Officer'], 10: ['Officer', 'Team Leader'], 
         13: ['Team Leader', 'Senior Team Leader'], 15: ['Senior Team Leader', 'Squad Leader'], 20: ['Squad Leader', 'Squad Captain'], 24: ['Squad Captain', 'Commander']}
+
+        if self.book_no == 2:
+            rank_ups = {1: ['Trainee', 'Recruit'], 2: ['Recruit', 'Private'], 3: ['Private', 'Soldier'], 4: ['Soldier', 'Elite Soldier'], 5: ['Elite Soldier', 'Officer'], 7: ['Officer', 'Team Leader'], 
+            8: ['Team Leader', 'Senior Team Leader'], 10: ['Senior Team Leader', 'Squad Leader'], 13: ['Squad Leader', 'Squad Captain'], 16: ['Squad Captain', 'Commander']}
         
         if (ending_count > former_ending_count) and (ending_count in rank_ups):
             new_rank = rank_ups[ending_count][1]
@@ -283,7 +313,7 @@ class State():
             '\nKrista: ' + self.statuses.krista + \
             '\nSasha: ' + self.statuses.sasha + \
             '\nLevi: ' + self.statuses.levi + \
-            '\nHanji: ' + self.statuses.hanji + \
+            '\nHange: ' + self.statuses.hange + \
             '\nAnnie: ' + self.statuses.annie + \
             '\nPetra: ' + self.statuses.petra + \
             '\nOluo: ' + self.statuses.oluo + \
@@ -298,7 +328,7 @@ class State():
             '\nJean: ' + str(self.affinities.jean) + \
             '\nKrista: ' + str(self.affinities.krista) + \
             '\nSasha: ' + str(self.affinities.sasha) + \
-            '\nHanji: ' + str(self.affinities.hanji) + \
+            '\nHange: ' + str(self.affinities.hange) + \
             '\nLevi: ' + str(self.affinities.levi) + \
             '\nAnnie: ' + str(self.affinities.annie))
 
@@ -318,47 +348,90 @@ class State():
 
         return stats_info
 
-    def get_profile(self, user_obj):
+    def get_profile(self, user_obj, book_no=1):
         conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
         cursor = conn.cursor()
 
-        player_endings_query = 'SELECT * FROM endings WHERE player = ?'
+        # Sanitize book_no input
+        try:
+            book_no = int(book_no)
+        except:
+            book_no = 1
+        
+        if book_no > 2 or book_no < 1:
+            book_no = 1
+
+        endings_table = 'endings' if book_no == 1 else 'endings2'
+        total_endings = 24 if book_no == 1 else 16
+
+        player_endings_query = 'SELECT * FROM {} WHERE player = ?'.format(endings_table)
         cursor.execute(player_endings_query, (user_obj.id,))
         raw_endings = cursor.fetchone()
         if raw_endings:
             my_endings = raw_endings[1:]
             ending_count = len(list(filter(lambda x: x > 0, my_endings)))
         else:
-            my_endings = [0] * 24
+            my_endings = [0] * total_endings
             ending_count = 0
-            insert_player_query = 'INSERT INTO endings VALUES ({})'.format(','.join('?' * 25))
+            insert_player_query = 'INSERT INTO {} VALUES ({})'.format(endings_table, ','.join('?' * (total_endings + 1)))
             cursor.execute(insert_player_query, [user_obj.id] + my_endings)
             conn.commit()
 
-        if ending_count == 0:
-            my_rank = '**Trainee 🔸**'
-        elif ending_count == 1:
-            my_rank = '**Recruit 🔸🔸**'
-        elif ending_count == 2:
-            my_rank = '**Private 🔸🔸🔸**'
-        elif ending_count < 5:
-            my_rank = '**Soldier 🔹**'
-        elif ending_count < 8:
-            my_rank = '**Elite Soldier 🔹🔹**'
-        elif ending_count < 10:
-            my_rank = '**Officer 🔹🔹🔹**'
-        elif ending_count < 13:
-            my_rank = '**Team Leader 💠**'
-        elif ending_count < 15:
-            my_rank = '**Senior Team Leader 💠🔹**'
-        elif ending_count < 20:
-            my_rank = '**Squad Leader ⭐**'
-        elif ending_count < 24:
-            my_rank = '**Squad Captain 🌟**'
-        elif ending_count == 24:
-            my_rank = '**Commander 👑**'
-        desc = 'Rank: ' + my_rank + '\n' + 'Number of endings obtained: ' + str(ending_count) + '/24'
-        progress_info = discord.Embed(title='Player information\n', description = desc, colour=0xE5D2BB)
+        if book_no == 1:
+            if ending_count == 0:
+                my_rank = '**Trainee 🔸**'
+            elif ending_count == 1:
+                my_rank = '**Recruit 🔸🔸**'
+            elif ending_count == 2:
+                my_rank = '**Private 🔸🔸🔸**'
+            elif ending_count < 5:
+                my_rank = '**Soldier 🔹**'
+            elif ending_count < 8:
+                my_rank = '**Elite Soldier 🔹🔹**'
+            elif ending_count < 10:
+                my_rank = '**Officer 🔹🔹🔹**'
+            elif ending_count < 13:
+                my_rank = '**Team Leader 💠**'
+            elif ending_count < 15:
+                my_rank = '**Senior Team Leader 💠🔹**'
+            elif ending_count < 20:
+                my_rank = '**Squad Leader ⭐**'
+            elif ending_count < 24:
+                my_rank = '**Squad Captain 🌟**'
+            elif ending_count == 24:
+                my_rank = '**Commander 👑**'
+
+        elif book_no == 2:
+            if ending_count == 0:
+                my_rank = '**Trainee 🔸**'
+            elif ending_count == 1:
+                my_rank = '**Recruit 🔸🔸**'
+            elif ending_count == 2:
+                my_rank = '**Private 🔸🔸🔸**'
+            elif ending_count == 3:
+                my_rank = '**Soldier 🔹**'
+            elif ending_count == 4:
+                my_rank = '**Elite Soldier 🔹🔹**'
+            elif ending_count < 7:
+                my_rank = '**Officer 🔹🔹🔹**'
+            elif ending_count < 8:
+                my_rank = '**Team Leader 💠**'
+            elif ending_count < 10:
+                my_rank = '**Senior Team Leader 💠🔹**'
+            elif ending_count < 13:
+                my_rank = '**Squad Leader ⭐**'
+            elif ending_count < 16:
+                my_rank = '**Squad Captain 🌟**'
+            elif ending_count == 16:
+                my_rank = '**Commander 👑**'
+
+        profile_title = 'Player information\n' + 'Book ' + str(book_no) + ': '
+        if book_no == 1:
+            profile_title += 'The Battle of Trost'
+        elif book_no == 2:
+            profile_title += 'Hunt for the Female Titan'
+        desc = 'Rank: ' + my_rank + '\n' + 'Number of endings obtained: ' + str(ending_count) + '/' + str(total_endings)
+        progress_info = discord.Embed(title = profile_title, description = desc, colour=0xE5D2BB)
         # Include number of games played, and other interesting stats?
 
         username, user_url = user_obj.name, user_obj.avatar_url
@@ -377,6 +450,16 @@ class State():
         'A Moment\'s Peace', 'Eren Flees', 'The Death of a Merchant'],
         ['Junior High']]
 
+        if book_no == 2:
+            endings_index_map = {0:'A Cruel World', 1:'Destruction of the Survey Corps', 2:'Traitor’s Friend', 3:'A Soldier in the Trost District Garrison', 4:'A Sliver of Hope', 
+            5:'Beyond the Walls', 6:'Eren Yeager’s Choice', 7:'Jean Kirstein’s Vow', 8:'Flight of the Female Titan', 9:'The True Face of Sasha Blouse', 10:'The Girl Who Hid Herself', 
+            11:'A World Beautiful and Cruel', 12:'Hange Zoë’s Truth', 13:'Armin Arlert’s Dream', 14:'Captain Levi’s Scars', 15:'A Soldier of the Survey Corps'}
+
+            endings = [['A Sliver of Hope', 'Beyond the Walls', 'Eren Yeager’s Choice', 'Jean Kirstein’s Vow', 'Flight of the Female Titan', 'The True Face of Sasha Blouse', 
+            'The Girl Who Hid Herself', 'A World Beautiful and Cruel', 'Hange Zoë’s Truth', 'Armin Arlert’s Dream', 'Captain Levi’s Scars', 'A Soldier of the Survey Corps'], 
+            ['A Cruel World', 'Destruction of the Survey Corps', 'Traitor’s Friend', 'A Soldier in the Trost District Garrison'],
+            []]
+
         good_endings, bad_endings, secret_endings = '', '', ''
         for i in range(len(my_endings)):
             if my_endings[i] > 0:
@@ -392,7 +475,8 @@ class State():
 
         progress_info.add_field(name = '**Good Endings**', value = '-' if good_endings == '' else good_endings) 
         progress_info.add_field(name = '**Bad Endings**', value = '-' if bad_endings == '' else bad_endings)
-        progress_info.add_field(name = '**Secret Endings**', value = '-' if secret_endings == '' else secret_endings, inline = False)
+        if book_no == 1:
+            progress_info.add_field(name = '**Secret Endings**', value = '-' if secret_endings == '' else secret_endings, inline = False)
 
         return progress_info
 
@@ -404,18 +488,34 @@ class State():
         cursor.execute(player_endings_query)
         all_endings = cursor.fetchall()
 
-        # server_users_ids = {member.id: [member.id, member.name] for member in server.members}
-        server_endings = []
+        player_endings_query2 = 'SELECT * FROM endings2'
+        cursor.execute(player_endings_query2)
+        all_endings2 = cursor.fetchall()
+
+        server_users_ids = {member.id: [member.id, member.name] for member in server.members}
+        server_endings = {}
         for row in all_endings:
             unique_ending_count = len(list(filter(lambda x: x > 0, row[1:])))
-            server_endings.append([row[0], unique_ending_count])
+            if row[0] in server_users_ids:
+                server_endings[row[0]] = [unique_ending_count, 0, server_users_ids[row[0]][1]]
+
+        for row in all_endings2:
+            unique_ending_count = len(list(filter(lambda x: x > 0, row[1:])))
+            if row[0] in server_users_ids:
+                if row[0] in server_endings:
+                    server_endings[row[0]][1] = unique_ending_count
+                else:
+                    server_endings[row[0]] = [0, unique_ending_count, server_users_ids[row[0]][1]]
 
         conn.close()
 
         # Sort according to ending count
-        server_endings.sort(key = lambda x: x[1], reverse = True)
+        server_endings_list = []
+        for row in server_endings:
+            server_endings_list.append([row, server_endings[row]])
+        server_endings_list.sort(key = lambda x: x[1][0] + x[1][1], reverse = True)
 
-        total_pages = math.ceil(len(server_endings) / 10)
+        total_pages = math.ceil(len(server_endings_list) / 10)
 
         # Sanitize page input
         try: 
@@ -425,14 +525,14 @@ class State():
 
         # Clips inputs that are too high or too low
         if page_no < 1:
-            page_no = 1
-        if page_no > total_pages:
             page_no = total_pages
+        if page_no > total_pages:
+            page_no = 1
 
         # Get page_no of player rank
         if player:
             player_rank = 0
-            for person in server_endings:
+            for person in server_endings_list:
                 player_rank += 1
                 if person[0] == player.id:
                     break
@@ -441,52 +541,69 @@ class State():
         leaderboard = discord.Embed(title = '🏆 Leaderboard for Choose Your Adventure 🏆', colour=0xE5D2BB)
         leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
         if player:
-            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_endings)), inline = False)
+            leaderboard.add_field(name = player.name + '\'s Rank', value = str(player_rank) + '/' + str(len(server_endings_list)), inline = False)
 
-        for rank in range((page_no - 1) * 10 + 1, min(len(server_endings) + 1, page_no * 10 + 1)):
-            ending_count = server_endings[rank-1][1]
-            if ending_count == 0:
-                insignia = '🔸'
-            elif ending_count == 1:
-                insignia = '🔸🔸'
-            elif ending_count == 2:
-                insignia = '🔸🔸🔸'
-            elif ending_count < 5:
-                insignia = '🔹'
-            elif ending_count < 8:
-                insignia = '🔹🔹'
-            elif ending_count < 10:
-                insignia = '🔹🔹🔹'
-            elif ending_count < 13:
-                insignia = '💠'
-            elif ending_count < 15:
-                insignia = '💠🔹'
-            elif ending_count < 20:
-                insignia = '⭐'
-            elif ending_count < 24:
-                insignia = '🌟'
-            elif ending_count == 24:
-                insignia = '👑'
-            leaderboard.add_field(name = insignia + ' | #' + str(rank) + ' | Endings: ￵**' + str(server_endings[rank-1][1]) + '**', 
-                                  value = '<@' + str(server_endings[rank-1][0]) + '>',
+        for rank in range((page_no - 1) * 10 + 1, min(len(server_endings_list) + 1, page_no * 10 + 1)):
+            ending_count1 = server_endings_list[rank-1][1][0]
+            ending_count2 = server_endings_list[rank-1][1][1]
+            player_name = server_endings_list[rank-1][1][2]
+
+            # if ending_count == 0:
+            #     insignia = '🔸'
+            # elif ending_count == 1:
+            #     insignia = '🔸🔸'
+            # elif ending_count == 2:
+            #     insignia = '🔸🔸🔸'
+            # elif ending_count < 5:
+            #     insignia = '🔹'
+            # elif ending_count < 8:
+            #     insignia = '🔹🔹'
+            # elif ending_count < 10:
+            #     insignia = '🔹🔹🔹'
+            # elif ending_count < 13:
+            #     insignia = '💠'
+            # elif ending_count < 15:
+            #     insignia = '💠🔹'
+            # elif ending_count < 20:
+            #     insignia = '⭐'
+            # elif ending_count < 24:
+            #     insignia = '🌟'
+            # elif ending_count == 24:
+            #     insignia = '👑'
+            
+            leaderboard.add_field(name = '#' + str(rank) + ' | ' + player_name,
+                                  value = 'Endings: ￵**' + str(ending_count1 + ending_count2) + '** | Book 1: **' + str(ending_count1) + '** | Book 2: **' + str(ending_count2) + '**', 
                                   inline = False)
 
-        return leaderboard
+        return leaderboard, page_no
 
-    def get_gamestats(self):
+    def get_gamestats(self, book_no=1):
         # Returns overall game statistics
         conn = sqlite3.connect('ChooseYourAdventure/cya_db.db')
         cursor = conn.cursor()
 
-        game_stats_query = 'SELECT * FROM global'
+        # Sanitize book_no input
+        try:
+            book_no = int(book_no)
+        except:
+            book_no = 1
+        
+        if book_no > 2 or book_no < 1:
+            book_no = 1
+
+        global_table = 'global' if book_no == 1 else 'global2'
+
+        game_stats_query = 'SELECT * FROM {}'.format(global_table)
         cursor.execute(game_stats_query)
         game_data = cursor.fetchall()
 
         endings_list = []
+        total_ending_count = 0
         for row in game_data:
             if row[0] == 'Total':
                 continue
             endings_list.append([row[0], row[1]])
+            total_ending_count += row[1]
 
         endings_list.sort(key = lambda x: x[1], reverse = True)
 
@@ -494,8 +611,13 @@ class State():
         for ending in endings_list:
             all_endings += ending[0] + ': ' + str(ending[1]) + '\n'
 
-        game_stats = discord.Embed(title = '🔦 Choose Your Adventure Stats', colour=0xE5D2BB)
-        game_stats.add_field(name = 'Total Number Of Endings Obtained', value = '**' + str(game_data[0][1]) + '**', inline = False)
+        gamestats_title = '🔦 Choose Your Adventure Stats\n' + 'Book ' + str(book_no) + ': '
+        if book_no == 1:
+            gamestats_title += 'The Battle of Trost'
+        elif book_no == 2:
+            gamestats_title += 'Hunt for the Female Titan'
+        game_stats = discord.Embed(title = gamestats_title, colour=0xE5D2BB)
+        game_stats.add_field(name = 'Total Number Of Endings Obtained', value = '**' + str(total_ending_count) + '**', inline = False)
         game_stats.add_field(name = 'Endings', value = all_endings)
 
         conn.close()

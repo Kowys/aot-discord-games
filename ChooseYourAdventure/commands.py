@@ -120,31 +120,96 @@ class Game():
         # Brings up the progress info of player
         if message.content.startswith('~info') or message.content.startswith('~profile'):
             messagebox = message.content.split(' ')
+            book_no = 1
             if len(messagebox) == 1:
                 user_obj = message.author
             elif message.mentions:
                 user_obj = message.mentions[0]
-            progress_info = self.state.get_profile(user_obj)
-            await message.channel.send(embed = progress_info)
+            else:
+                user_obj = message.author
+                book_no = messagebox[1]
+                
+            progress_info = self.state.get_profile(user_obj, book_no=book_no)
+            profile_msg = await message.channel.send(embed = progress_info)
+
+            def reaction_check(reaction, user):
+                return user != self.client.user and (reaction.emoji == '1️⃣' or reaction.emoji == '2️⃣') and (reaction.message.id == profile_msg.id)
+
+            await profile_msg.add_reaction('1️⃣')
+            await profile_msg.add_reaction('2️⃣')
+
+            while True:
+                rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
+
+                if rxn.emoji == '1️⃣':
+                    book_no = 1
+                elif rxn.emoji == '2️⃣':
+                    book_no = 2
+
+                progress_info = self.state.get_profile(user_obj, book_no=book_no)
+                await profile_msg.edit(embed=progress_info)
+                await rxn.remove(user)
+                await asyncio.sleep(0.1)
 
         # Shows the leaderboard
         if message.content.startswith('~leaderboard') or message.content.startswith('~lb'):
-            # await message.channel.send('🚧 | The leaderboard is no longer available due to restrictions on server members\' data imposed by Discord.')
             messagebox = message.content.split(' ')
             if len(messagebox) == 1:
-                leaderboard = self.state.get_leaderboard(message.guild)
+                leaderboard, cur_page = self.state.get_leaderboard(message.guild)
             elif message.mentions:
                 player_profile = message.mentions[0]
-                leaderboard = self.state.get_leaderboard(message.guild, player=player_profile)
+                leaderboard, cur_page = self.state.get_leaderboard(message.guild, player=player_profile)
             else:
                 page_no = messagebox[1]
-                leaderboard = self.state.get_leaderboard(message.guild, page=page_no)
-            await message.channel.send(embed = leaderboard)
+                leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=page_no)
+            leaderboard_msg = await message.channel.send(embed = leaderboard)
+
+            def reaction_check(reaction, user):
+                return user != self.client.user and (reaction.emoji == '◀' or reaction.emoji == '▶') and (reaction.message.id == leaderboard_msg.id)
+
+            await leaderboard_msg.add_reaction('◀')
+            await leaderboard_msg.add_reaction('▶')
+
+            while True:
+                rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
+
+                if rxn.emoji == '◀':
+                    cur_page += 1
+                elif rxn.emoji == '▶':
+                    cur_page -= 1
+
+                leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page)
+                await leaderboard_msg.edit(embed=leaderboard)
+                await rxn.remove(user)
+                await asyncio.sleep(0.1)
 
         # Returns overall game statistics
         if message.content.startswith('~gamestats'):
-            gamestats = self.state.get_gamestats()
-            await message.channel.send(embed = gamestats)
+            messagebox = message.content.split(' ')
+            book_no = 1
+            if len(messagebox) > 1:
+                book_no = messagebox[1]
+            gamestats = self.state.get_gamestats(book_no=book_no)
+            gamestats_msg = await message.channel.send(embed = gamestats)
+
+            def reaction_check(reaction, user):
+                return user != self.client.user and (reaction.emoji == '1️⃣' or reaction.emoji == '2️⃣') and (reaction.message.id == gamestats_msg.id)
+
+            await gamestats_msg.add_reaction('1️⃣')
+            await gamestats_msg.add_reaction('2️⃣')
+
+            while True:
+                rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
+
+                if rxn.emoji == '1️⃣':
+                    book_no = 1
+                elif rxn.emoji == '2️⃣':
+                    book_no = 2
+
+                gamestats = self.state.get_gamestats(book_no=book_no)
+                await gamestats_msg.edit(embed=gamestats)
+                await rxn.remove(user)
+                await asyncio.sleep(0.1)
 
         # Testing command
         if message.content.startswith('~test'):
