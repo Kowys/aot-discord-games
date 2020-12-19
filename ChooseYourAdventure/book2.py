@@ -106,7 +106,7 @@ What do you do?\n\n\
     
     def P2(self, *option):
         if option == ():
-            response = 'On the battlefield, when you let fear take control, of you and rob you of rational judgement, the only possible outcome is death.\n\n\
+            response = 'On the battlefield, when you let fear take control of you and rob you of rational judgement, the only possible outcome is death.\n\n\
 You fail in your attempt to run- a giant hand grabs you, and you are eaten by a Titan.\n\n\
 Type 1️⃣ to continue.'
             self.choices[0] = [1]
@@ -144,7 +144,7 @@ Type 1️⃣ to continue.'
         if option == ():
             response = 'You open your eyes. It was all a dream. You’re soaked with sweat.\n\n\
 It all starts to come back. You’re in the Garrison, and all the things you just dreamed about are over.\n\n\
-The Battle of Trost was some days ago. It was a brutal fight with the Titans, and may soldiers died, including no small number of your brothers and sisters in arms from the 104th Training Corps.\n\n\
+The Battle of Trost was some days ago. It was a brutal fight with the Titans, and many soldiers died, including no small number of your brothers and sisters in arms from the 104th Training Corps.\n\n\
 After the battle, you were assigned to help with corpse retrieval duty in the city. You remember all too well the horrifying state many of your friends were in. \
 Ever since then, you’ve had nightmares almost every night. And it’s not just you. They seem to afflict a large number of your comrades.\n\n\
 The dream you just had… may not have been something you actually experienced. Actual memories are so easily confused with things you’ve only heard about.\n\n\
@@ -509,7 +509,11 @@ Hange is finally done talking.\n\n'
             self.choices[0] = [1]
             return response
         elif option[0] == 1:
-            self.cur_page[0] = 11
+            if self.state.flags.from_squad_levi == True:
+                self.cur_page[0] = 11
+                self.state.flags.from_squad_levi = False
+            else:
+                self.cur_page[0] = 18
 
     def P30(self, *option):
         if option == ():
@@ -709,6 +713,7 @@ They’re at Trost District army headquarters right now…” Hange’s furiousl
 Let’s not just stand here and talk. Let’s find somewhere nice to sit down…”\n\n\
 It looks like you’re going to be hearing about Titans for the foreseeable future…\n\n\
 Type 1️⃣ to continue.'
+            self.state.flags.from_squad_levi = True
             self.choices[0] = [1]
             return response
         elif option[0] == 1:
@@ -1061,7 +1066,7 @@ Suddenly Eren, who was seated innocently at the table, has a Titan’s arm!\n\n\
 The four members of Squad Levi have their weapons drawn almost instantly and begin flinging questions at Eren.\n\n\
 “Why did you transform into a Titan without permission? Answer me!”\n\n\
 “Move that arm an inch- just an inch- and I’ll cut your damn head off!”\n\n\
-Eren himself isn’t sanguine about the situational; he groans in distress.\n\n\
+Eren himself isn’t sanguine about the situation; he groans in distress.\n\n\
 “Shut up and leave me alone for a minute!” he exclaims, but this only agitates the people around him. He begins trying to pull his own arm out of the Titan arm.\n\n\
 Squad Leader Hange is excited: “Let me examine that arm!”\n\n\
 And in the midst of all this confusion…\n\n\
@@ -2569,7 +2574,7 @@ Behind you, one soldier after another flings themselves at the Female Titan in a
 
     def P1551(self, *option):
         if option == ():
-            response = 'Eren seems unable to accept it: not the deaths of his comrades, not the fact that Squad Levi is leaving their friends behind in order to keep him safe. n\n\
+            response = 'Eren seems unable to accept it: not the deaths of his comrades, not the fact that Squad Levi is leaving their friends behind in order to keep him safe.\n\n\
 You see him raise his hand to his mouth. He means to transform into a Titan.\n\n\
 There’s no question that if he turns into a Titan here, he could fight back against the monster pursuing you. At that very instant, soldier after soldier is being killed.\n\n\
 “Eren, what are you doing?!” Petra cries.\n\n\

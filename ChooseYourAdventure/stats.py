@@ -77,6 +77,7 @@ class Flags():
             self.keyS = 'No'
             self.killcount = 0
             self.hange_explanation = False
+            self.from_squad_levi = False
             self.hange_hand = False
             self.eren_hand = False
             self.levi_hand = False
