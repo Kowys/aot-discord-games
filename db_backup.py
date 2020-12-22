@@ -8,7 +8,7 @@ class DBbackup:
         self.db_backup_timer_obj = self.client.loop.create_task(self.db_backup_timer())
 
     async def db_backup_timer(self):
-        backup_hours = 24 * 7
+        backup_hours = 24
         db_paths = [
             'AttackonWikia/aow_db.db', 
             'ChooseYourAdventure/cya_db.db', 
