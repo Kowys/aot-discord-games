@@ -7,6 +7,8 @@ import admin
 from WarriorsvsSoldiers import game
 
 class MyClient(discord.Client):
+    backup = None
+
     async def on_ready(self):
         print('Logged in as')
         print(self.user.name)
@@ -16,7 +18,8 @@ class MyClient(discord.Client):
         config_queries.initialize_dbs()
 
         # Begin DB backup loop
-        db_backup.DBbackup(self)
+        if self.backup:
+            db_backup.DBbackup(self)
 
         # Set default status for public bot
         bot_status = discord.Game(name = '~help | ~config')
