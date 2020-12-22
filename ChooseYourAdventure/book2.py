@@ -4106,7 +4106,7 @@ I know it’s a lot, asking you to help me when I can’t tell you what you’re
 Everyone is surprised, but no one objects. You all want to help Eren.\n\n\
 And so you set about concocting a plan to break him free…\n\n'
             if self.state.flags.keyA == 'Yes' and self.state.flags.keyY == 'Yes':
-                response += 'You have both keys A and Y! Add the numbers associated with them together. What do you get?\n\n\
+                response += '**You have both keys A and Y! Add the numbers associated with them together. What do you get?**\n\n\
 1️⃣ 117\n\n\
 2️⃣ 140\n\n\
 3️⃣ 177\n\n\
