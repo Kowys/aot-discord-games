@@ -2123,7 +2123,7 @@ Type 1️⃣ to continue.'
 
     def P128(self, *option):
         if option == ():
-            response = '“We should tell a nearby squad about this abandoned village, and the Titan,” the squad leader says. “Any volunteers to take a message?”\b\b\
+            response = '“We should tell a nearby squad about this abandoned village, and the Titan,” the squad leader says. “Any volunteers to take a message?”\n\n\
 The communication is to be carried out to the squad where Mikasa and Connie are. Sasha is pale, perhaps on account of the battle with the Titans.\n\n\
 You…\n\n\
 1️⃣ Stay close; you’re worried about Sasha\n\n\
@@ -2504,7 +2504,7 @@ The captain’s response is blunt: “Don’t ask about the obvious.”\n\n\
 It’s true; the more experienced soldiers- the members of Squad Levi- don’t voice any complaints. They simply trust the order they’ve been given and silently carry them out.\n\n\
 A sound like a whirlwind comes from behind you.\n\n\
 “Everyone, draw your swords,” Levi says. “It’ll appear in an instant.”\n\n\
-THe sound of ringing steel fills your hearing. What is “it,” you wonder, even as you draw your sword.\n\n\
+The sound of ringing steel fills your hearing. What is “it,” you wonder, even as you draw your sword.\n\n\
 A moment later, “it” is there.\n\n\
 It’s running down the path through the forest at an incredible speed. A Titan, about ten meters tall. Its movements are efficient, and it has the slim build of a woman.\n\n\
 It’s a female Titan.\n\n\
@@ -4104,15 +4104,26 @@ I know it’s a lot, asking you to help me when I can’t tell you what you’re
 “Can’t trust even us, huh? That hurts,” Reiner says, frowning.\n\n\
 “Heh! Fine by me,” Jean says. “I don’t want to end up tortured by the Military Police because I’ve heard your dumb secrets. Let Armin do that.”\n\n\
 Everyone is surprised, but no one objects. You all want to help Eren.\n\n\
-And so you set about concocting a plan to break him free…\n\n\
-Type 1️⃣ to continue.'
-            self.choices[0] = [1]
+And so you set about concocting a plan to break him free…\n\n'
+            if self.state.flags.keyA == 'Yes' and self.state.flags.keyY == 'Yes':
+                response += 'You have both keys A and Y! Add the numbers associated with them together. What do you get?\n\n\
+1️⃣ 117\n\n\
+2️⃣ 140\n\n\
+3️⃣ 177\n\n\
+4️⃣ 217'
+                self.choices[0] = [1,2,3,4]
+            else:
+                response += 'Type 1️⃣ to continue.'
+                self.choices[0] = [1]
             return response
         elif option[0] == 1:
-            if self.state.flags.keyA == 'Yes' and self.state.flags.keyY == 'Yes':
-                self.cur_page[0] = 177
-            else:
-                self.cur_page[0] = 250
+            self.cur_page[0] = 250
+        elif option[0] == 2:
+            self.cur_page[0] = 250
+        elif option[0] == 3:
+            self.cur_page[0] = 177
+        elif option[0] == 4:
+            self.cur_page[0] = 250
 
     def P250(self, *option):
         if option == ():
@@ -4406,7 +4417,7 @@ Type 1️⃣ to continue.'
 A pile of dust and debris is the result, the arms and legs of crushed soldiers sticking out here and there.\n\n\
 Annie, the Female Titan, stomped down from above into the underground tunnel.\n\n\
 “So, what?! Does she not care if Eren dies?!” Mikasa shouts.\n\n\
-“I think she gambled that he wouldn’t be killed,” Armin sas back. “Annie is hell-bent on stealing Eren from us.”\n\n\
+“I think she gambled that he wouldn’t be killed,” Armin says back. “Annie is hell-bent on stealing Eren from us.”\n\n\
 Your group is at a desperate disadvantage now. Your escape route is blocked, and Annie is above you, watching both the stairs and this hole. \
 Even if you were to jet upwards with your Vertical Maneuvering Equipment, she would attack you the moment you did so.\n\n\
 “Stick close to me!” Eren calls. He raises his hand. He’s going to transform into a Titan. His transformation won’t explode the immediate area, you suspect. He’ll modulate his body to protect his friends.\n\n\
@@ -4523,7 +4534,7 @@ Type 1️⃣ to continue.'
 This studied craft allows her to land a punch on Eren.\n\n\
 Eren is just as powerful as she is, however. He winds up and punches back; the Female Titan goes flying through the air. There’s a crash as she slams against one of the trees.\n\n\
 The Female Titan climbs to her feet again, assuming a fighting stance. Unlike most Titans, who rely blindly on their own strength, she looks like an accomplished martial artist.\n\n\
-Suddenly, Eren stops moving. The chain of attacks he’s been launching ends. It’s almost as if he’s noticed something about the Female TItan, something that stays his hand…\n\n\
+Suddenly, Eren stops moving. The chain of attacks he’s been launching ends. It’s almost as if he’s noticed something about the Female Titan, something that stays his hand…\n\n\
 The Female Titan, is hardly one to let such an opening slip by. She brings her leg up to head height, performing a roundhouse kick with tremendous speed.\n\n\
 Eren’s head goes flying as if it had been cut off with a sword. The head of a Titan is the size of a small horse, and now Eren’s is tumbling along the ground. \
 You assume the Female Titan must have hardened her foot for the vicious kick.\n\n\
@@ -4656,7 +4667,7 @@ The Survey Corps draw their swords, but the Titans don’t so much as look at th
 Titans would never normally do this. That noise the female just made… Does she have the power to command other Titans? And did she order them to consume her, \
 in order to destroy whatever clues she might be hiding?\n\n\
 “All hands, to battle!” Commander Erwin orders. “Protect the Female Titan with your lives!” And then, Vertical Maneuvering Equipment at the ready, he leaps into the fray himself.\n\n\
-The Survey Corps commences combat with the crowd of TItans. Because the monsters are ignoring the humans, it’s a simple matter to cut them down, but there are dozens of them. Too many to deal with effectively.\n\n\
+The Survey Corps commences combat with the crowd of Titans. Because the monsters are ignoring the humans, it’s a simple matter to cut them down, but there are dozens of them. Too many to deal with effectively.\n\n\
 Most of the Female Titan’s body has been eaten. Between the steam rising from her body and that coming from the bodies of the defeated Titans around her, the entire area is thick with white haze. \
 Everything is blurred and distorted…\n\n\
 Type 1️⃣ to continue.'
@@ -5020,7 +5031,7 @@ The leaders of the Survey Corps surround Annie.\n\n\
 “I have nothing to say to you. What are you going to do, torture me? How very human.”\n\n\
 So this episode concludes. You and the others succeed in achieving your “special objective.” It was extremely fortunate that you were able to apprehend and stop Annie. \
 If the Female Titan had appeared in the middle of Stohess District, the result might have been catastrophic.\n\n\
-Problems remain, of course; a mountain of then. Eren’s custody is by no means resolved, and the capture of a new kind of human who can turn into a Titan will no doubt make the tribunal even messier.\n\n\
+Problems remain, of course; a mountain of them. Eren’s custody is by no means resolved, and the capture of a new kind of human who can turn into a Titan will no doubt make the tribunal even messier.\n\n\
 You don’t know what will happen to Annie now. She’s an enemy of humanity. Fortunately, however, she hasn’t yet killed any humans. Perhaps she could be enlisted to fight on your side as a Titan, just like Eren.\n\n\
 Maybe you’ll still have a chance to talk.\n\n\
 **🎉 Congratulations! You\'ve obtained the "A Sliver of Hope" Ending. 🎉**\n\n\
@@ -5533,7 +5544,7 @@ How will you answer her question?\n\n\
         if option == ():
             response = 'Mikasa sits before the bed in which Eren lies, asleep. After the fighting in Stohess District, Eren returned from his Titan form and fell into a sleep so deep he almost seems comatose. \
 Mikasa sits quietly, watching over him.\n\n\
-She’s such a fearsome presence on the battlefield, yet here she looks like a normal girl. Eren’s is the quiet, rhythmic breathing of sleep, and she looks at him with something like love.\n\n\
+She’s such a fearsome presence on the battlefield, yet here she looks like a normal girl. Eren’s in the quiet, rhythmic breathing of sleep, and she looks at him with something like love.\n\n\
 Your other friends were here to check on Eren not long ago, but perhaps out of courtesy, one by one they’ve left. It’s about time for you to go, too…\n\n\
 “The world is… cruel,” Mikasa says softly.\n\n\
 Is she talking about all the lives that were lost in these recent events? Or does she mean Annie, who was supposed to be your comrade but turned out to be deceiving all of you? Or…\n\n\
