@@ -5035,6 +5035,8 @@ Problems remain, of course; a mountain of them. Eren’s custody is by no means 
 You don’t know what will happen to Annie now. She’s an enemy of humanity. Fortunately, however, she hasn’t yet killed any humans. Perhaps she could be enlisted to fight on your side as a Titan, just like Eren.\n\n\
 Maybe you’ll still have a chance to talk.\n\n\
 **🎉 Congratulations! You\'ve obtained the "A Sliver of Hope" Ending. 🎉**\n\n\
+https://www.youtube.com/watch?v=mWZI17J46uU&ab_channel=k4h4r'
+            self.response2[0] = '\n\n\
 **To play again, type `~reset`.**'
             self.choices[0] = []
             return response
