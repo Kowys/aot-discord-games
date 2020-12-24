@@ -174,9 +174,9 @@ class Game():
                 rxn, user = await self.client.wait_for('reaction_add', check = reaction_check)
 
                 if rxn.emoji == '◀':
-                    cur_page += 1
-                elif rxn.emoji == '▶':
                     cur_page -= 1
+                elif rxn.emoji == '▶':
+                    cur_page += 1
 
                 leaderboard, cur_page = self.state.get_leaderboard(message.guild, page=cur_page)
                 await leaderboard_msg.edit(embed=leaderboard)
