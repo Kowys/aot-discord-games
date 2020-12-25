@@ -5,7 +5,7 @@ import sqlite3
 
 
 class State():
-    def __init__(self):
+    def __init__(self, channel_id):
         # Constants
         self.intro_msg = discord.Embed(
             title = 'Welcome to ⚔ Warriors vs Soldiers 🛡!',
@@ -19,6 +19,23 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 ❗Type `~rules` to view the game rules.\n\n\
 ❗Type `~help` to see the full list of commands.',  
             colour=0x0013B4)
+
+        self.timer_options = {
+            '1':1, '2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9,
+            '1️⃣':1, '2️⃣':2, '3️⃣':3, '4️⃣':4, '5️⃣':5, '6️⃣':6, '7️⃣':7, '8️⃣':8, '9️⃣':9
+        }
+        self.timer_states = ['select', 'next_expedition', 'selection', 'approval', 'decision', 'kidnap', 'blessing', 'paths', 'saboteur']
+        self.timer_display_map = {
+            0: 'Unlimited',
+            30: '30 seconds',
+            60: '60 seconds',
+            120: '2 minutes',
+            180: '3 minutes',
+            300: '5 minutes',
+            600: '10 minutes',
+            1800: '30 minutes',
+            3600: '1 hour'
+        }
 
         self.reset_msg = discord.Embed(title = 'Game Reset!', description = 'Type **`~host`** to create a new lobby.\nType **`~intro`** for more information about the game.', colour=0x0013B4)
 
@@ -63,13 +80,16 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         # Variables
         self.status = 'waiting for game' # waiting for players, assigning roles, expedition selection, expedition approval, expedition decision, expedition over, choose coordinate, game ended
 
+        self.game_channel_id = channel_id
+        self.timer_values = self.init_timers()
+        self.timer_config_status = None
+
         self.game_channel = None
         self.server = None
         self.tournament = False
         self.game_host = None
         self.reset_confirmation = False
         self.gametype = 'Ranked'
-        self.gamespeed = 'Normal'
         self.players = [] # each player is a list of two elements: the player object and the player's role (str)
         self.message_box = []
         self.newroles = []
@@ -101,7 +121,32 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.hunter_used = False
         self.hunter_target = None
 
-    def host(self, player, server, channel, fast, ranked):
+    def init_timers(self):
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        get_timers = 'SELECT * FROM timers WHERE channel = ?'
+        cursor.execute(get_timers, (self.game_channel_id,))
+        timer_data = cursor.fetchone()
+
+        timer_mappings = {'next_expedition': 0, 'selection': 1, 'approval': 2, 'decision': 3, 'kidnap': 4, 'blessing': 5, 'paths': 6, 'saboteur': 7}
+        timers = [600, 300, 60, 60, 600, 120, 120, 120]
+
+        if timer_data:
+            timers = timer_data[1:]
+        else:
+            insert_timers_query = 'INSERT INTO timers VALUES ({})'.format(','.join('?' * 9))
+            insert_timers_data = [self.game_channel_id] + timers
+            cursor.execute(insert_timers_query, insert_timers_data)
+            conn.commit()
+        
+        conn.close()
+
+        timer_values = {key: timers[timer_mappings[key]] for key in timer_mappings}
+
+        return timer_values
+
+    def host(self, player, server, channel, ranked):
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
         cursor = conn.cursor()
 
@@ -114,13 +159,11 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
             self.gametype = 'Ranked'
             if ranked == False:
-                self.gametype = 'Casual'
-            self.gamespeed = 'Normal'
-            if fast == True:
-                self.gamespeed = 'Fast'        
+                self.gametype = 'Casual'      
             self.game_host = player
             self.reset_confirmation = False
             self.status = 'waiting for players'
+            self.timer_config_status = None
             self.players = [[player, None]]
             self.newroles = []
             self.ymir_blessing = False
@@ -515,22 +558,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             if player == self.game_host or player.id == 238808836075421697:
                 if self.tournament:
                     return 'This option is not available for this tournament!'
-
-                if gametype == 'fast':
-                    if self.gamespeed == 'Fast':
-                        return 'The game speed is already set to **Fast**!'
-                    else:
-                        self.gamespeed = 'Fast'
-                        return 'The game speed has been set to **Fast**!'
-
-                elif gametype == 'normal':
-                    if self.gamespeed == 'Normal':
-                        return 'The game speed is already set to **Normal**!'
-                    else:
-                        self.gamespeed = 'Normal'
-                        return 'The game speed has been set to **Normal**!'
                 
-                elif gametype == 'casual':
+                if gametype == 'casual':
                     if self.gametype == 'Casual':
                         return 'The game is already in **Casual** mode!'
                     else:
@@ -549,6 +578,94 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         else:
             return 'There is no open lobby at the moment!'
 
+    def timer_config(self):
+        self.timer_config_status = 'select'
+
+        config_msg = 'Select a timer from one of the options below:\n\n'
+
+        config_embed = discord.Embed(title = 'Timer Configuration', description = config_msg, colour=0x0013B4)
+        timer_field = '1️⃣ Selection phase\n' + '2️⃣ Approval phase\n' + '3️⃣ Decision phase\n' + '4️⃣ Kidnap phase\n' + '5️⃣ Ymir\'s blessing\n' + '6️⃣ Paths\n' + '7️⃣ Sabotage\n' + '8️⃣ Next expedition\n'
+        duration_field = self.timer_display_map[self.timer_values['selection']] + '\n' + self.timer_display_map[self.timer_values['approval']] + '\n' + \
+            self.timer_display_map[self.timer_values['decision']] + '\n' + self.timer_display_map[self.timer_values['kidnap']] + '\n' + \
+            self.timer_display_map[self.timer_values['blessing']] + '\n' + self.timer_display_map[self.timer_values['paths']] + '\n' + \
+            self.timer_display_map[self.timer_values['saboteur']] + '\n' + self.timer_display_map[self.timer_values['next_expedition']]
+
+        config_embed.add_field(name = 'Timer', value = timer_field)
+        config_embed.add_field(name = 'Duration', value = duration_field)
+        return config_embed
+
+    def timer_select(self, option, player):
+        duration_mappings = {
+            'selection': [30, 60, 120, 180, 300, 600, 0],
+            'approval': [30, 60, 120, 180, 300, 0],
+            'decision': [30, 60, 120, 180, 300, 0],
+            'kidnap': [60, 120, 180, 300, 600, 1800, 3600, 0],
+            'blessing': [30, 60, 120, 180, 300, 600, 0],
+            'paths': [30, 60, 120, 180, 300, 600, 0],
+            'saboteur': [30, 60, 120, 180, 300, 600, 0],
+            'next_expedition': [60, 120, 180, 300, 600, 1800, 0]
+        }
+
+        choice = self.timer_options[option]
+
+        if self.timer_config_status == 'select':
+            timer_mappings = {1:'selection', 2:'approval', 3:'decision', 4:'kidnap', 5:'blessing', 6:'paths', 7:'saboteur', 8:'next_expedition'}
+            if choice not in [i for i in timer_mappings]:
+                return discord.Embed(description = 'This option is not available!', colour=0x0013B4)
+
+            self.timer_config_status = timer_mappings[choice]
+            
+            title_mappings = {1:'Selection', 2:'Approval', 3:'Decision', 4:'Kidnap', 5:'Blessing', 6:'Paths', 7:'Sabotage', 8:'Next Expedition'}
+            
+            select_msg = 'Please select new timer duration:\n\n'
+            index_mapping = {1: '1️⃣', 2: '2️⃣', 3: '3️⃣', 4: '4️⃣', 5: '5️⃣', 6: '6️⃣', 7: '7️⃣', 8: '8️⃣'}
+            duration_options = duration_mappings[self.timer_config_status]
+
+            for i, duration in enumerate(duration_options):
+                select_msg += index_mapping[i+1] + ' ' + self.timer_display_map[duration] + '\n\n'
+
+            select_title = title_mappings[choice] + ' Timer\n' + self.timer_display_map[self.timer_values[self.timer_config_status]]
+            timer_embed = discord.Embed(title = select_title, description = select_msg, colour=0x0013B4)
+
+        else:
+            # Timers cannot be changed during a game
+            if self.status not in ['waiting for game', 'waiting for players', 'game ended']:
+                self.timer_config_status = None
+                return discord.Embed(description = 'You may not modify the timers while a game is ongoing!', colour=0x0013B4)
+
+            # Manage server permissions required
+            if not (player.guild_permissions.manage_guild or message.author.id == 238808836075421697):
+                self.timer_config_status = None
+                return discord.Embed(description = 'You require the **Manage Server** permission to modify the timers!', colour=0x0013B4)
+
+            # Choice must be in the available options
+            duration_options = duration_mappings[self.timer_config_status]
+            if choice not in [i+1 for i in range(len(duration_options))]:
+                return discord.Embed(description = 'This option is not available!', colour=0x0013B4)
+
+            self.update_timer(duration_options[choice-1])
+
+            title_mappings = {'selection':'Selection', 'approval':'Approval', 'decision':'Decision', 'kidnap':'Kidnap', 
+            'blessing':'Blessing', 'paths':'Paths', 'saboteur':'Sabotage', 'next_expedition':'Next Expedition'}
+            timer_msg = 'The **' + title_mappings[self.timer_config_status] + '** timer is now **' + self.timer_display_map[self.timer_values[self.timer_config_status]] + '**!'
+            
+            self.timer_config_status = None
+            timer_embed = discord.Embed(title = 'Timer modified', description = timer_msg, colour=0x0013B4)
+
+        return timer_embed
+
+    def update_timer(self, timer_value):
+        conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
+        cursor = conn.cursor()
+
+        update_timer = 'UPDATE timers SET {} = ? WHERE channel = ?'.format(self.timer_config_status)
+        cursor.execute(update_timer, (timer_value, self.game_channel_id))
+        conn.commit()
+
+        conn.close()
+
+        self.timer_values[self.timer_config_status] = timer_value
+
     def display_lobby(self):
         players_in_lobby = ''
         for person in self.players:
@@ -558,7 +675,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 players_in_lobby = players_in_lobby + '**' + person[0].mention + '**\n'
 
         lobby = discord.Embed(title = 'Current lobby', colour=0x0013B4)
-        lobby.add_field(name = 'Game Type', value = '**' + self.gamespeed + ' ' + self.gametype + '**' if not self.tournament else '**Tournament**')
+        lobby.add_field(name = 'Game Type', value = '**' + self.gametype + '**' if not self.tournament else '**Tournament**')
         advantage_field = '⚖️ **Perfectly balanced!** ⚖️' if self.calculate_advantage() == '**None**' else self.calculate_advantage()
         if self.tournament:
             advantage_field = '❓ **Unknown** ❓'
@@ -737,12 +854,12 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.expedition_sizes = {5:[2,3,2,3,3], 6:[2,3,4,3,4], 7:[2,3,3,4,4], 8:[3,3,4,4,5], 9:[3,4,4,5,5], 10:[3,3,4,5,5]}
 
             self.status = 'waiting for game'
+            self.timer_config_status = None
 
             self.tournament = False
             self.game_host = None
             self.reset_confirmation = False
             self.gametype = 'Ranked'
-            self.gamespeed = 'Normal'
             self.players = []
             self.message_box = []
             self.newroles = []
@@ -3249,7 +3366,7 @@ In their Titan form, the Warriors have the ability to communicate with their com
 This ability allows for all Warriors to send a public message to everyone in the game as their assigned role, but without revealing their identity. Each Warrior may use this ability only once per game.'
 
         if command_query:
-            commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` or `fast` to the command to host an unranked or fast game.',
+            commands_dict = {'host':'Creates a new lobby with you as the host. Add `casual` to the command to host an unranked game.',
                             'join':'Joins an existing lobby.',
                             'leave':'Leave your current lobby.',
                             'kick':'Removes a player from the lobby (Only the host can kick).',
@@ -3258,9 +3375,6 @@ This ability allows for all Warriors to send a public message to everyone in the
                             'add':'Adds the specified optional role to the game. (E.g. `~add queen`)',
                             'remove':'Removes the specified optional role from the game. (E.g. `~remove queen`)',
                             'randomroles': 'Toggles randomization of optional roles when starting a game.',
-                            'fast': 'Toggles fast mode on, with reduced timer durations for all phases.\n\n\
-Voting: 1 min -> 30 secs\nExpedition selection: 5 min -> 2 min\nKidnap: 10 min -> 2 min',
-                            'normal': 'Toggles normal mode on, with standard timer durations for all phases.',
                             'casual': 'Toggles casual mode on. SR or badges will not be awarded at the end of a game.',
                             'ranked': 'Toggles ranked mode on, with SR and badges being awarded as usual.',
                             'players':'If game hasn\'t started yet: Brings up the current list of players in the lobby.\n\n\
@@ -3278,6 +3392,8 @@ and status of the Walls, the results of previous expeditions and information on 
                                 'Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
                             'lb': 'Brings up the leaderboard, listing the top 10 players on the server.  Add `g` or `global` to see the global leaderboard. ' + \
                                 'Add a number or tag to see subsequent pages (e.g. `~lb 2`).',
+                            'timer': 'Opens the timer config, allowing you to change the length of various timers in the game.',
+                            'timers': 'Opens the timer config, allowing you to change the length of various timers in the game.',
                             'role': 'Checks your current role with the bot.',
                             'roles': 'If game hasn\'t started yet: Shows the full list of available roles.\n\nIf game has started: Shows the list of roles currently in the game.',
                             'advantage': 'The advantage value tells you how powerful one side is relative to the other. It is calculated by a combination of the roles added and size of the game.\n\n' + \
@@ -3326,8 +3442,6 @@ and status of the Walls, the results of previous expeditions and information on 
 `~remove <role>`\n\
 `~roles`\n\
 `~randomroles`\n\
-`~fast`\n\
-`~normal`\n\
 `~casual`\n\
 `~ranked`\n\
 `~players`\n\
@@ -3346,7 +3460,8 @@ and status of the Walls, the results of previous expeditions and information on 
 `~profile <@person>`\n\
 `~badges <@person>`\n\
 `~gamestats`\n\
-`~leaderboard`'
+`~leaderboard`\n\
+`~timers`'
 
             commands = discord.Embed(title = 'List of commands for Warriors vs Soldiers', colour=0x0013B4)
             general_commands = '`~config` : Lets you select the game for each channel\n' + \

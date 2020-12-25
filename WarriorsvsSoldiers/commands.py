@@ -4,9 +4,9 @@ from WarriorsvsSoldiers import game
 
 
 class Game():
-    def __init__(self, client):
+    def __init__(self, client, channel_id):
         self.client = client
-        self.state = game.State()
+        self.state = game.State(channel_id)
         self.approval_timer_obj = None
         self.decision_timer_obj = None
         self.selection_timer_obj = None
@@ -312,14 +312,12 @@ class Game():
             if message.content.startswith('~host'):
                 # Hosts a new game if status is 'waiting for game', i.e. after a reset or a game just ended
                 messagebox = message.content.split(' ')
-                fast, ranked = False, True
+                ranked = True
                 if len(messagebox) >= 2:
-                    if 'fast' in [word.lower() for word in messagebox]:
-                        fast = True
                     if 'casual' in [word.lower() for word in messagebox]:
                         ranked = False
                 
-                msg = self.state.host(message.author, message.guild, message.channel, fast, ranked)
+                msg = self.state.host(message.author, message.guild, message.channel, ranked)
                 await message.channel.send(msg)
                 if 'has started' in msg:
                     lobby = self.state.display_lobby()
@@ -411,12 +409,8 @@ class Game():
                             delete_msg = self.state.message_box.pop(0)
                             await delete_msg.delete()
             
-            if message.content.lower().startswith('~fast') or message.content.lower().startswith('~normal') or message.content.lower().startswith('~casual') or message.content.lower().startswith('~ranked'):
-                if message.content.lower().startswith('~fast'):
-                    msg = self.state.toggle_gametype(message.author, 'fast')
-                elif message.content.lower().startswith('~normal'):
-                    msg = self.state.toggle_gametype(message.author, 'normal')
-                elif message.content.lower().startswith('~casual'):
+            if message.content.lower().startswith('~casual') or message.content.lower().startswith('~ranked'):
+                if message.content.lower().startswith('~casual'):
                     msg = self.state.toggle_gametype(message.author, 'casual')
                 elif message.content.lower().startswith('~ranked'):
                     msg = self.state.toggle_gametype(message.author, 'ranked')
@@ -429,6 +423,14 @@ class Game():
                         for _ in range(len(self.state.message_box) - 1):
                             delete_msg = self.state.message_box.pop(0)
                             await delete_msg.delete()
+            
+            if message.content.lower().startswith('~timer'):
+                timer_msg = self.state.timer_config()
+                await message.channel.send(embed=timer_msg)
+
+            if message.content in self.state.timer_options and self.state.timer_config_status in self.state.timer_states:
+                timer_msg = self.state.timer_select(message.content, message.author)
+                await message.channel.send(embed=timer_msg)
 
             if message.content.startswith('~start'):
                 # Only the host can start the game
@@ -1019,22 +1021,31 @@ class Game():
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'assigning roles' or self.state.status == 'expedition over':
+            if (self.state.status == 'assigning roles' or self.state.status == 'expedition over') and self.state.timer_values['next_expedition'] != 0:
                 timer = 0
+                timer_max = self.state.timer_values['next_expedition']
                 while self.state.status == 'assigning roles' or self.state.status == 'expedition over':
                     await asyncio.sleep(1)
                     timer += 1
-                    if (self.state.gamespeed == 'Normal' and timer == 540 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over')) or \
-                    (self.state.gamespeed == 'Fast' and timer == 120 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over')):
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
+                        timer_msg = self.state.game_host.mention + ', you have **5 minutes** to start the next expedition!'
+                        await self.state.game_channel.send(timer_msg)
+
+                    if time_remaining == 120 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
+                        timer_msg = self.state.game_host.mention + ', you have **2 minutes** to start the next expedition!'
+                        await self.state.game_channel.send(timer_msg)
+                    
+                    if time_remaining == 60 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
                         timer_msg = self.state.game_host.mention + ', you have **60 seconds** to start the next expedition!'
                         await self.state.game_channel.send(timer_msg)
 
-                    if self.state.gamespeed == 'Fast' and timer == 150 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
+                    if time_remaining == 30 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
                         timer_msg = self.state.game_host.mention + ', you have **30 seconds** to start the next expedition!'
                         await self.state.game_channel.send(timer_msg)
 
-                    if (self.state.gamespeed == 'Normal' and timer >= 600 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over')) or \
-                    (self.state.gamespeed == 'Fast' and timer >= 180 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over')):
+                    if time_remaining <= 0 and (self.state.status == 'assigning roles' or self.state.status == 'expedition over'):
                         times_up_msg = '**' + self.state.game_host.name + \
                             '** did not manage to start the next expedition in time! Resetting game...'
                         await self.state.game_channel.send(times_up_msg)
@@ -1046,15 +1057,27 @@ class Game():
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'expedition approval':
+            if self.state.status == 'expedition approval' and self.state.timer_values['approval'] != 0:
                 timer = 0
+                timer_max = self.state.timer_values['approval']
                 while self.state.status == 'expedition approval':
                     await asyncio.sleep(1)
                     timer += 1
-                    if self.state.gamespeed == 'Normal' and timer == 30 and self.state.status == 'expedition approval':
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and self.state.status == 'expedition approval':
+                        await self.state.game_channel.send('Participants have **5 minutes** to cast their votes!')
+
+                    if time_remaining == 120 and self.state.status == 'expedition approval':
+                        await self.state.game_channel.send('Participants have **2 minutes** to cast their votes!')
+
+                    if time_remaining == 60 and self.state.status == 'expedition approval':
+                        await self.state.game_channel.send('Participants have **60 seconds** to cast their votes!')
+
+                    if time_remaining == 30 and self.state.status == 'expedition approval':
                         await self.state.game_channel.send('Participants have **30 seconds** to cast their votes!')
-                    if (self.state.gamespeed == 'Normal' and timer >= 60 and self.state.status == 'expedition approval') or \
-                    (self.state.gamespeed == 'Fast' and timer >= 30 and self.state.status == 'expedition approval'):
+
+                    if time_remaining <= 0 and self.state.status == 'expedition approval':
                         self.state.status = ''
                         await self.state.game_channel.send('Time\'s up! Approving the remaining votes...')
                         # Add remaining players into expedition approval ('yes' by default)
@@ -1169,15 +1192,27 @@ class Game():
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'expedition decision':
+            if self.state.status == 'expedition decision' and self.state.timer_values['decision'] != 0:
                 timer = 0
+                timer_max = self.state.timer_values['decision']
                 while self.state.status == 'expedition decision':
                     await asyncio.sleep(1)
                     timer += 1
-                    if self.state.gamespeed == 'Normal' and timer == 30 and self.state.status == 'expedition decision':
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and self.state.status == 'expedition decision':
+                        await self.state.game_channel.send('Expedition team members have **5 minutes** to make their decisions!')
+
+                    if time_remaining == 120 and self.state.status == 'expedition decision':
+                        await self.state.game_channel.send('Expedition team members have **2 minutes** to make their decisions!')
+
+                    if time_remaining == 60 and self.state.status == 'expedition decision':
+                        await self.state.game_channel.send('Expedition team members have **60 seconds** to make their decisions!')
+
+                    if time_remaining == 30 and self.state.status == 'expedition decision':
                         await self.state.game_channel.send('Expedition team members have **30 seconds** to make their decisions!')
-                    if (self.state.gamespeed == 'Normal' and timer >= 60 and self.state.status == 'expedition decision') or \
-                    (self.state.gamespeed == 'Fast' and timer >= 30 and self.state.status == 'expedition decision'):
+
+                    if time_remaining <= 0 and self.state.status == 'expedition decision':
                         self.state.status = ''
                         # Add remaining players into expedition decision
                         for player in self.state.expedition_squad:
@@ -1238,42 +1273,43 @@ class Game():
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'expedition selection':
+            if self.state.status == 'expedition selection' and self.state.timer_values['selection'] != 0:
                 timer = 0
-                while self.state.status == 'expedition selection' and not self.client.is_closed():
+                timer_max = self.state.timer_values['selection']
+                while self.state.status == 'expedition selection':
                     await asyncio.sleep(1)
                     timer += 1
-                    if (self.state.gamespeed == 'Normal' and timer == 240 and self.state.status == 'expedition selection') or \
-                    (self.state.gamespeed == 'Fast' and timer == 60 and self.state.status == 'expedition selection'):
-                        timer_msg = 'Commander ' + \
-                            self.state.players[0][0].mention + \
-                            ', you have **60 seconds** to pick your team!'
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and self.state.status == 'expedition selection':
+                        timer_msg = 'Commander ' + self.state.players[0][0].mention + ', you have **5 minutes** to pick your team!'
                         await self.state.game_channel.send(timer_msg)
 
-                    elif self.state.gamespeed == 'Fast' and timer == 90 and self.state.status == 'expedition selection':
-                        timer_msg = 'Commander ' + \
-                            self.state.players[0][0].mention + \
-                            ', you have **30 seconds** to pick your team!'
+                    if time_remaining == 120 and self.state.status == 'expedition selection':
+                        timer_msg = 'Commander ' + self.state.players[0][0].mention + ', you have **2 minutes** to pick your team!'
                         await self.state.game_channel.send(timer_msg)
 
-                    elif (self.state.gamespeed == 'Normal' and timer >= 300 and self.state.status == 'expedition selection') or \
-                    (self.state.gamespeed == 'Fast' and timer >= 120 and self.state.status == 'expedition selection'):
+                    if time_remaining == 60 and self.state.status == 'expedition selection':
+                        timer_msg = 'Commander ' + self.state.players[0][0].mention + ', you have **60 seconds** to pick your team!'
+                        await self.state.game_channel.send(timer_msg)
+
+                    if time_remaining == 30 and self.state.status == 'expedition selection':
+                        timer_msg = 'Commander ' + self.state.players[0][0].mention + ', you have **30 seconds** to pick your team!'
+                        await self.state.game_channel.send(timer_msg)
+
+                    if time_remaining <= 0 and self.state.status == 'expedition selection':
                         timer = 0
                         # Skip to next commander
                         self.state.expedition_squad = []
-                        times_up_msg = 'Commander **' + \
-                            self.state.players[0][0].name + \
-                            '** did not manage to pick their team in time!'
+                        times_up_msg = 'Commander **' + self.state.players[0][0].name + '** did not manage to pick their team in time!'
                         await self.state.game_channel.send(times_up_msg)
 
-                        expedition_msg = '--**Expedition #' + \
-                            str(self.state.cur_expedition) + ': Planning phase**--'
+                        expedition_msg = '--**Expedition #' + str(self.state.cur_expedition) + ': Planning phase**--'
                         await self.state.game_channel.send(expedition_msg)
 
                         await asyncio.sleep(2)
                         self.state.next_commander()
-                        commander_msg = 'The commander for this expedition is ' + \
-                            self.state.players[0][0].mention + '!'
+                        commander_msg = 'The commander for this expedition is ' + self.state.players[0][0].mention + '!'
                         await self.state.game_channel.send(commander_msg)
 
                         await asyncio.sleep(2)
@@ -1286,33 +1322,38 @@ class Game():
                             await self.state.game_channel.send(embed=kenny_hit_list_msg)
 
                         await asyncio.sleep(1)
-                        commander_msg2 = 'Commander ' + \
-                            self.state.players[0][0].name + \
-                            ', please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
+                        commander_msg2 = 'Commander ' + self.state.players[0][0].name + ', please select your team for the expedition. (Type `~pick <@name>` to pick a team member.)'
                         await self.state.game_channel.send(commander_msg2)
 
     async def blessing_timer(self):
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'ymir\'s blessing':
+            if self.state.status == 'ymir\'s blessing' and self.state.timer_values['blessing'] != 0:
                 timer = 0
+                timer_max = self.state.timer_values['blessing']
                 while self.state.status == 'ymir\'s blessing':
                     await asyncio.sleep(1)
                     timer += 1
-                    if self.state.gamespeed == 'Normal' and timer == 60 and self.state.status == 'ymir\'s blessing':
-                        timer_msg = self.state.currently_blessed.mention + \
-                            ', you have **60 seconds** to use Ymir\'s blessing!'
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and self.state.status == 'ymir\'s blessing':
+                        timer_msg = self.state.currently_blessed.mention + ', you have **5 minutes** to use Ymir\'s blessing!'
                         await self.state.game_channel.send(timer_msg)
 
-                    if (self.state.gamespeed == 'Normal' and timer == 90 and self.state.status == 'ymir\'s blessing') or \
-                    (self.state.gamespeed == 'Fast' and timer == 30 and self.state.status == 'ymir\'s blessing'):
-                        timer_msg = self.state.currently_blessed.mention + \
-                            ', you have **30 seconds** to use Ymir\'s blessing!'
+                    if time_remaining == 120 and self.state.status == 'ymir\'s blessing':
+                        timer_msg = self.state.currently_blessed.mention + ', you have **2 minutes** to use Ymir\'s blessing!'
                         await self.state.game_channel.send(timer_msg)
 
-                    if (self.state.gamespeed == 'Normal' and timer >= 120 and self.state.status == 'ymir\'s blessing') or \
-                    (self.state.gamespeed == 'Fast' and timer >= 60 and self.state.status == 'ymir\'s blessing'):
+                    if time_remaining == 60 and self.state.status == 'ymir\'s blessing':
+                        timer_msg = self.state.currently_blessed.mention + ', you have **60 seconds** to use Ymir\'s blessing!'
+                        await self.state.game_channel.send(timer_msg)
+
+                    if time_remaining == 30 and self.state.status == 'ymir\'s blessing':
+                        timer_msg = self.state.currently_blessed.mention + ', you have **30 seconds** to use Ymir\'s blessing!'
+                        await self.state.game_channel.send(timer_msg)
+
+                    if time_remaining <= 0 and self.state.status == 'ymir\'s blessing':
                         times_up_msg = '**' + self.state.currently_blessed.name + '** did not use Ymir\'s blessing in time!'
                         await self.state.game_channel.send(times_up_msg)
 
@@ -1328,12 +1369,33 @@ class Game():
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'paths announcement':
+            if self.state.status == 'paths announcement' and self.state.timer_values['paths'] != 0:
                 timer = 0
+                timer_max = self.state.timer_values['paths']
                 while self.state.status == 'paths announcement':
                     await asyncio.sleep(1)
                     timer += 1
-                    if self.state.gamespeed == 'Normal' and timer == 60 and self.state.status == 'paths announcement':
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and self.state.status == 'paths announcement':
+                        timer_msg = 'The Paths holder has **5 minutes** to make their announcement!'
+                        player_timer_msg = 'You have **5 minutes** to send your message!'
+                        await self.state.game_channel.send(timer_msg)
+                        try:
+                            await self.state.paths_holders[0].dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
+
+                    if time_remaining == 120 and self.state.status == 'paths announcement':
+                        timer_msg = 'The Paths holder has **2 minutes** to make their announcement!'
+                        player_timer_msg = 'You have **2 minutes** to send your message!'
+                        await self.state.game_channel.send(timer_msg)
+                        try:
+                            await self.state.paths_holders[0].dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
+
+                    if time_remaining == 60 and self.state.status == 'paths announcement':
                         timer_msg = 'The Paths holder has **60 seconds** to make their announcement!'
                         player_timer_msg = 'You have **60 seconds** to send your message!'
                         await self.state.game_channel.send(timer_msg)
@@ -1342,8 +1404,7 @@ class Game():
                         except:
                             print("Error: User cannot receive DM")
 
-                    if (self.state.gamespeed == 'Normal' and timer == 90 and self.state.status == 'paths announcement') or \
-                    (self.state.gamespeed == 'Fast' and timer == 30 and self.state.status == 'paths announcement'):
+                    if time_remaining == 30 and self.state.status == 'paths announcement':
                         timer_msg = 'The Paths holder has **30 seconds** to make their announcement!'
                         player_timer_msg = 'You have **30 seconds** to send your message!'
                         await self.state.game_channel.send(timer_msg)
@@ -1352,8 +1413,7 @@ class Game():
                         except:
                             print("Error: User cannot receive DM")
 
-                    if (self.state.gamespeed == 'Normal' and timer >= 120 and self.state.status == 'paths announcement') or \
-                    (self.state.gamespeed == 'Fast' and timer >= 60 and self.state.status == 'paths announcement'):
+                    if time_remaining <= 0 and self.state.status == 'paths announcement':
                         times_up_msg = 'The Paths holder did not make their announcement in time!'
                         await self.state.game_channel.send(times_up_msg)
                         self.state.paths_holders.pop(0)
@@ -1387,12 +1447,35 @@ class Game():
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'saboteur selection':
+            if self.state.status == 'saboteur selection' and self.state.timer_values['saboteur'] != 0:
                 timer = 0
+                timer_max = self.state.timer_values['saboteur']
                 while self.state.status == 'saboteur selection':
                     await asyncio.sleep(1)
                     timer += 1
-                    if timer == 60 and self.state.status == 'saboteur selection':
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and self.state.status == 'saboteur selection':
+                        timer_msg = 'The Saboteur has **5 minutes** to sabotage an expedition!'
+                        player_timer_msg = 'You have **5 minutes** to sabotage an expedition!'
+                        await self.state.game_channel.send(timer_msg)
+                        try:
+                            saboteur_player = list(filter(lambda x: x[1] == 'saboteur', self.state.players))[0][0]
+                            await saboteur_player.dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
+
+                    if time_remaining == 120 and self.state.status == 'saboteur selection':
+                        timer_msg = 'The Saboteur has **2 minutes** to sabotage an expedition!'
+                        player_timer_msg = 'You have **2 minutes** to sabotage an expedition!'
+                        await self.state.game_channel.send(timer_msg)
+                        try:
+                            saboteur_player = list(filter(lambda x: x[1] == 'saboteur', self.state.players))[0][0]
+                            await saboteur_player.dm_channel.send(player_timer_msg)
+                        except:
+                            print("Error: User cannot receive DM")
+
+                    if time_remaining == 60 and self.state.status == 'saboteur selection':
                         timer_msg = 'The Saboteur has **60 seconds** to sabotage an expedition!'
                         player_timer_msg = 'You have **60 seconds** to sabotage an expedition!'
                         await self.state.game_channel.send(timer_msg)
@@ -1402,7 +1485,7 @@ class Game():
                         except:
                             print("Error: User cannot receive DM")
                     
-                    if timer == 90 and self.state.status == 'saboteur selection':
+                    if time_remaining == 30 and self.state.status == 'saboteur selection':
                         timer_msg = 'The Saboteur has **30 seconds** to sabotage an expedition!'
                         player_timer_msg = 'You have **30 seconds** to sabotage an expedition!'
                         await self.state.game_channel.send(timer_msg)
@@ -1412,7 +1495,7 @@ class Game():
                         except:
                             print("Error: User cannot receive DM")
 
-                    if timer >= 120 and self.state.status == 'saboteur selection':
+                    if time_remaining <= 0 and self.state.status == 'saboteur selection':
                         times_up_msg = 'The Saboteur did not sabotage an expedition in time!'
                         await self.state.game_channel.send(times_up_msg)
                         self.state.status = 'assigning roles'
@@ -1423,37 +1506,36 @@ class Game():
         await self.client.wait_until_ready()
         while not self.client.is_closed():
             await asyncio.sleep(1)
-            if self.state.status == 'choose coordinate':
+            if self.state.status == 'choose coordinate' and self.state.timer_values['kidnap'] != 0:
                 timer = 0
+                timer_max = self.state.timer_values['kidnap']
                 while self.state.status == 'choose coordinate':
                     await asyncio.sleep(1)
                     timer += 1
-                    if self.state.gamespeed == 'Normal' and timer == 300 and self.state.status == 'choose coordinate':
+                    time_remaining = timer_max - timer
+
+                    if time_remaining == 300 and self.state.status == 'choose coordinate':
                         timer_msg = '❗| The Warriors have **5 minutes** to kidnap the Coordinate!'
                         await self.state.game_channel.send(timer_msg)
-                    elif self.state.gamespeed == 'Normal' and timer == 480 and self.state.status == 'choose coordinate':
+
+                    if time_remaining == 120 and self.state.status == 'choose coordinate':
                         timer_msg = '❗| The Warriors have **2 minutes** to kidnap the Coordinate!'
                         await self.state.game_channel.send(timer_msg)
-                    elif (self.state.gamespeed == 'Normal' and timer == 540 and self.state.status == 'choose coordinate') or \
-                    (self.state.gamespeed == 'Fast' and timer == 60 and self.state.status == 'choose coordinate'):
+
+                    if time_remaining == 60 and self.state.status == 'choose coordinate':
                         timer_msg = '❗| The Warriors have **60 seconds** to kidnap the Coordinate!'
                         await self.state.game_channel.send(timer_msg)
-                    elif (self.state.gamespeed == 'Normal' and timer == 570 and self.state.status == 'choose coordinate') or \
-                    (self.state.gamespeed == 'Fast' and timer == 90 and self.state.status == 'choose coordinate'):
+
+                    if time_remaining == 30 and self.state.status == 'choose coordinate':
                         timer_msg = '❗| The Warriors have **30 seconds** to kidnap the Coordinate!'
                         await self.state.game_channel.send(timer_msg)
-                    elif self.state.gamespeed == 'Fast' and timer == 105 and self.state.status == 'choose coordinate':
-                        timer_msg = '❗| The Warriors have **15 seconds** to kidnap the Coordinate!'
-                        await self.state.game_channel.send(timer_msg)
-                    elif (self.state.gamespeed == 'Normal' and timer >= 600 and self.state.status == 'choose coordinate') or \
-                    (self.state.gamespeed == 'Fast' and timer >= 120 and self.state.status == 'choose coordinate'):
-                        timer = 0
+                        
+                    if time_remaining <= 0 and self.state.status == 'choose coordinate':
                         # Win for soldiers
                         self.state.status = 'game ended soldiers'
                         times_up_msg = '🛡The Warriors did not manage to kidnap the Coordinate in time. Soldiers win!🛡'
                         await self.state.game_channel.send(times_up_msg)
 
-                        self.cancel_timers()
                         end_summary = self.state.get_summary()
                         await asyncio.sleep(2)
                         await self.state.game_channel.send(embed=end_summary)
@@ -1462,15 +1544,19 @@ class Game():
                             rating_changes = self.state.update_rating()
                             achievements_msgs = self.state.update_achievements()
                             # Update roles in official WvS server
-                            for player in self.state.players:
-                                await self.state.update_role(player[0], self.client)
-                            await self.state.update_top_roles(self.client)
+                            try:
+                                for player in self.state.players:
+                                    await self.state.update_role(player[0], self.client)
+                                await self.state.update_top_roles(self.client)
+                            except Exception as e:
+                                print(e)
                             await asyncio.sleep(2)
                             await self.state.game_channel.send(embed=rating_changes)
                             for achievements_msg in achievements_msgs:
                                 await self.state.game_channel.send(achievements_msg)
 
                         self.state.status = 'game ended'
+                        self.cancel_timers()
                         
 
     # async def vc_timer(self):

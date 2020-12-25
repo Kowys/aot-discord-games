@@ -120,3 +120,4 @@ package-lock.json
 
 *.tflite
 *.xlsx
+*.db

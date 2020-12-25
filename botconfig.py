@@ -26,7 +26,7 @@ class Instance():
         elif game_name == 'Jaegermore':
             return Jaegermore.commands.Game(self.client)
         elif game_name == 'Warriors vs Soldiers':
-            return WarriorsvsSoldiers.commands.Game(self.client)
+            return WarriorsvsSoldiers.commands.Game(self.client, self.channel_id)
         elif game_name == 'Attack on Wikia':
             return AttackonWikia.commands.Game(self.client)
 
