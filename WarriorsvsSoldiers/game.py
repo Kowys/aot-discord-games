@@ -634,7 +634,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 return discord.Embed(description = 'You may not modify the timers while a game is ongoing!', colour=0x0013B4)
 
             # Manage server permissions required
-            if not (player.guild_permissions.manage_guild or message.author.id == 238808836075421697):
+            if not (player.guild_permissions.manage_guild or player.id == 238808836075421697):
                 self.timer_config_status = None
                 return discord.Embed(description = 'You require the **Manage Server** permission to modify the timers!', colour=0x0013B4)
 
