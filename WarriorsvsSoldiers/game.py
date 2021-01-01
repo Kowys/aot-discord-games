@@ -157,6 +157,11 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         elif self.status == 'waiting for game' or self.status == 'game ended':
             self.expedition_sizes = {5:[2,3,2,3,3], 6:[2,3,4,3,4], 7:[2,3,3,4,4], 8:[3,3,4,4,5], 9:[3,4,4,5,5], 10:[3,3,4,5,5]}
 
+            if channel.id in self.tournament_channel_ids:
+                # self.tournament = True
+                # self.randomroles = True
+                return 'There is no active tournament at the moment!'
+
             self.gametype = 'Ranked'
             if ranked == False:
                 self.gametype = 'Casual'      
@@ -193,11 +198,6 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.wall_secured = False
             self.hunter_used = False
             self.hunter_target = None
-
-            if channel.id in self.tournament_channel_ids:
-                # self.tournament = True
-                # self.randomroles = True
-                return 'There is no active tournament at the moment!'
 
             msg = '**' + player.name + '** has started a new lobby! Type `~join` to join the game!'
 
