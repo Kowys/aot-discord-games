@@ -195,8 +195,9 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.hunter_target = None
 
             if channel.id in self.tournament_channel_ids:
-                self.tournament = True
-                self.randomroles = True
+                # self.tournament = True
+                # self.randomroles = True
+                return 'There is no active tournament at the moment!'
 
             msg = '**' + player.name + '** has started a new lobby! Type `~join` to join the game!'
 
