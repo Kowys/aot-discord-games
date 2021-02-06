@@ -43,7 +43,8 @@ def get_cur_game(message):
         if str(message.channel.type) == 'private':
             try:
                 # For multiple wvs games
-                if message.author in list(map(lambda x:x[0], instance.game.state.players)):
+                if instance.game_name == 'Warriors vs Soldiers' and message.author in list(map(lambda x:x[0], instance.game.state.players)) and \
+                    instance.game.state.status not in ['waiting for game', 'waiting for players', 'game ended']:
                     cur_games.append(instance)
             except:
                 continue

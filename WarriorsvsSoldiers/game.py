@@ -1156,7 +1156,7 @@ Your fellow Warriors are:\n'
             # DM player their role
             if player not in list(map(lambda x: x[0], self.players)):
                 return 'You need to be in a game to have a role!'
-            elif self.status == 'waiting for players':
+            elif self.status in ['waiting for game', 'waiting for players', 'game ended']:
                 return 'Roles are only assigned after the game has started!'
             else:
                 player_role = list(filter(lambda x: player == x[0], self.players))[0][1]
