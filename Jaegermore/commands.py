@@ -11,14 +11,14 @@ class Game():
         self.client.loop.create_task(self.timeout())
 
     async def msg_handler(self, message):
-        if message.content in self.state.question.EC and self.state.question.curplayer != None and (message.author.id == self.state.question.curplayer.id):
-            chosen_option = self.state.question.EC[message.content]
-            if chosen_option in self.state.question.choices[0]:
-                if message.author == self.state.question.curplayer:
+        if message.content in self.state.question.EC and self.state.question.curplayer != None:
+            if message.author.id == self.state.question.curplayer.id:
+                chosen_option = self.state.question.EC[message.content]
+                if chosen_option in self.state.question.choices[0]:
                     msg_content = self.state.question.question_handler(chosen_option)
                     await message.channel.send(msg_content)
-                else:
-                    await message.channel.send('Someone else is currently taking the assessment! Please wait for your turn.')
+            else:
+                await message.channel.send('Someone else is currently taking the assessment! Please wait for your turn.')
 
 
         # Resets the game
@@ -32,7 +32,7 @@ class Game():
 
         # Starts game
         if message.content.lower().startswith('~start'):
-            if (self.state.question.cur_qn[0] == 0 or self.state.question.cur_qn[0] == 'result' or self.state.question.cur_qn[0] == 'result2'):
+            if (self.state.question.cur_qn[0] == 0 or self.state.question.cur_qn[0] == 'result2'):
                 messagebox = message.content.split(' ')
                 if len(messagebox) == 1:
                     self.state.game_reset()
@@ -46,14 +46,15 @@ class Game():
                     self.state.game_channel = message.channel
                     self.state.question.num_qns = 40
                     response = 'Beginning full assessment for cadet **' + self.state.question.curplayer.name + '**!'
+
+                msg_content = self.state.question.question_handler(0)
                 
                 await message.channel.send(response)
                 await asyncio.sleep(1)
-
-                msg_content = self.state.question.question_handler(0)
+                
                 await message.channel.send(msg_content)
             else:
-                await message.channel.send('Someone else is currently taking the assessment! Please wait for your turn.')
+                await message.channel.send('There is currently a game ongoing! Please wait for the game to finish.')
 
         # Reminder to use the emoji to answer
         if message.content in ['1','2','3','4','5','6'] and self.state.question.curplayer != None and message.author.id == self.state.question.curplayer.id:
