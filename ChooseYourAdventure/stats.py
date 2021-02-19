@@ -116,6 +116,7 @@ class State():
     def switch_book(self, book_num):
         books = {1:book, 2:book2}
         self.book = books[book_num].Book(self)
+        self.book.cur_page[0] = 1
         self.book_no = book_num
         self.affinities = Affinities(book_num)
         self.statuses = Statuses(book_num)

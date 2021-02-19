@@ -73,7 +73,7 @@ victory. You may even save some of your friends who otherwise would be fated to 
         3091: 'Sasha Blouse\'s Promise', 310: 'The Girl Who Hid Her True Self', 311: 'The Death of a Merchant', 312: 'No Regrets', 313: 'Jean of the Military Police', 315: 'Joining the Garrison'}
 
         # Variables
-        self.cur_page = [1]
+        self.cur_page = [0]
         self.choices = [[]]
         self.response2 = ['']
         self.state = state

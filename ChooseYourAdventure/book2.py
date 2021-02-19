@@ -63,7 +63,7 @@ This is Book 2.\n\n\
         330: 'The Girl Who Hid Herself', 331: 'A World Beautiful and Cruel', 3321: 'Hange Zoë’s Truth', 333: 'Armin Arlert’s Dream', 3341: 'Captain Levi’s Scars', 336: 'A Soldier of the Survey Corps'}
 
         # Variables
-        self.cur_page = [1]
+        self.cur_page = [0]
         self.choices = [[]]
         self.response2 = ['']
         self.state = state

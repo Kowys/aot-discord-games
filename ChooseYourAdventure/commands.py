@@ -64,15 +64,17 @@ class Game():
         
         # Starts game
         if message.content.startswith('~start'):
-            if self.state.book.cur_page[0] == 1 or self.state.book.choices[0] == []:
+            if self.state.book.cur_page[0] == 0 or self.state.book.choices[0] == []:
                 self.state.reset_game()
                 self.state.game_channel = message.channel
                 self.state.cur_player_id = message.author.id
+                self.state.book.cur_page[0] = 1
 
                 # Book selection
                 # Access to Book 2, go to book selection
                 if self.state.check_book(message.author):
                     self.state.select_book = True
+                    self.state.book.choices[0] = [0]
                     select_msg = await message.channel.send('📖 | Please select the story you would like to participate in:\n\n' + \
                     ':one: Book 1 - The Battle for Trost\n\n' + \
                     ':two: Book 2 - Hunt for the Female Titan')
@@ -85,20 +87,23 @@ class Game():
                     for option in self.state.book.choices[0]:
                         await new_msg.add_reaction(self.state.book.EC2[option])
             else:
-                await message.channel.send('There is already a game ongoing!')
+                await message.channel.send('Someone else is currently playing the game! Please wait for your turn.')
 
         # Book selection
         if self.state.select_book == True and message.content in self.state.book.EC:
-            chosen_option = self.state.book.EC[message.content]
-            # Changes state for book 2, otherwise starts book 1 (default state)
-            if chosen_option == 2:
-                self.state.switch_book(2)
+            if message.author.id == self.state.cur_player_id:
+                chosen_option = self.state.book.EC[message.content]
+                # Changes state for book 2, otherwise starts book 1 (default state)
+                if chosen_option == 2:
+                    self.state.switch_book(2)
 
-            if chosen_option == 1 or chosen_option == 2:
-                self.state.select_book = False
-                new_msg = await message.channel.send(self.state.book.P1())
-                for option in self.state.book.choices[0]:
-                    await new_msg.add_reaction(self.state.book.EC2[option])
+                if chosen_option == 1 or chosen_option == 2:
+                    self.state.select_book = False
+                    new_msg = await message.channel.send(self.state.book.P1())
+                    for option in self.state.book.choices[0]:
+                        await new_msg.add_reaction(self.state.book.EC2[option])
+            else:
+                await message.channel.send('Someone else is currently playing the game! Please wait for your turn.')
 
         # Reminder to use the emoji to answer
         if (self.state.book.cur_page[0] == 1 or self.state.book.cur_page[0] == 2) and (self.state.book.choices[0] != [] and message.content in ['1','2','3']):
