@@ -87,7 +87,7 @@ class Game():
                     for option in self.state.book.choices[0]:
                         await new_msg.add_reaction(self.state.book.EC2[option])
             else:
-                await message.channel.send('Someone else is currently playing the game! Please wait for your turn.')
+                await message.channel.send('There is currently a game ongoing! Please wait for the game to finish.')
 
         # Book selection
         if self.state.select_book == True and message.content in self.state.book.EC:
