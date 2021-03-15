@@ -251,8 +251,16 @@ class Game():
                         elif response.startswith('n'):
                             # Warriors only
                             if message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))):
-                                self.state.expedition_result.append([message.author, 'no'])
-                                await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=0xFFF700))
+                                if message.author in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'cadet', self.state.players)))):
+                                    if self.state.cadet_broke_wall == True:
+                                        await message.author.dm_channel.send('You have already broken the Walls once and are unable to do so again!')
+                                    else:
+                                        self.state.cadet_breaking = True
+                                        self.state.expedition_result.append([message.author, 'no'])
+                                        await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=0xFFF700))
+                                else:
+                                    self.state.expedition_result.append([message.author, 'no'])
+                                    await message.author.dm_channel.send(embed=discord.Embed(description='Response recorded!', colour=0xFFF700))
                             else:
                                 await message.author.dm_channel.send('Only a Warrior may sabotage the expedition!')
 
@@ -670,8 +678,7 @@ class Game():
                     # Inform all warriors inside expedition of the identity of the Ackerman if the Ackerman secures wall
                     if 'secure' in list(map(lambda x: x[1], self.state.expedition_result)):
                         for warrior in list(filter(lambda x: x in self.state.expedition_squad, list(map(lambda x: x[0], list(filter(lambda x: x[1] in self.state.warrior_roles, self.state.players)))))):
-                            ackerman_name = list(filter(lambda x: x[1] == 'ackerman', self.state.players))[
-                                0][0].name
+                            ackerman_name = list(filter(lambda x: x[1] == 'ackerman', self.state.players))[0][0].name
                             try:
                                 await warrior.dm_channel.send(embed=discord.Embed(description='🛡 The Ackerman, **' + ackerman_name + '**, has prevented you from destroying the Walls!', colour=0x00C9FF))
                             except:
@@ -840,7 +847,7 @@ class Game():
                 else:
                     await message.channel.send('There is no open lobby at the moment!')
 
-            if message.content.startswith('~profile') or message.content == '~rank':
+            if message.content.startswith('~profile') or message.content.startswith('~rank'):
                 messagebox = message.content.split(' ')
                 if message.mentions:
                     player_profile = message.mentions[0]

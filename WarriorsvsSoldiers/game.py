@@ -47,7 +47,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                              8: ['soldier','soldier','soldier','soldier','warrior','warrior','warrior','coordinate'], 
                              9: ['soldier','soldier','soldier','soldier','soldier','warrior','warrior','warrior','coordinate'], 
                              10: ['soldier','soldier','soldier','soldier','soldier','warrior','warrior','warrior','warrior','coordinate']}
-        self.warrior_roles = ['warrior','warchief','false king','ymir','spy','saboteur']
+        self.warrior_roles = ['warrior','warchief','false king','ymir','spy','saboteur','cadet']
         self.expedition_sizes = {5:[2,3,2,3,3], 6:[2,3,4,3,4], 7:[2,3,3,4,4], 8:[3,3,4,4,5], 9:[3,4,4,5,5], 10:[3,3,4,5,5]}
         self.expedition_advantages = {5:-50, 6:50, 7:-100, 8:0, 9:100, 10:-150}
         self.roles_advantages = {'queen': {5:150, 6:130, 7:120, 8:100, 9:80, 10:70},
@@ -59,10 +59,11 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                                  'false king': {5:-140, 6:-120, 7:-100, 8:-80, 9:-60, 10:-40},
                                  'ymir': {5:100, 6:90, 7:60, 8:50, 9:50, 10:30},
                                  'spy': {5:-140, 6:-160, 7:-180, 8:-200, 9:-220, 10:-240},
-                                 'saboteur': {5:-100, 6:-100, 7:-100, 8:-100, 9:-100, 10:-100}}
+                                 'saboteur': {5:-100, 6:-100, 7:-100, 8:-100, 9:-100, 10:-100},
+                                 'decoy': {5:-50, 6:-60, 7:-70, 8:-80, 9:-90, 10:-100},
+                                 'cadet': {5:150, 6:150, 7:150, 8:150, 9:150, 10:150}}
         self.blessing_advantages = {5:150, 6:120, 7:100, 8:80, 9:60, 10:50}
         self.funds_advantages = {5:-50, 6:-60, 7:-70, 8:-80, 9:-90, 10:-100}
-
 
         self.number_games_achievements = {10:'Bronze', 25:'Silver', 50:'Gold', 100:'Platinum', 250:'Diamond', 500:'Master', 1000:'Grandmaster'}
         self.consecutive_wins_achievements = {2:'Bronze', 3:'Silver', 5:'Gold', 7:'Platinum', 10:'Diamond', 15:'Master', 20:'Grandmaster'}
@@ -120,6 +121,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
         self.wall_secured = False
         self.hunter_used = False
         self.hunter_target = None
+        self.cadet_breaking = False
+        self.cadet_broke_wall = False
 
     def init_timers(self):
         conn = sqlite3.connect('WarriorsvsSoldiers/wvs_db.db')
@@ -198,6 +201,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.wall_secured = False
             self.hunter_used = False
             self.hunter_target = None
+            self.cadet_breaking = False
+            self.cadet_broke_wall = False
 
             msg = '**' + player.name + '** has started a new lobby! Type `~join` to join the game!'
 
@@ -306,13 +311,15 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         'ackerman': '💂**Ackerman**💂',
                         'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>',
                         'scout': '🏇**Scout**🏇',
-                        'hunter': '🏹**Hunter**🏹'}
+                        'hunter': '🏹**Hunter**🏹',
+                        'decoy': '🔰**Decoy**🔰'}
 
         warrior_dict = {'warchief': '🦹‍♂️**Warchief**🦹‍♂️',
                         'ymir': '🤷‍♀️**Ymir**🤷‍♀️',
                         'false king': '🕴**False King**🕴',
                         'spy': '🕵️‍♀️**Spy**🕵️‍♀️',
-                        'saboteur': '🔨**Saboteur**🔨'}
+                        'saboteur': '🔨**Saboteur**🔨',
+                        'cadet': '🗡**Cadet**🗡'}
 
         if self.tournament and randomroles == False:
             return 'Random roles are enabled by default for this tournament!'
@@ -381,12 +388,14 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             'zacharias': 'mike',
             'scout': 'scout',
             'hunter': 'hunter',
+            'decoy': 'decoy',
             'warchief': 'warchief',
             'ymir': 'ymir',
             'false king': 'false king',
             'falseking': 'false king',
             'spy': 'spy',
-            'saboteur': 'saboteur'
+            'saboteur': 'saboteur',
+            'cadet': 'cadet'
         }
 
         if self.status == 'waiting for players' or randomroles == True:
@@ -446,11 +455,13 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>',
             'scout': '🏇**Scout**🏇',
             'hunter': '🏹**Hunter**🏹',
+            'decoy': '🔰**Decoy**🔰',
             'warchief': '🦹‍♂️**Warchief**🦹‍♂️',
             'ymir': '🤷‍♀️**Ymir**🤷‍♀️',
             'false king': '🕴**False King**🕴',
             'spy': '🕵️‍♀️**Spy**🕵️‍♀️',
-            'saboteur': '🔨**Saboteur**🔨'
+            'saboteur': '🔨**Saboteur**🔨',
+            'cadet': '🗡**Cadet**🗡'
         }
 
         if self.tournament:
@@ -473,12 +484,14 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             'zacharias': 'mike',
             'scout': 'scout',
             'hunter': 'hunter',
+            'decoy': 'decoy',
             'warchief': 'warchief',
             'ymir': 'ymir',
             'false king': 'false king',
             'falseking': 'false king',
             'spy': 'spy',
-            'saboteur': 'saboteur'
+            'saboteur': 'saboteur',
+            'cadet': 'cadet'
         }
 
         if self.status == 'waiting for players':
@@ -703,6 +716,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 role_msg += '✅ 🏇**Scout**🏇\n\n'
             if 'hunter' in self.newroles:
                 role_msg += '✅ 🏹**Hunter**🏹\n\n'
+            if 'decoy' in self.newroles:
+                role_msg += '✅ 🔰**Decoy**🔰\n\n'
         elif team == 'warrior':
             if 'warchief' in self.newroles:
                 role_msg += '✅ 🦹‍♂️**Warchief**🦹‍♂️\n\n'
@@ -714,6 +729,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                 role_msg += '✅ 🕵️‍♀️**Spy**🕵️‍♀️\n\n'
             if 'saboteur' in self.newroles:
                 role_msg += '✅ 🔨**Saboteur**🔨\n\n'
+            if 'cadet' in self.newroles:
+                role_msg += '✅ 🗡**Cadet**🗡\n\n'
         if role_msg == '':
             role_msg = '-'
         return role_msg
@@ -736,7 +753,7 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
 
     def randomize_roles(self):
         self.newroles = []
-        rolelist = ['queen', 'ackerman', 'mike', 'scout', 'hunter', 'warchief', 'false king', 'ymir', 'spy', 'saboteur']
+        rolelist = ['queen', 'ackerman', 'mike', 'scout', 'hunter', 'decoy', 'warchief', 'false king', 'ymir', 'spy', 'saboteur', 'cadet']
         rolelist.sort(key = lambda x: random.randint(1,100))
         for role in rolelist:
             to_add = random.randint(0, 1)
@@ -783,6 +800,11 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                             if all_player_roles[i] == 'soldier':
                                 all_player_roles[i] = 'hunter'
                                 break
+                    if 'decoy' in self.newroles:
+                        for i in range(len(all_player_roles)):
+                            if all_player_roles[i] == 'soldier':
+                                all_player_roles[i] = 'decoy'
+                                break
                     if 'warchief' in self.newroles:
                         for i in range(len(all_player_roles)):
                             if all_player_roles[i] == 'warrior':
@@ -807,6 +829,11 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
                         for i in range(len(all_player_roles)):
                             if all_player_roles[i] == 'warrior':
                                 all_player_roles[i] = 'saboteur'
+                                break
+                    if 'cadet' in self.newroles:
+                        for i in range(len(all_player_roles)):
+                            if all_player_roles[i] == 'warrior':
+                                all_player_roles[i] = 'cadet'
                                 break
                     
                     self.players.sort(key = lambda x: random.randint(1,100)) # Randomizes player list
@@ -891,6 +918,8 @@ Or will the Warriors destroy the Walls and wipe out humanity? You decide!\n\n\
             self.wall_secured = False
             self.hunter_used = False
             self.hunter_target = None
+            self.cadet_breaking = False
+            self.cadet_broke_wall = False
 
             return self.reset_msg
 
@@ -939,16 +968,23 @@ Your fellow Warriors are:\n'
             else:
                 warrior_msg = warrior_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
-            warrior_msg = warrior_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+            if len(self.players) < 7:
+                warrior_msg = warrior_msg + '**-**\n'
+            warrior_msg = warrior_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
         if self.titan_scream:
             warrior_msg = warrior_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         coordinate_msg = 'You are the **Coordinate**!\n\n\
 You possess the special ability to sense Titan powers, which allows you to know who the Warriors are. However, due to the powers you possess, \
 you are also their prime target, and so you must endeavour to remain hidden while aiding the Soldiers as much as you can. \n\n\
-Your task is to help the Soldiers achieve victory using your knowledge of the Warriors\' identities, while keeping your identity as the Coordinate a secret from the Warriors.\n\n\
-The Warriors are:\n'
-        for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
+Your task is to help the Soldiers achieve victory using your knowledge of the Warriors\' identities, while keeping your identity as the Coordinate a secret from the Warriors.\n\n'
+        if 'decoy' in self.newroles:
+            coordinate_msg += 'One of the following players is the Decoy. The rest are Warriors:\n'
+        else:
+            coordinate_msg += 'The Warriors are:\n'
+        warrior_list = list(filter(lambda x:x[1] in self.warrior_roles or x[1] == 'decoy', self.players))
+        warrior_list.sort(key = lambda x: random.randint(1,100))
+        for warrior in warrior_list:
             if warrior[1] == 'warchief':
                 continue
             else:
@@ -986,6 +1022,10 @@ Your task is to guide the Soldiers to pick the correct team for expeditions, whi
 You possess the unique ability of tracking a target in an expedition you are on. If your target sabotages the expedition, you will expose their identity to everyone in the game.\n\n\
 You may only do this once in a game however, so choose your target carefully!'
 
+        decoy_msg = 'You are the **Decoy!**\n\n\
+You are placed in the unique position where the Coordinate believes you are a Warrior (in addition to the other Warriors).\n\n\
+Your task is to persuade the Coordinate to trust you over the other Warriors, while helping to keep the Coordinate\'s identity a secret.'
+
         warchief_msg = 'You are the **Warchief**!\n\n\
 As the leader of the Warriors, you have the unique ability of concealing your Titan powers from the Coordinate. Use this extra layer of anonymity to infiltrate deep into the Soldiers\' \
 ranks and ensure the Warriors emerge victorious.\n\n\
@@ -997,7 +1037,9 @@ Your fellow Warriors are:\n'
             else:
                 warchief_msg = warchief_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
-            warchief_msg = warchief_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+            if len(self.players) < 7:
+                warchief_msg = warchief_msg + '**-**\n'
+            warchief_msg = warchief_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
         if self.titan_scream:
             warchief_msg = warchief_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
@@ -1019,7 +1061,9 @@ Your fellow Warriors are:\n'
             else:
                 falseking_msg = falseking_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
-            falseking_msg = falseking_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+            if len(self.players) < 7:
+                falseking_msg = falseking_msg + '**-**\n'
+            falseking_msg = falseking_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
         if self.titan_scream:
             falseking_msg = falseking_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
@@ -1033,7 +1077,9 @@ Your fellow Warriors are:\n'
             else:
                 spy_msg = spy_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
-            spy_msg = spy_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+            if len(self.players) < 7:
+                spy_msg = spy_msg + '**-**\n'
+            spy_msg = spy_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
         if self.titan_scream:
             spy_msg = spy_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
@@ -1047,9 +1093,27 @@ Your fellow Warriors are:\n'
             else:
                 saboteur_msg = saboteur_msg + '**' + warrior[0].name + '**\n'
         if 'ymir' in self.newroles:
-            saboteur_msg = saboteur_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+            if len(self.players) < 7:
+                saboteur_msg = saboteur_msg + '**-**\n'
+            saboteur_msg = saboteur_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
         if self.titan_scream:
             saboteur_msg = saboteur_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
+
+        cadet_msg = 'You are the **Cadet**!\n\n\
+As an inexperienced Warrior, you possess only enough stamina to break the Walls once.\n\n\
+Your task is to form a strategy with your fellow Warriors that will allow you to break all 3 Walls (or find the Coordinate in the process).\n\n\
+Your fellow Warriors are:\n'
+        for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
+            if warrior == player_lst or warrior[1] == 'ymir':
+                continue
+            else:
+                cadet_msg = cadet_msg + '**' + warrior[0].name + '**\n'
+        if 'ymir' in self.newroles:
+            if len(self.players) < 7:
+                cadet_msg = cadet_msg + '**-**\n'
+            cadet_msg = cadet_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
+        if self.titan_scream:
+            cadet_msg = cadet_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
         player_role = player_lst[1]
         role_msgs = {
@@ -1061,11 +1125,13 @@ Your fellow Warriors are:\n'
             'mike': mike_msg,
             'scout': scout_msg,
             'hunter': hunter_msg,
+            'decoy': decoy_msg,
             'warchief': warchief_msg, 
             'ymir': ymir_msg, 
             'false king': falseking_msg,
             'spy': spy_msg,
-            'saboteur': saboteur_msg
+            'saboteur': saboteur_msg,
+            'cadet': cadet_msg
         }
         allegiances = {
             'soldier': 'soldier', 
@@ -1076,11 +1142,13 @@ Your fellow Warriors are:\n'
             'mike': 'soldier',
             'scout': 'soldier',
             'hunter': 'soldier',
+            'decoy': 'soldier',
             'warchief': 'warrior', 
             'ymir': 'warrior', 
             'false king': 'warrior',
             'spy': 'warrior',
-            'saboteur': 'warrior'
+            'saboteur': 'warrior',
+            'cadet': 'warrior'
         }
 
         allegiance = allegiances[player_role]
@@ -1095,11 +1163,13 @@ Your fellow Warriors are:\n'
             'mike': '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>',
             'scout': '🏇 Scout 🏇',
             'hunter': '🏹 Hunter 🏹',
+            'decoy': '🔰 Decoy 🔰',
             'warchief': '🦹‍♂️ Warchief 🦹‍♂️',
             'ymir': '🤷‍♀️ Ymir 🤷‍♀️',
             'false king': '🕴 False King 🕴',
             'spy': '🕵️‍♀️ Spy 🕵️‍♀️',
-            'saboteur': '🔨 Saboteur 🔨'
+            'saboteur': '🔨 Saboteur 🔨',
+            'cadet': '🗡 Cadet 🗡'
         }
         thumbnails = {
             'soldier': 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png', 
@@ -1120,8 +1190,8 @@ Your fellow Warriors are:\n'
             if self.status == 'waiting for players' or self.status == 'waiting for game' or self.status.startswith('game ended'):
                 # Lists all roles + effects available in the game
                 basic_roles = '\n'.join(['🛡 Soldier 🛡', '🗺 Coordinate 🗺', '⚔ Warrior ⚔'])
-                soldier_roles = '\n'.join(['👼 Queen 👼', '💂 Ackerman 💂', '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>', '🏇 Scout 🏇', '🏹 Hunter 🏹'])
-                warrior_roles = '\n'.join(['🦹‍♂️ Warchief 🦹‍♂️', '🕴 False King 🕴', '🤷‍♀️ Ymir 🤷‍♀️', '🕵️‍♀️ Spy 🕵️‍♀️', '🔨 Saboteur 🔨'])
+                soldier_roles = '\n'.join(['👼 Queen 👼', '💂 Ackerman 💂', '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>', '🏇 Scout 🏇', '🏹 Hunter 🏹', '🔰 Decoy 🔰'])
+                warrior_roles = '\n'.join(['🦹‍♂️ Warchief 🦹‍♂️', '🕴 False King 🕴', '🤷‍♀️ Ymir 🤷‍♀️', '🕵️‍♀️ Spy 🕵️‍♀️', '🔨 Saboteur 🔨', '🗡 Cadet 🗡'])
                 effects = '\n'.join(['🔮 Ymir\'s Blessing 🔮', '📢 Paths 📢', '💰 Limited Funds 💰', '<:kennytheripper:768310628506402887> Kenny the Ripper <:kennytheripper:768310628506402887>',
                 '🗣 Titan Scream 🗣'])
                 
@@ -1137,15 +1207,17 @@ Your fellow Warriors are:\n'
                 all_roles = [player[1] for player in self.players]
 
                 def role_ordering(role_name):
-                    role_map = {'soldier': 0, 'warrior': 1, 'coordinate': 2, 'queen': 3, 'ackerman': 4, 'mike': 5, 'scout': 6, 'hunter': 7, 
-                    'warchief': 8, 'false king': 9, 'ymir': 10, 'spy': 11, 'saboteur': 12}
+                    role_map = {'soldier': 0, 'warrior': 1, 'coordinate': 2, 'queen': 3, 'ackerman': 4, 'mike': 5, 'scout': 6, 'hunter': 7,  'decoy': 8,
+                    'warchief': 9, 'false king': 10, 'ymir': 11, 'spy': 12, 'saboteur': 13, 'cadet': 14}
                     return role_map[role_name]
 
                 all_roles.sort(key = role_ordering)
                 display_roles = ''
                 display_role_map = {'soldier': '🛡**Soldier**🛡', 'queen': '👼**Queen**👼', 'ackerman': '💂**Ackerman**💂', 
                 'mike': '<:aotSmirk:571740978377916416>**Mike Zacharias** <:aotSmirk:571740978377916416>', 'scout': '🏇**Scout**🏇', 'coordinate': '🗺**Coordinate**🗺', 'hunter': '🏹**Hunter**🏹',
-                'warrior': '⚔**Warrior**⚔', 'warchief': '🦹‍♂️**Warchief**🦹‍♂️', 'false king': '🕴**False King**🕴', 'ymir': '🤷‍♀️**Ymir**🤷‍♀️', 'spy': '🕵️‍♀️**Spy**🕵️‍♀️', 'saboteur': '🔨**Saboteur**🔨'}
+                'decoy': '🔰**Decoy**🔰',
+                'warrior': '⚔**Warrior**⚔', 'warchief': '🦹‍♂️**Warchief**🦹‍♂️', 'false king': '🕴**False King**🕴', 'ymir': '🤷‍♀️**Ymir**🤷‍♀️', 'spy': '🕵️‍♀️**Spy**🕵️‍♀️', 'saboteur': '🔨**Saboteur**🔨', 
+                'cadet': '🗡**Cadet**🗡'}
                 for role in all_roles:
                     display_roles += display_role_map[role] + '\n'
 
@@ -1170,7 +1242,11 @@ Your fellow Warriors are:\n'
                     else:
                         warrior_msg = warrior_msg + '**' + warrior[0].name + '**\n'
                 if 'ymir' in self.newroles:
-                    warrior_msg = warrior_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+                    if len(self.players) < 7:
+                        warrior_msg = warrior_msg + '**-**\n'
+                    warrior_msg = warrior_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
+                if self.titan_scream:
+                    warrior_msg = warrior_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
                 warchief_msg = 'You are the **Warchief**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
@@ -1179,7 +1255,11 @@ Your fellow Warriors are:\n'
                     else:
                         warchief_msg = warchief_msg + '**' + warrior[0].name + '**\n'
                 if 'ymir' in self.newroles:
-                    warchief_msg = warchief_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+                    if len(self.players) < 7:
+                        warchief_msg = warchief_msg + '**-**\n'
+                    warchief_msg = warchief_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
+                if self.titan_scream:
+                    warchief_msg = warchief_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
                 queen_msg = 'You are the **Queen**!\n\n'
                 if 'false king' not in self.newroles:
@@ -1198,9 +1278,17 @@ Your fellow Warriors are:\n'
                 scout_msg = 'You are the **Scout**!'
 
                 hunter_msg = 'You are the **Hunter!**'
+
+                decoy_msg = 'You are the **Decoy!**'
                 
-                coordinate_msg = 'You are the **Coordinate**!\n\nThe Warriors are:\n'
-                for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
+                coordinate_msg = 'You are the **Coordinate**!\n\n'
+                if 'decoy' in self.newroles:
+                    coordinate_msg += 'One of the following players is the Decoy. The rest are Warriors:\n'
+                else:
+                    coordinate_msg += 'The Warriors are:\n'
+                warrior_list = list(filter(lambda x:x[1] in self.warrior_roles or x[1] == 'decoy', self.players))
+                warrior_list.sort(key = lambda x: random.randint(1,100))
+                for warrior in warrior_list:
                     if warrior[1] == 'warchief':
                         continue
                     else:
@@ -1209,6 +1297,8 @@ Your fellow Warriors are:\n'
                     coordinate_msg = coordinate_msg + '\n❗*The identity of the **Warchief** is hidden from you*.'
 
                 ymir_msg = 'You are **Ymir**!'
+                if self.titan_scream:
+                    ymir_msg = ymir_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
                 falseking_msg = 'You are the **False King**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
@@ -1217,7 +1307,11 @@ Your fellow Warriors are:\n'
                     else:
                         falseking_msg = falseking_msg + '**' + warrior[0].name + '**\n'
                 if 'ymir' in self.newroles:
-                    falseking_msg = falseking_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+                    if len(self.players) < 7:
+                        falseking_msg = falseking_msg + '**-**\n'
+                    falseking_msg = falseking_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
+                if self.titan_scream:
+                    falseking_msg = falseking_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
                 spy_msg = 'You are the **Spy**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
@@ -1226,7 +1320,11 @@ Your fellow Warriors are:\n'
                     else:
                         spy_msg = spy_msg + '**' + warrior[0].name + '**\n'
                 if 'ymir' in self.newroles:
-                    spy_msg = spy_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+                    if len(self.players) < 7:
+                        spy_msg = spy_msg + '**-**\n'
+                    spy_msg = spy_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
+                if self.titan_scream:
+                    spy_msg = spy_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
                 saboteur_msg = 'You are the **Saboteur**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
@@ -1235,7 +1333,24 @@ Your fellow Warriors are:\n'
                     else:
                         saboteur_msg = saboteur_msg + '**' + warrior[0].name + '**\n'
                 if 'ymir' in self.newroles:
-                    saboteur_msg = saboteur_msg + '\n❗*You do not know **Ymir\'s** identity.*'
+                    if len(self.players) < 7:
+                        saboteur_msg = saboteur_msg + '**-**\n'
+                    saboteur_msg = saboteur_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
+                if self.titan_scream:
+                    saboteur_msg = saboteur_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
+
+                cadet_msg = 'You are the **Cadet**!\n\nYour fellow Warriors are:\n'
+                for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
+                    if warrior == player_lst or warrior[1] == 'ymir':
+                        continue
+                    else:
+                        cadet_msg = cadet_msg + '**' + warrior[0].name + '**\n'
+                if 'ymir' in self.newroles:
+                    if len(self.players) < 7:
+                        cadet_msg = cadet_msg + '**-**\n'
+                    cadet_msg = cadet_msg + '\n❗*You do not know **Ymir\'s** identity.*\n'
+                if self.titan_scream:
+                    cadet_msg = cadet_msg + '\n🗣 *You may type `~say <message>` at any time to send a public message as your role.*'
 
                 role_msgs = {
                     'soldier': soldier_msg, 
@@ -1246,11 +1361,13 @@ Your fellow Warriors are:\n'
                     'mike': mike_msg, 
                     'scout': scout_msg,
                     'hunter': hunter_msg,
+                    'decoy': decoy_msg,
                     'warchief': warchief_msg, 
                     'ymir': ymir_msg, 
                     'false king': falseking_msg,
                     'spy': spy_msg,
-                    'saboteur': saboteur_msg
+                    'saboteur': saboteur_msg,
+                    'cadet': cadet_msg
                 }
                 allegiances = {
                     'soldier': 'soldier', 
@@ -1261,11 +1378,13 @@ Your fellow Warriors are:\n'
                     'mike': 'soldier',
                     'scout': 'soldier',
                     'hunter': 'soldier',
+                    'decoy': 'soldier',
                     'warchief': 'warrior', 
                     'ymir': 'warrior', 
                     'false king': 'warrior',
                     'spy': 'warrior',
-                    'saboteur': 'warrior'
+                    'saboteur': 'warrior',
+                    'cadet': 'warrior'
                 }
 
                 allegiance = allegiances[player_role]
@@ -1280,11 +1399,13 @@ Your fellow Warriors are:\n'
                     'mike': '<:aotSmirk:571740978377916416> Mike Zacharias <:aotSmirk:571740978377916416>',
                     'scout': '🏇 Scout 🏇',
                     'hunter': '🏹 Hunter 🏹',
+                    'decoy': '🔰 Decoy 🔰',
                     'warchief': '🦹‍♂️ Warchief 🦹‍♂️',
                     'ymir': '🤷‍♀️ Ymir 🤷‍♀️',
                     'false king': '🕴 False King 🕴',
                     'spy': '🕵️‍♀️ Spy 🕵️‍♀️',
-                    'saboteur': '🔨 Saboteur 🔨'
+                    'saboteur': '🔨 Saboteur 🔨',
+                    'cadet': '🗡 Cadet 🗡'
                 }
                 thumbnails = {
                     'soldier': 'https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/259/shield_1f6e1.png', 
@@ -1368,7 +1489,8 @@ Your fellow Warriors are:\n'
             'ymir': ['🤷‍♀️**Ymir**🤷‍♀️!', '**Ymir** says:\n'],
             'false king': ['the 🕴**False King**🕴!', 'The **False King** says:\n'],
             'spy': ['the 🕵️‍♀️**Spy**🕵️‍♀️!', 'The **Spy** says:\n'],
-            'saboteur': ['the 🔨**Saboteur**🔨!', 'The **Saboteur** says:\n']
+            'saboteur': ['the 🔨**Saboteur**🔨!', 'The **Saboteur** says:\n'],
+            'cadet': ['the 🗡**Cadet**🗡!', 'The **Cadet** says:\n']
         }
         author_role = list(filter(lambda x:x[0] == message.author, self.players))[0][1]
         preface_msg = 'A scream is heard from ' + warrior_mapping[author_role][0]
@@ -1526,6 +1648,12 @@ Your fellow Warriors are:\n'
             decision_msg = 'Do you allow the expedition to succeed?\n\n' + \
                 '✅ Type `y` to let the expedition succeed.\n' + \
                 '❌ Type `n` to sabotage the expedition and destroy the Wall.'
+
+            if player in list(map(lambda x: x[0], list(filter(lambda x: x[1] == 'cadet', self.players)))) and self.cadet_broke_wall == True:
+                decision_msg = 'Do you allow the expedition to succeed?\n\n' + \
+                '✅ Type `y` to let the expedition succeed.\n\n' + \
+                '❗ You have already broken the Walls once and are unable to do so again.'
+
             decision_embed = discord.Embed(title = 'Expedition Decision', description = decision_msg, colour=0xFFF700)
             return decision_embed
         # Soldier
@@ -1598,6 +1726,7 @@ Your fellow Warriors are:\n'
                 return True
 
     def expedition_success_update(self):
+        self.cadet_breaking = False
         self.successful_expeditions += 1
         self.cur_expedition += 1
         self.expedition_history.append('🛡')
@@ -1605,6 +1734,10 @@ Your fellow Warriors are:\n'
         return '✅The expedition was a success!✅'
 
     def expedition_failure_update(self):
+        if self.cadet_breaking == True:
+            self.cadet_broke_wall = True
+            self.cadet_breaking = False
+
         self.walls_destroyed += 1
         self.cur_expedition += 1
         self.expedition_history.append('⚔')
@@ -1745,6 +1878,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             summary.add_field(name = '🏇Scout🏇', value = list(filter(lambda x:x[1] == 'scout', self.players))[0][0].name)
         if 'hunter' in self.newroles:
             summary.add_field(name = '🏹Hunter🏹', value = list(filter(lambda x:x[1] == 'hunter', self.players))[0][0].name)
+        if 'decoy' in self.newroles:
+            summary.add_field(name = '🔰Decoy🔰', value = list(filter(lambda x:x[1] == 'decoy', self.players))[0][0].name)   
         if 'warchief' in self.newroles:
             summary.add_field(name = '🦹‍♂️Warchief🦹‍♂️', value = list(filter(lambda x:x[1] == 'warchief', self.players))[0][0].name)
         if 'false king' in self.newroles:
@@ -1755,6 +1890,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             summary.add_field(name = '🕵️‍♀️Spy🕵️‍♀️', value = list(filter(lambda x:x[1] == 'spy', self.players))[0][0].name)
         if 'saboteur' in self.newroles:
             summary.add_field(name = '🔨Saboteur🔨', value = list(filter(lambda x:x[1] == 'saboteur', self.players))[0][0].name)
+        if 'cadet' in self.newroles:
+            summary.add_field(name = '🗡Cadet🗡', value = list(filter(lambda x:x[1] == 'cadet', self.players))[0][0].name)
 
         return summary
 
@@ -1796,7 +1933,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         server_data = cursor.fetchone()
 
         role_index_map = {'soldier':[19,20], 'warrior':[21,22], 'coordinate':[23,24], 'queen':[25,26], 'warchief':[27,28], 'ymir':[29,30], 'false king':[31,32],
-        'ackerman':[33,34], 'mike':[35,36], 'scout':[37,38], 'spy':[39,40], 'hunter':[41,42], 'saboteur':[43,44]}
+        'ackerman':[33,34], 'mike':[35,36], 'scout':[37,38], 'spy':[39,40], 'hunter':[41,42], 'saboteur':[43,44], 'decoy':[45,46], 'cadet':[47,48]}
         role_col_map = {
             'soldier': ['soldier_wins', 'soldier_games'],
             'queen': ['queen_wins', 'queen_games'],
@@ -1804,13 +1941,15 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             'mike': ['mike_wins', 'mike_games'],
             'scout': ['scout_wins', 'scout_games'],
             'hunter': ['hunter_wins', 'hunter_games'],
+            'decoy': ['decoy_wins', 'decoy_games'],
             'coordinate': ['coordinate_wins', 'coordinate_games'],
             'warrior': ['warrior_wins', 'warrior_games'],
             'warchief': ['warchief_wins', 'warchief_games'],
             'ymir': ['ymir_wins', 'ymir_games'],
             'false king': ['false_king_wins', 'false_king_games'],
             'spy': ['spy_wins', 'spy_games'],
-            'saboteur': ['saboteur_wins', 'saboteur_games']
+            'saboteur': ['saboteur_wins', 'saboteur_games'],
+            'cadet': ['cadet_wins', 'cadet_games']
         }
 
         if server_data:
@@ -1856,8 +1995,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 warriors_kidnap += 1
                 role_win_updates = list(map(lambda y:y[1], list(filter(lambda x:x[1] in self.warrior_roles, self.players))))
 
-            insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 45))
-            insert_server_data = [self.server.id] + [0] * 44
+            insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 49))
+            insert_server_data = [self.server.id] + [0] * 48
             for i, score in enumerate([soldiers_wins, warriors_walls, warriors_kidnap]):
                 insert_server_data[3 * num_players_index + i + 1] = score
 
@@ -1941,8 +2080,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             if player_data:
                 ratings.append([player_data[0], player_data[1], player[1]]) 
             else:
-                insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 30))
-                insert_player_data = [player[0].id, 1500] + 28 * [0]
+                insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 34))
+                insert_player_data = [player[0].id, 1500] + 32 * [0]
                 cursor.execute(insert_player_data_query, insert_player_data)
                 conn.commit()
 
@@ -1996,13 +2135,15 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 'mike': ['mike_wins', 'mike_games'],
                 'scout': ['scout_wins', 'scout_games'],
                 'hunter': ['hunter_wins', 'hunter_games'],
+                'decoy': ['decoy_wins', 'decoy_games'],
                 'coordinate': ['coordinate_wins', 'coordinate_games'],
                 'warrior': ['warrior_wins', 'warrior_games'],
                 'warchief': ['warchief_wins', 'warchief_games'],
                 'ymir': ['ymir_wins', 'ymir_games'],
                 'false king': ['false_king_wins', 'false_king_games'],
                 'spy': ['spy_wins', 'spy_games'],
-                'saboteur': ['saboteur_wins', 'saboteur_games']
+                'saboteur': ['saboteur_wins', 'saboteur_games'],
+                'cadet': ['cadet_wins', 'cadet_games'],
             }
             get_player_role_query = 'SELECT {},{} FROM {} WHERE player = ?'.format(*role_to_column_map[player[2]], player_records)
             cursor.execute(get_player_role_query, (player[0],))
@@ -2109,7 +2250,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
             # Add SR, achievement msgs for games played
             games_played = player_data[5] + player_data[7] + player_data[9] + player_data[11] + player_data[13] + player_data[15] + player_data[17] + player_data[19] + \
-                player_data[21] + player_data[23] + player_data[25] + player_data[27] + player_data[29]
+                player_data[21] + player_data[23] + player_data[25] + player_data[27] + player_data[29] + player_data[31] + player_data[33]
             if games_played in self.number_games_achievements:
                 # Achievement msg
                 games_played_msg = self.badge_emojis[self.number_games_achievements[games_played]] + ' | Congratulations ' + cur_player[0].mention + \
@@ -2182,8 +2323,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         cursor.execute(update_rating_query, update_rating)
                         conn.commit()
 
-                elif cur_player[1] == 'queen' or cur_player[1] == 'ackerman' or cur_player[1] == 'mike' or cur_player[1] == 'scout' or cur_player[1] == 'hunter':
-                    optional_soldier_wins = player_data[10] + player_data[18] + player_data[20] + player_data[22] + player_data[26]
+                elif cur_player[1] == 'queen' or cur_player[1] == 'ackerman' or cur_player[1] == 'mike' or cur_player[1] == 'scout' or cur_player[1] == 'hunter' or cur_player[1] == 'decoy':
+                    optional_soldier_wins = player_data[10] + player_data[18] + player_data[20] + player_data[22] + player_data[26] + player_data[30]
                     if optional_soldier_wins in self.queen_wins_achievements:
                         # Achievement msg
                         queen_win_msg = self.badge_emojis[self.queen_wins_achievements[optional_soldier_wins]] + ' | Congratulations ' + cur_player[0].mention + \
@@ -2201,8 +2342,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         cursor.execute(update_rating_query, update_rating)
                         conn.commit()
 
-                elif cur_player[1] == 'warchief' or cur_player[1] == 'false king' or cur_player[1] == 'ymir' or cur_player[1] == 'spy' or cur_player[1] == 'saboteur':
-                    optional_warrior_wins = player_data[12] + player_data[14] + player_data[16] + player_data[24] + player_data[28]
+                elif cur_player[1] == 'warchief' or cur_player[1] == 'false king' or cur_player[1] == 'ymir' or cur_player[1] == 'spy' or cur_player[1] == 'saboteur' or cur_player[1] == 'cadet':
+                    optional_warrior_wins = player_data[12] + player_data[14] + player_data[16] + player_data[24] + player_data[28] + player_data[32]
                     if optional_warrior_wins in self.warchief_wins_achievements:
                         # Achievement msg
                         warchief_win_msg = self.badge_emojis[self.warchief_wins_achievements[optional_warrior_wins]] + ' | Congratulations ' + cur_player[0].mention + \
@@ -2254,7 +2395,7 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
 
         if player_data:
             games_played = player_data[5] + player_data[7] + player_data[9] + player_data[11] + player_data[13] + player_data[15] + \
-            player_data[17] + player_data[19] + player_data[21] + player_data[23] + player_data[25] + player_data[27] + player_data[29]
+            player_data[17] + player_data[19] + player_data[21] + player_data[23] + player_data[25] + player_data[27] + player_data[29] + player_data[31] + player_data[33]
         else:
             games_played = 0
         
@@ -2270,7 +2411,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             [50, 751426716697755658],
             [100, 751426972474671144],
             [250, 749524159574442005], 
-            [500, 749525061136023603]
+            [500, 749525061136023603],
+            [1000, 793403451358969866],
         ]
 
         member = server.get_member(player.id)
@@ -2354,27 +2496,32 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             'played as warchief': player_data[13], 'win as ymir': player_data[14], 'played as ymir': player_data[15], 'win as false king':player_data[16], 'played as false king': player_data[17], 
             'win as ackerman': player_data[18], 'played as ackerman': player_data[19], 'win as mike': player_data[20], 'played as mike': player_data[21], 'win as scout': player_data[22], 
             'played as scout': player_data[23], 'win as spy': player_data[24], 'played as spy': player_data[25], 'win as hunter': player_data[26], 'played as hunter': player_data[27],
-            'win as saboteur': player_data[28], 'played as saboteur': player_data[29]}
+            'win as saboteur': player_data[28], 'played as saboteur': player_data[29], 'win as decoy': player_data[30], 'played as decoy': player_data[31],
+            'win as cadet': player_data[32], 'played as cadet': player_data[33]}
 
-            stats['soldier wins'] = stats['win as soldier'] + stats['win as coord'] + stats['win as queen'] + stats['win as ackerman'] + stats['win as mike'] + stats['win as scout'] + stats['win as hunter']
-            stats['soldier games'] = stats['played as soldier'] + stats['played as coord'] + stats['played as queen'] + stats['played as ackerman'] + stats['played as mike'] + stats['played as scout'] + stats['played as hunter']
-            stats['warrior wins'] = stats['win as warrior'] + stats['win as warchief'] + stats['win as ymir'] + stats['win as false king'] + stats['win as spy'] + stats['win as saboteur']
-            stats['warrior games'] = stats['played as warrior'] + stats['played as warchief'] + stats['played as ymir'] + stats['played as false king'] + stats['played as spy'] + stats['played as saboteur']
+            stats['soldier wins'] = stats['win as soldier'] + stats['win as coord'] + stats['win as queen'] + stats['win as ackerman'] + stats['win as mike'] + stats['win as scout'] + \
+                stats['win as hunter'] + stats['win as decoy']
+            stats['soldier games'] = stats['played as soldier'] + stats['played as coord'] + stats['played as queen'] + stats['played as ackerman'] + stats['played as mike'] + stats['played as scout'] + \
+                stats['played as hunter'] + stats['played as decoy']
+            stats['warrior wins'] = stats['win as warrior'] + stats['win as warchief'] + stats['win as ymir'] + stats['win as false king'] + stats['win as spy'] + stats['win as saboteur'] + \
+                stats['win as cadet']
+            stats['warrior games'] = stats['played as warrior'] + stats['played as warchief'] + stats['played as ymir'] + stats['played as false king'] + stats['played as spy'] + stats['played as saboteur'] + \
+                stats['played as cadet']
             stats['wins'] = stats['soldier wins'] + stats['warrior wins']
             stats['games'] = stats['soldier games'] + stats['warrior games']
 
         else:
             # Add player data into player records
             player_sr = 1500
-            insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 30))
-            insert_player_data = [player.id, 1500] + 28 * [0]
+            insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 34))
+            insert_player_data = [player.id, 1500] + 32 * [0]
             cursor.execute(insert_player_data_query, insert_player_data)
             conn.commit()
 
             stats = {'wins': 0, 'games': 0, 'soldier wins': 0, 'soldier games': 0, 'warrior wins': 0, 'warrior games': 0, 'win as soldier': 0, 'played as soldier': 0, 'win as warrior': 0, 'played as warrior': 0, 
             'win as coord': 0, 'played as coord': 0, 'win as queen': 0, 'played as queen': 0, 'win as warchief': 0, 'played as warchief': 0, 'win as ymir': 0, 'played as ymir':0, 'win as false king':0, 
             'played as false king': 0, 'win as ackerman': 0, 'played as ackerman': 0, 'win as mike': 0, 'played as mike': 0, 'win as scout': 0, 'played as scout': 0, 'win as spy': 0, 'played as spy': 0,
-            'win as hunter': 0, 'played as hunter': 0, 'win as saboteur': 0, 'played as saboteur': 0}
+            'win as hunter': 0, 'played as hunter': 0, 'win as saboteur': 0, 'played as saboteur': 0, 'win as decoy': 0, 'played as decoy': 0, 'win as cadet': 0, 'played as cadet': 0}
 
         # Get total players in server
         player_rankings_query = 'SELECT player, rating FROM {}'.format(player_records)
@@ -2440,6 +2587,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         if stats['played as hunter'] > 0:
             soldier_wins += ' (' + str(round(100 * stats['win as hunter'] / stats['played as hunter'], 1)) + '%)'
 
+        soldier_wins += '\nDecoy: ' + str(stats['win as decoy']) + '/' + str(stats['played as decoy'])
+        if stats['played as decoy'] > 0:
+            soldier_wins += ' (' + str(round(100 * stats['win as decoy'] / stats['played as decoy'], 1)) + '%)'
+
         soldier_wins += '\nCoordinate: ' + str(stats['win as coord']) + '/' + str(stats['played as coord'])
         if stats['played as coord'] > 0:
             soldier_wins += ' (' + str(round(100 * stats['win as coord'] / stats['played as coord'], 1)) + '%)'
@@ -2473,6 +2624,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         if stats['played as saboteur'] > 0:
             warrior_wins += ' (' + str(round(100 * stats['win as saboteur'] / stats['played as saboteur'], 1)) + '%)'
 
+        warrior_wins += '\nCadet: ' + str(stats['win as cadet']) + '/' + str(stats['played as cadet'])
+        if stats['played as cadet'] > 0:
+            warrior_wins += ' (' + str(round(100 * stats['win as cadet'] / stats['played as cadet'], 1)) + '%)'
+
         profile.add_field(name = won_soldiers, value = soldier_wins, inline = False)
         profile.add_field(name = won_warriors, value = warrior_wins, inline = False)
         
@@ -2491,14 +2646,14 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
         if player_data:
             # [Name, No. games played, Current win streak, Max win streak, Soldier wins, Warrior wins, Coordinate wins, Queen/Ackerman/Mike/Scout wins, Warchief/False King/Ymir/Spy wins]
             games_played = player_data[5] + player_data[7] + player_data[9] + player_data[11] + player_data[13] + player_data[15] + player_data[17] + player_data[19] + \
-                player_data[21] + player_data[23] + player_data[25] + player_data[27] + player_data[29]
-            optional_soldier_wins = player_data[10] + player_data[18] + player_data[20] + player_data[22] + player_data[26]
-            optional_warrior_wins = player_data[12] + player_data[14] + player_data[16] + player_data[24] + player_data[28]
+                player_data[21] + player_data[23] + player_data[25] + player_data[27] + player_data[29] + player_data[31] + player_data[33]
+            optional_soldier_wins = player_data[10] + player_data[18] + player_data[20] + player_data[22] + player_data[26] + player_data[30]
+            optional_warrior_wins = player_data[12] + player_data[14] + player_data[16] + player_data[24] + player_data[28] + player_data[32]
             badges = [player.name, games_played, player_data[2], player_data[3], player_data[4], player_data[6], player_data[8], optional_soldier_wins, optional_warrior_wins]
         else:
             # Add player data into player records
-            insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 30))
-            insert_player_data = [player.id, 1500] + 28 * [0]
+            insert_player_data_query = 'INSERT INTO players VALUES ({})'.format(','.join('?' * 34))
+            insert_player_data = [player.id, 1500] + 32 * [0]
             cursor.execute(insert_player_data_query, insert_player_data)
             conn.commit()
 
@@ -2673,8 +2828,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                         num_players_stats += ' (' + str(round(100 * warriors_kidnap_n / (warriors_wins_n + soldiers_wins_n), 1)) + '%)'
                     game_stats.add_field(name = str(i + 5) + ' Players: ' + str(warriors_wins_n + soldiers_wins_n), value = num_players_stats)
             else:
-                insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 45))
-                insert_server_data = [server.id] + [0] * 44
+                insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 49))
+                insert_server_data = [server.id] + [0] * 48
                 cursor.execute(insert_server_data_query, insert_server_data)
                 conn.commit()
 
@@ -2731,9 +2886,11 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 spy_wins, spy_games = server_data[39], server_data[40]
                 hunter_wins, hunter_games = server_data[41], server_data[42]
                 saboteur_wins, saboteur_games = server_data[43], server_data[44]
+                decoy_wins, decoy_games = server_data[45], server_data[46]
+                cadet_wins, cadet_games = server_data[47], server_data[48]
             else:
-                insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 45))
-                insert_server_data = [server.id] + [0] * 44
+                insert_server_data_query = 'INSERT INTO servers VALUES ({})'.format(','.join('?' * 49))
+                insert_server_data = [server.id] + [0] * 48
                 cursor.execute(insert_server_data_query, insert_server_data)
                 conn.commit()
 
@@ -2750,6 +2907,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 spy_wins, spy_games = 0, 0
                 hunter_wins, hunter_games = 0, 0
                 saboteur_wins, saboteur_games = 0, 0
+                decoy_wins, decoy_games = 0, 0
+                cadet_wins, cadet_games = 0, 0
 
             soldier_stats = 'Games: ' + str(soldier_games)
             soldier_stats += '\nWins: ' + str(soldier_wins)
@@ -2828,6 +2987,18 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             if saboteur_wins > 0:
                 saboteur_stats += ' (' + str(round(100 * saboteur_wins / saboteur_games, 1)) + '%)'
             game_stats.add_field(name = '🔨Saboteur🔨', value = saboteur_stats)
+
+            decoy_stats = 'Games: ' + str(decoy_games)
+            decoy_stats += '\nWins: ' + str(decoy_wins)
+            if decoy_wins > 0:
+                decoy_stats += ' (' + str(round(100 * decoy_wins / decoy_games, 1)) + '%)'
+            game_stats.add_field(name = '🔰Decoy🔰', value = decoy_stats)
+
+            cadet_stats = 'Games: ' + str(cadet_games)
+            cadet_stats += '\nWins: ' + str(cadet_wins)
+            if cadet_wins > 0:
+                cadet_stats += ' (' + str(round(100 * cadet_wins / cadet_games, 1)) + '%)'
+            game_stats.add_field(name = '🗡Cadet🗡', value = cadet_stats)
 
         elif page_no == 3:
             # Game stats
@@ -2883,6 +3054,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             spy_wins, spy_games = 0, 0
             hunter_wins, hunter_games = 0, 0
             saboteur_wins, saboteur_games = 0, 0
+            decoy_wins, decoy_games = 0, 0
+            cadet_wins, cadet_games = 0, 0
 
             for row in player_data:
                 soldier_wins += row[4]
@@ -2911,6 +3084,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 hunter_games += row[27]
                 saboteur_wins += row[28]
                 saboteur_games += row[29]
+                decoy_wins += row[30]
+                decoy_games += row[31]
+                cadet_wins += row[32]
+                cadet_games += row[33]
 
             soldier_stats = 'Games: ' + str(soldier_games)
             soldier_stats += '\nWins: ' + str(soldier_wins)
@@ -2989,6 +3166,18 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             if saboteur_wins > 0:
                 saboteur_stats += ' (' + str(round(100 * saboteur_wins / saboteur_games, 1)) + '%)'
             game_stats.add_field(name = '🔨Saboteur🔨', value = saboteur_stats)
+
+            decoy_stats = 'Games: ' + str(decoy_games)
+            decoy_stats += '\nWins: ' + str(decoy_wins)
+            if decoy_wins > 0:
+                decoy_stats += ' (' + str(round(100 * decoy_wins / decoy_games, 1)) + '%)'
+            game_stats.add_field(name = '🔰Decoy🔰', value = decoy_stats)
+
+            cadet_stats = 'Games: ' + str(cadet_games)
+            cadet_stats += '\nWins: ' + str(cadet_wins)
+            if cadet_wins > 0:
+                cadet_stats += ' (' + str(round(100 * cadet_wins / cadet_games, 1)) + '%)'
+            game_stats.add_field(name = '🗡Cadet🗡', value = cadet_stats)
 
         conn.close()
 
@@ -3064,6 +3253,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             spy_wins, spy_games = 0, 0
             hunter_wins, hunter_games = 0, 0
             saboteur_wins, saboteur_games = 0, 0
+            decoy_wins, decoy_games = 0, 0
+            cadet_wins, cadet_games = 0, 0
 
             for row in player_data:
                 soldier_wins += row[4]
@@ -3092,6 +3283,10 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 hunter_games += row[27]
                 saboteur_wins += row[28]
                 saboteur_games += row[29]
+                decoy_wins += row[30]
+                decoy_games += row[31]
+                cadet_wins += row[32]
+                cadet_games += row[33]
 
             soldier_stats = 'Games: ' + str(soldier_games)
             soldier_stats += '\nWins: ' + str(soldier_wins)
@@ -3171,6 +3366,18 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
                 saboteur_stats += ' (' + str(round(100 * saboteur_wins / saboteur_games, 1)) + '%)'
             game_stats.add_field(name = '🔨Saboteur🔨', value = saboteur_stats)
 
+            decoy_stats = 'Games: ' + str(decoy_games)
+            decoy_stats += '\nWins: ' + str(decoy_wins)
+            if decoy_wins > 0:
+                decoy_stats += ' (' + str(round(100 * decoy_wins / decoy_games, 1)) + '%)'
+            game_stats.add_field(name = '🔰Decoy🔰', value = decoy_stats)
+
+            cadet_stats = 'Games: ' + str(cadet_games)
+            cadet_stats += '\nWins: ' + str(cadet_wins)
+            if cadet_wins > 0:
+                cadet_stats += ' (' + str(round(100 * cadet_wins / cadet_games, 1)) + '%)'
+            game_stats.add_field(name = '🗡Cadet🗡', value = cadet_stats)
+
         conn.close()
 
         return game_stats
@@ -3196,8 +3403,8 @@ str(len(list(filter(lambda x:x[1] not in self.warrior_roles, self.players)))) +
             player_check = cursor.fetchone()
             if player_check is None:
                 # Add player data into player records
-                insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 30))
-                insert_player_data = [player.id, 1500] + 28 * [0]
+                insert_player_data_query = 'INSERT INTO {} VALUES ({})'.format(player_records, ','.join('?' * 34))
+                insert_player_data = [player.id, 1500] + 32 * [0]
                 cursor.execute(insert_player_data_query, insert_player_data)
                 conn.commit()
                 player_data.append(insert_player_data)
@@ -3321,6 +3528,10 @@ to confuse the Warriors as to who they are.'
 The Hunter possesses the unique ability of tracking a target in **one** expedition they are in. If their target sabotages the expedition, the Hunter will expose their identity \
 to everyone in the game.\n\n\
 **Tip:** Choosing the right time to use the Hunter\'s ability can be just as important as tracking the right person. Even if the wrong person is targeted, the Hunter can still gain valuable information.'
+        decoy_info = '🔰**Decoy**🔰\n\n\
+The Decoy is revealed to the Coordinate as a Warrior, in addition to the other Warriors. This can make it more difficult for the Coordinate to prevent Warriors from entering expeditions, but \
+also helps protect the Coordinate from being discovered by the Warriors.\n\n\
+**Tip:** Try to work with the Coordinate to identify your role correctly, but be careful not to make it too obvious as the Warriors will be on the lookout.'
         falseking_info = '🕴**False King**🕴\n\n\
 The False King appears as the Coordinate to the Queen, in addition to the real Coordinate. This gives him the ability to confuse her by acting as the Coordinate, which can \
 help turn the tide in the Warriors\' favor.\n\n\
@@ -3343,6 +3554,10 @@ She may only do this once, however, as everyone will be alerted that the votes h
 The Saboteur has the ability to increase the size of a chosen expedition by 1 at the start of the game, provided the expedition\'s size is smaller than the number of Soldiers in the game.\n\n\
 **Tip:** The best expedition to sabotage might change depending on the roles in the game. For example, if the Warchief is in the game, it might be better to sabotage a later expedition, when the Warchief \
 has gained the Soldiers\' trust.'
+        cadet_info = '🗡**Cadet**🗡\n\n\
+The Cadet is an inexperienced Warrior who possess only enough stamina to break the Walls once. To win, the Cadet needs to work closely with their Warrior teammates to break all the Walls.\n\n\
+**Tip:** Be very careful to not reveal your role to the Soldiers. If you have already broken a Wall, you are equivalent to a Soldier, and the Soldiers will be able to add you to an expedition without \
+consequence.'
         blessing_info = '🔮**Ymir\'s Blessing**🔮\n\n\
 Ymir\'s Blessing allows a player who has it to check another player\'s true allegiance (Warriors or Soldiers). At the start of the 3rd expedition, a random player will be given Ymir\'s blessing. \
 They may use it on another player to find out their allegiance (will be DMed to them in private).\n\n\
@@ -3410,12 +3625,14 @@ and status of the Walls, the results of previous expeditions and information on 
                         'mike': mike_info,
                         'scout': scout_info,
                         'hunter': hunter_info,
+                        'decoy': decoy_info,
                         'false king': falseking_info,
                         'falseking': falseking_info,
                         'warchief': warchief_info,
                         'ymir': ymir_info,
                         'spy': spy_info,
                         'saboteur': saboteur_info,
+                        'cadet': cadet_info,
                         'ymir\'s blessing': blessing_info,
                         'blessing': blessing_info,
                         'paths': paths_info,
@@ -3491,18 +3708,18 @@ and status of the Walls, the results of previous expeditions and information on 
             'However, the Soldiers do not know anyone\'s identities, while the Warriors know each other\'s identities.\n\u200B'
             tutorial1_embed.add_field(name = 'The Teams', value = tutorial1_teams, inline = False)
 
-            tutorial1_objective = 'The objective of the game is to score 3 points for your team before the opposing team does.\n\u200B'
+            tutorial1_objective = 'The objective of the game is to score 3 victories for your team before the opposing team does.\n\u200B'
             tutorial1_embed.add_field(name = 'The Objective', value = tutorial1_objective, inline = False)
 
             tutorial1_selection = 'There can be up to 5 rounds (called Expeditions) in a game. Players take turns to pick a team (of varying size) to embark on each expedition.\n\u200B'
             tutorial1_embed.add_field(name = 'Team Selection', value = tutorial1_selection, inline = False)
 
-            tutorial1_expedition = 'If a team is comprised of all Soldiers, then the expedition succeeds and Soldiers gain a point. ' + \
-            'However, if there is a Warrior in the team, they may choose to sabotage the expedition, giving Warriors a point instead.\n\u200B'
+            tutorial1_expedition = 'If a team is comprised of all Soldiers, then the expedition succeeds and Soldiers win the round. ' + \
+            'However, if there is a Warrior in the team, they may choose to sabotage the expedition, giving Warriors the win instead.\n\u200B'
             tutorial1_embed.add_field(name = 'The Expedition', value = tutorial1_expedition, inline = False)
 
             tutorial1_coordinate = 'The Coordinate is a special Soldier role who knows the Warriors\' identities from the beginning. ' + \
-            'However, if the Soldiers score 3 points first, the Warriors have a last chance to win by identifying the Coordinate correctly at the end of the game.'
+            'However, if the Soldiers score 3 victories first, the Warriors have a last chance to win by identifying the Coordinate correctly at the end of the game.'
             tutorial1_embed.add_field(name = 'The Coordinate', value = tutorial1_coordinate, inline = False)
 
             tutorial1_details = 'For more detailed information on the game (including in-game screenshots!), click on ▶ below.'
@@ -3648,28 +3865,30 @@ the Coordinate using this information by acting like they would.\n\n\
 **Tip:** While the Queen has the advantage of knowing the Coordinate\'s identity, she also has to be careful not to accidentally reveal the Coordinate\'s identity by favoring them on expeditions too much.\n\u200B'
             tutorial12_ackerman = 'The Ackerman has the ability to secure the Walls in **one** expedition that they\'re in. This prevents any Warriors on the expedition from destroying it. However, doing so also \
 alerts any Warriors in the expedition of the Ackerman\'s identity, making it easier for them to identity the Coordinate.\n\n\
-**Tip:** Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, keeping your identity hidden.'
-
+**Tip:** Knowing if and when to secure the Walls is key to playing an Ackerman well. For example, if the Soldiers are winning, it might be best to not secure the Walls at all, keeping your identity hidden.\n\u200B'
+            tutorial12_mike = 'Humanity\'s 2nd strongest soldier Mike Zacharias has the incredible ability to sniff out Titans in expeditions. \
+During the approval phase of the expeditions he is in, Mike will be told how many Titans the expedition contains. Both Warriors and the Coordinate are considered Titans.\n\n\
+**Tip:** The knowledge of how many Titans are in an expedition can be very valuable to both Warriors and Soldiers. Be careful not to reveal information that might help the Warriors identify the Coordinate.'
             tutorial12_embed = discord.Embed(title='Optional Soldier Roles (1)', colour=0x0013B4)
             tutorial12_embed.add_field(name = '👼Queen👼', value = tutorial12_queen, inline = False)
             tutorial12_embed.add_field(name = '💂Ackerman💂', value = tutorial12_ackerman, inline = False)
+            tutorial12_embed.add_field(name = '<:aotSmirk:571740978377916416>Mike Zacharias <:aotSmirk:571740978377916416>', value = tutorial12_mike, inline = False)
             return None, tutorial12_embed, page_num
 
         elif page_num == 13:
-            tutorial13_mike = 'Humanity\'s 2nd strongest soldier Mike Zacharias has the incredible ability to sniff out Titans in expeditions. \
-During the approval phase of the expeditions he is in, Mike will be told how many Titans the expedition contains. Both Warriors and the Coordinate are considered Titans.\n\n\
-**Tip:** The knowledge of how many Titans are in an expedition can be very valuable to both Warriors and Soldiers. Be careful not to reveal information that might help the Warriors identify the Coordinate.\n\u200B'
             tutorial13_scout = 'The Scout is the guiding light of an expedition. If the Scout is in an expedition, they will automatically fire a signal flare, alerting everyone of their presence in the expedition.\n\n\
 **Tip:** The knowledge of the Scout\'s identity can benefit both sides in the game. The Scout should try to help the Soldiers identify them correctly, while working with their fellow Soldiers \
 to confuse the Warriors as to who they are.\n\u200B'
             tutorial13_hunter = 'The Hunter possesses the unique ability of tracking a target in **one** expedition they are in. If their target sabotages the expedition, the Hunter will expose their identity \
 to everyone in the game.\n\n\
-**Tip:** Choosing the right time to use the Hunter\'s ability can be just as important as tracking the right person. Even if the wrong person is targeted, the Hunter can still gain valuable information.'
-
+**Tip:** Choosing the right time to use the Hunter\'s ability can be just as important as tracking the right person. Even if the wrong person is targeted, the Hunter can still gain valuable information.\n\u200B'
+            tutorial13_decoy = 'The Decoy is revealed to the Coordinate as a Warrior, in addition to the other Warriors. This can make it more difficult for the Coordinate to prevent Warriors from entering \
+expeditions, but also helps protect the Coordinate from being discovered by the Warriors.\n\n\
+**Tip:** Try to work with the Coordinate to identify your role correctly, but be careful not to make it too obvious as the Warriors will be on the lookout.'
             tutorial13_embed = discord.Embed(title='Optional Soldier Roles (2)', colour=0x0013B4)
-            tutorial13_embed.add_field(name = '<:aotSmirk:571740978377916416>Mike Zacharias <:aotSmirk:571740978377916416>', value = tutorial13_mike, inline = False)
             tutorial13_embed.add_field(name = '🏇Scout🏇', value = tutorial13_scout, inline = False)
             tutorial13_embed.add_field(name = '🏹Hunter🏹', value = tutorial13_hunter, inline = False)
+            tutorial13_embed.add_field(name = '🔰Decoy🔰', value = tutorial13_decoy, inline = False)
             return None, tutorial13_embed, page_num
 
         elif page_num == 14:
@@ -3679,30 +3898,33 @@ This gives him the ability to confuse her by acting as the Coordinate, which can
             tutorial14_warchief = 'The Warchief has the ability to conceal his identity from the Coordinate. \
 This allows more possibilities to sow confusion within the Soldiers\' ranks without worrying about the Coordinate stepping in.\n\n\
 **Tip:** The Warchief\'s role acts like a double-edged blade. Without the Coordinate\'s knowing the Warchief\'s identity, he can more easily gain the Soldiers\' trust. \
-However, the very fact that the Coordinate is unaware of the Warchief\'s identity can make it harder for the Warriors to identify the Coordinate.'
-
+However, the very fact that the Coordinate is unaware of the Warchief\'s identity can make it harder for the Warriors to identify the Coordinate.\n\u200B'
+            tutorial14_ymir = 'Ymir is also on the Warriors\' side, but does not know of their identities, nor do they know hers. To achieve success, she must keep a close watch \
+for potential comrades during expeditions.\n\n\
+**Tip:** In smaller expeditions, it can be risky to choose to destroy the Walls, as there might be another Warrior in your group which would give both of you away. \
+It is usually a good idea to wait until the later (and larger) expeditions to make your move.'
             tutorial14_embed = discord.Embed(title='Optional Warrior Roles (1)', colour=0x0013B4)
             tutorial14_embed.add_field(name = '🕴False King🕴', value = tutorial14_falseking, inline = False)
             tutorial14_embed.add_field(name = '🦹‍♂️Warchief🦹‍♂️', value = tutorial14_warchief, inline = False)
+            tutorial14_embed.add_field(name = '🤷‍♀️Ymir🤷‍♀️', value = tutorial14_ymir, inline = False)
             return None, tutorial14_embed, page_num
 
         elif page_num == 15:
-            tutorial15_ymir = 'Ymir is also on the Warriors\' side, but does not know of their identities, nor do they know hers. To achieve success, she must keep a close watch \
-for potential comrades during expeditions.\n\n\
-**Tip:** In smaller expeditions, it can be risky to choose to destroy the Walls, as there might be another Warrior in your group which would give both of you away. \
-It is usually a good idea to wait until the later (and larger) expeditions to make your move.\n\u200B'
             tutorial15_spy = 'A highly skilled infiltrator, the Spy has the ability to flip the votes during the approval phase of an expedition. \
 She may only do this once, however, as everyone will be alerted that the votes have been flipped.\n\n\
 **Tip:** The Spy needs to be strategic about when to flip the votes to favor the Warriors, as it can easily backfire if people do not vote the way you expect.\n\u200B'
             tutorial15_saboteur = 'The Saboteur has the ability to increase the size of a chosen expedition by 1 at the start of the game, \
 provided the expedition\'s size is smaller than the number of Soldiers in the game.\n\n\
 **Tip:** The best expedition to sabotage might change depending on the roles in the game. For example, if the Warchief is in the game, it might be better to sabotage a later expedition, when the Warchief \
-has gained the Soldiers\' trust.'
-
+has gained the Soldiers\' trust.\n\u200B'
+            tutorial15_cadet = 'The Cadet is an inexperienced Warrior who possess only enough stamina to break the Walls once. To win, the Cadet needs to work closely with their Warrior teammates to break \
+all the Walls.\n\n\
+**Tip:** Be very careful to not reveal your role to the Soldiers. If you have already broken a Wall, you are equivalent to a Soldier, and the Soldiers will be able to add you to an expedition without \
+consequence.'
             tutorial15_embed = discord.Embed(title='Optional Warrior Roles (2)', colour=0x0013B4)
-            tutorial15_embed.add_field(name = '🤷‍♀️Ymir🤷‍♀️', value = tutorial15_ymir, inline = False)
             tutorial15_embed.add_field(name = '🕵️‍♀️Spy🕵️‍♀️', value = tutorial15_spy, inline = False)
             tutorial15_embed.add_field(name = '🔨Saboteur🔨', value = tutorial15_saboteur, inline = False)
+            tutorial15_embed.add_field(name = '🗡Cadet🗡', value = tutorial15_cadet, inline = False)
             return None, tutorial15_embed, page_num
 
         elif page_num == 16:
