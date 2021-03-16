@@ -1,0 +1,4 @@
+discord.py
+PyYAML
+dblpy
+google-cloud-storage

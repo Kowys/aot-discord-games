@@ -23,7 +23,7 @@ There are four games in total:
 - Warriors vs Soldiers
 - Attack on Wikia
 
-After enabling a game, type `~help` for the full list of commands of that game.
+After enabling a game, type `~help` for the full list of commands for that game.
 
 ## Games
 ### Choose Your Adventure
