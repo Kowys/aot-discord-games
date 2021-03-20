@@ -7,7 +7,7 @@ First, make sure you have Python installed on your system. Download link is here
 pip install -r requirements.txt
 ```
 
-2. Copy your bot's token into `secrets.yml`. E.g.
+2. Copy your bot's token into `secrets.yml`:
 ```
 BOT_TOKEN: 'BOT_TOKEN_HERE'
 ```

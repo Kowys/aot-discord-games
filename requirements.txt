@@ -1,4 +1,4 @@
 discord.py
 PyYAML
-dblpy
-google-cloud-storage
+# dblpy
+# google-cloud-storage
