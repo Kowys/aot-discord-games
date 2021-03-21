@@ -1408,9 +1408,9 @@ class State():
 
         # Clips inputs that are too high or too low
         if page_no < 1:
-            page_no = 1
-        if page_no > total_pages:
             page_no = total_pages
+        if page_no > total_pages:
+            page_no = 1
 
         # Get page_no of player rank
         if player:
@@ -1445,7 +1445,7 @@ class State():
         leaderboard.add_field(name = 'Level/Exp', value = all_levels_exp)
         leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
 
-        return leaderboard
+        return leaderboard, page_no
 
     def get_commands(self):
         # Returns the list of commands
