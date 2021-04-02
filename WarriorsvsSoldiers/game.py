@@ -1341,7 +1341,7 @@ Your fellow Warriors are:\n'
 
                 cadet_msg = 'You are the **Cadet**!\n\nYour fellow Warriors are:\n'
                 for warrior in list(filter(lambda x:x[1] in self.warrior_roles, self.players)):
-                    if warrior == player_lst or warrior[1] == 'ymir':
+                    if warrior[0] == player or warrior[1] == 'ymir':
                         continue
                     else:
                         cadet_msg = cadet_msg + '**' + warrior[0].name + '**\n'
