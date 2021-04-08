@@ -24,11 +24,11 @@ class Game():
             if message.content.startswith('~new'):
                 if not self.state.game_active():
                     await message.channel.send('Starting new puzzle!')
-                    new_qn_msg = self.state.get_new_question(message.channel)
-                    if type(new_qn_msg) == str:
-                        await message.channel.send(new_qn_msg)
-                    else:
-                        await message.channel.send(embed=new_qn_msg)
+                    try:
+                        new_qn_msg = self.state.get_new_question(message.channel)
+                    except Exception as e:
+                        print(e)
+                    await message.channel.send(embed = new_qn_msg)
                 else:
                     await message.channel.send('There is already an active game being played! Please finish the current game before starting a new one.')
 
@@ -37,12 +37,15 @@ class Game():
                 if type(clue_msg) == str:
                     await message.channel.send(clue_msg)
                 else:
-                    await message.channel.send(embed=clue_msg)
+                    await message.channel.send(embed = clue_msg)
 
             if message.content.startswith('~image'):
                 if not self.state.game_active():
                     await message.channel.send('Generating new image!')
-                    new_image = self.state.get_new_image(message.channel)
+                    try:
+                        new_image = self.state.get_new_image(message.channel)
+                    except Exception as e:
+                        print(e)
                     await message.channel.send(embed = new_image)
                 else:
                     await message.channel.send('There is already an active game being played! Please finish the current game before starting a new one.')
@@ -51,7 +54,10 @@ class Game():
                 if not self.state.game_active():
                     if len(message.content.split(' ')) == 1:
                         await message.channel.send('Starting new hangman game!')
-                        hangman_msg = self.state.get_new_hangman(message.channel)
+                        try:
+                            hangman_msg = self.state.get_new_hangman(message.channel)
+                        except Exception as e:
+                            print(e)
                         await message.channel.send(embed = hangman_msg)
                     else:
                         if message.mentions and message.mentions[0] != message.author:
