@@ -61,12 +61,12 @@ class Game():
                         await message.channel.send(embed = hangman_msg)
                     else:
                         if message.mentions and message.mentions[0] != message.author:
-                            if self.state.players == [] or message.author != self.state.players[1]:
+                            if self.state.players == [] or message.author != self.state.players[1] or message.mentions[0] != self.state.players[0]:
                                 self.state.players = [message.author, message.mentions[0]]
                                 await message.channel.send('**' + self.state.players[0].name + '** has challenged **' + self.state.players[1].name + '** to a game of Hangman!')
                                 await message.channel.send('**' + self.state.players[1].name + '**, type ~hangman <@mention> to accept.')
 
-                            elif message.author == self.state.players[1]:
+                            elif message.author == self.state.players[1] and message.mentions[0] == self.state.players[0]:
                                 # Starts challenge
                                 await message.channel.send('**' + self.state.players[0].name + '** vs. **' + self.state.players[1].name + '**! First to 3 wins!')
 
