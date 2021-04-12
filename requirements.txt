@@ -1,4 +1,6 @@
 discord.py
 PyYAML
 google-cloud-storage
+numpy
+opencv-python
 # dblpy

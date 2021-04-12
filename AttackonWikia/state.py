@@ -3,6 +3,9 @@ import time
 import random
 import math
 import sqlite3
+import urllib
+import numpy as np
+import cv2
 from AttackonWikia import fetchURL
 
 class State():
@@ -13,6 +16,7 @@ class State():
         self.clue_no = 0
         self.game_channel = None
         self.image = None
+        self.image_hint = 0
         self.challenge = False
         self.hangman_challenge = False
         self.players = []
@@ -43,6 +47,7 @@ class State():
         self.consecutive_days_achievements = {5:'Bronze', 14:'Silver', 30:'Gold', 60:'Platinum', 100:'Diamond', 200:'Master', 365:'Grandmaster'}
         self.challenge_achievements = {5:'Bronze', 15:'Silver', 30:'Gold', 50:'Platinum', 80:'Diamond', 150:'Master', 300:'Grandmaster'}
         self.hangman_achievements = {5:'Bronze', 15:'Silver', 50:'Gold', 100:'Platinum', 250:'Diamond', 500:'Master', 1000:'Grandmaster'}
+        self.image_achievements = {5:'Bronze', 15:'Silver', 50:'Gold', 100:'Platinum', 250:'Diamond', 500:'Master', 1000:'Grandmaster'}
 
         self.achievement_rewards = {'Bronze': 20, 'Silver': 50, 'Gold': 100, 'Platinum': 150, 'Diamond': 300, 'Master':500, 'Grandmaster':1000}
         self.badge_emojis = {'Bronze': '🥉', 'Silver': '🥈', 'Gold': '🥇', 'Platinum': '💠', 'Diamond': '💎', 'Master': '👑', 'Grandmaster':'🎓'}
@@ -54,6 +59,7 @@ class State():
         self.clue_no = 0
         self.game_channel = None
         self.image = None
+        self.image_hint = 0
         self.challenge = False
         self.hangman_challenge = False
         self.players = []
@@ -103,14 +109,86 @@ class State():
 
         return clue_embed
 
+    def populate_crops(self, img):
+        # 4 different sizes: 0.2, 0.4, 0.6, 1.0
+        # Corresponds to 3 hints
+        filename = "image.jpg"
+        cv2.imwrite(filename, img)
+
+        starting_coords = (random.uniform(0,1), random.uniform(0,1))
+        for i, scale in enumerate([0.1, 0.2, 0.3]):
+            x1, x2 = starting_coords[0] - scale, starting_coords[0] + scale
+            if x1 < 0:
+                x2 -= x1
+                x1 = 0
+            elif x2 > 1:
+                x1 -= x2 - 1
+                x2 = 1
+            y1, y2 = starting_coords[1] - scale, starting_coords[1] + scale
+            if y1 < 0:
+                y2 -= y1
+                y1 = 0
+            elif y2 > 1:
+                y1 -= y2 - 1
+                y2 = 1
+
+            h, w = img.shape[0], img.shape[1]
+            crop_img = img[int(y1*h):int(y2*h), int(x1*w):int(x2*w)]
+            filename = "image{}.jpg".format(i+1)
+            cv2.imwrite(filename, crop_img)
+
+    def get_crop_image(self):
+        filename = "image{}.jpg".format(self.image_hint + 1) if self.image_hint < 3 else "image.jpg"
+        img_file = discord.File(filename)
+        return img_file
+        
+    def get_image(self, image_url):
+        url_response = urllib.request.urlopen(image_url)
+        img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
+        img = cv2.imdecode(img_array, -1)
+
+        self.populate_crops(img)
+
+        return self.get_crop_image()
+
     def get_new_image(self, msg_channel):
         self.game_reset()
         self.game_channel = msg_channel
         self.question_set = fetchURL.new_image()
         self.new_image_update()
-        image_embed = discord.Embed(title = 'Guess the image!', description = 'Type `~answer` to reveal the answer.', colour = 0xC0C0C0)
-        image_embed.set_image(url = self.question_set['image'])
-        return image_embed
+
+        image_file = self.get_image(self.question_set['image'])
+
+        if self.image_hint < 3:
+            hint_msg = 'Type `~hint` to reveal more of the image.\n'
+        else:
+            hint_msg = ''
+
+        image_embed = discord.Embed(title = 'Guess the image!', description = hint_msg + 'Type `~answer` to reveal the answer.', colour = 0xC0C0C0)
+        image_embed.set_image(url = "attachment://image1.jpg")
+        return image_file, image_embed
+
+    def get_image_hint(self):
+        if self.question_set == None:
+            return None, 'No puzzle is currently active!'
+        elif len(self.question_set) == 2:
+            return None, 'You can\'t use that in a hangman game!'
+        elif 'clues' in self.question_set:
+            return None, 'You can\'t use that in a regular puzzle!'
+        elif self.image_hint >= 3:
+            return None, 'You have already revealed the entire image!'
+        else:
+            self.image_hint += 1
+            image_file = self.get_crop_image()
+
+            if self.image_hint < 3:
+                hint_msg = 'Type `~hint` to reveal more of the image.\n'
+            else:
+                hint_msg = ''
+
+            image_embed = discord.Embed(title = 'Guess the image!', description = hint_msg + 'Type `~answer` to reveal the answer.', colour = 0xC0C0C0)
+            image_embed.set_image(url = "attachment://{}".format(image_file.filename))
+            return image_file, image_embed
 
     def get_new_hangman(self, msg_channel):
         self.game_reset()
@@ -844,8 +922,8 @@ class State():
             else:
                 new_clue_value = 1
                 cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-                insert_clue_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-                insert_clue_achievements_values = [player.id, new_clue_value, 0, cur_date, 1, 1, 0, 0, 0, 0, 0]
+                insert_clue_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+                insert_clue_achievements_values = [player.id, new_clue_value, 0, cur_date, 1, 1, 0, 0, 0, 0, 0, 0]
                 cursor.execute(insert_clue_achievements_query, insert_clue_achievements_values)
 
             conn.commit()
@@ -900,8 +978,8 @@ class State():
             else:
                 new_hangman_value = 1
                 cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-                insert_hangman_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-                insert_hangman_achievements_values = [player.id, 0, 0, cur_date, 1, 1, new_hangman_value, 0, 0, 0, 0]
+                insert_hangman_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+                insert_hangman_achievements_values = [player.id, 0, 0, cur_date, 1, 1, new_hangman_value, 0, 0, 0, 0, 0]
                 cursor.execute(insert_hangman_achievements_query, insert_hangman_achievements_values)
 
             conn.commit()
@@ -934,6 +1012,56 @@ class State():
 
                 # Add exp
                 player_exp = player_exp + self.achievement_rewards[self.hangman_achievements[achievement_value]]
+                update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
+                cursor.execute(update_player_exp_query, (player_exp, player.id))
+                conn.commit()
+
+                # New player level
+                for level in self.levelling_system:
+                    if player_exp < level[1]:
+                        break
+                    new_player_level = level[0]
+
+                if new_player_level > old_player_level:
+                    achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
+
+        # No hint image 
+        if 'image' in self.question_set and self.image_hint == 0:
+            if player_achievements:
+                new_image_value = player_achievements[11] + 1
+                update_image_achievements_query = 'UPDATE achievements SET no_hint_image = ? WHERE player = ?'
+                cursor.execute(update_image_achievements_query, (new_image_value, player.id))
+            else:
+                new_image_value = 1
+                cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
+                insert_image_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+                insert_image_achievements_values = [player.id, 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0, new_image_value]
+                cursor.execute(insert_image_achievements_query, insert_image_achievements_values)
+
+            conn.commit()
+
+            # If achievement earned, add exp and append achievement msg
+            if new_image_value in self.image_achievements:
+                achievement_value = new_image_value
+                # Achievement msg
+                image_msg = self.badge_emojis[self.image_achievements[achievement_value]] + ' | Congratulations ' + player.mention + \
+                '! You have obtained ' + ('a ' if 'Master' not in self.image_achievements[achievement_value] else 'the ') + '**' + \
+                self.image_achievements[achievement_value] + (' of Images' if 'Master' in self.image_achievements[achievement_value] else '') + \
+                '** badge for guessing **' + str(achievement_value) + '** images correctly without any hints! **(+' + \
+                str(self.achievement_rewards[self.image_achievements[achievement_value]]) + ' Exp)**'
+                
+                achievement_msgs.append(image_msg)
+
+                # Add exp to player (Assume player data already exists, from update_player_records method)
+                player_exp = player_data[1]
+                # Old player level
+                for level in self.levelling_system:
+                    if player_exp < level[1]:
+                        break
+                    old_player_level = level[0]
+
+                # Add exp
+                player_exp = player_exp + self.achievement_rewards[self.image_achievements[achievement_value]]
                 update_player_exp_query = 'UPDATE players SET exp = ? WHERE player = ?'
                 cursor.execute(update_player_exp_query, (player_exp, player.id))
                 conn.commit()
@@ -1094,8 +1222,8 @@ class State():
                         achievement_msgs.append('🆙 | Congratulations ' + player.mention + '! You have reached level **' + str(new_player_level) + '**!')
             else:
                 cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-                insert_challenge_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-                insert_challenge_achievements_values = [player.id, 0, 1, cur_date, 1, 1, 0, 0, 0, 0, 0]
+                insert_challenge_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+                insert_challenge_achievements_values = [player.id, 0, 1, cur_date, 1, 1, 0, 0, 0, 0, 0, 0]
                 cursor.execute(insert_challenge_achievements_query, insert_challenge_achievements_values)
                 conn.commit()
 
@@ -1177,15 +1305,15 @@ class State():
         player_info = cursor.fetchone()
 
         if player_info:
-            badges = [player.name, player_info[1], player_info[2], player_info[4], player_info[5], player_info[6]]
+            badges = [player.name, player_info[1], player_info[2], player_info[4], player_info[5], player_info[6], player_info[11]]
         else:
             cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-            insert_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-            initial_achievements = [player.id, 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0]
+            insert_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+            initial_achievements = [player.id, 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0, 0]
             cursor.execute(insert_achievements_query, initial_achievements)
             conn.commit()
 
-            badges = [player.name, 0, 0, 1, 1, 0]
+            badges = [player.name, 0, 0, 1, 1, 0, 0]
 
         conn.close()
 
@@ -1233,6 +1361,16 @@ class State():
             perfect_hangman_badges += self.badge_emojis[self.hangman_achievements[step]]
             num_badges += 1
 
+        no_hint_image = badges[6]
+        no_hint_image_badges = ''
+        no_hint_image_next = str(no_hint_image)
+        for step in sorted(list(self.image_achievements)):
+            if no_hint_image < step:
+                no_hint_image_next = str(no_hint_image) + '/' + str(step)
+                break
+            no_hint_image_badges += self.badge_emojis[self.image_achievements[step]]
+            num_badges += 1
+
         player_achievements = discord.Embed(title = 'Badges for Attack on Wikia', description = 'Number of badges collected: **' + str(num_badges) + '**', colour = 0xC0C0C0)
         player_achievements.set_author(name = player.name, icon_url = player.avatar_url)
         player_achievements.set_thumbnail(url = player.avatar_url)
@@ -1246,6 +1384,9 @@ class State():
         player_achievements.add_field(name = 'Perfect Hangman games', value = perfect_hangman_next)
         player_achievements.add_field(name = '⠀', value='⠀')
         player_achievements.add_field(name = 'Badges', value = perfect_hangman_badges if perfect_hangman_badges != '' else '-')
+        player_achievements.add_field(name = 'Images guessed with no hints', value = no_hint_image_next)
+        player_achievements.add_field(name = '⠀', value='⠀')
+        player_achievements.add_field(name = 'Badges', value = no_hint_image_badges if no_hint_image_badges != '' else '-')
         player_achievements.add_field(name = 'Challenges played', value = challenge_next)
         player_achievements.add_field(name = '⠀', value='⠀')
         player_achievements.add_field(name = 'Badges', value = challenge_badges if challenge_badges != '' else '-')
