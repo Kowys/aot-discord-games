@@ -42,10 +42,12 @@ class Game():
             if message.content.startswith('~image'):
                 if not self.state.game_active():
                     await message.channel.send('Generating new image!')
-                    try:
-                        image_file, new_image = self.state.get_new_image(message.channel)
-                    except Exception as e:
-                        print(e)
+                    for i in range(5):
+                        try:
+                            image_file, new_image = self.state.get_new_image(message.channel)
+                            break
+                        except Exception as e:
+                            print(e)
                     await message.channel.send(file = image_file, embed = new_image)
                 else:
                     await message.channel.send('There is already an active game being played! Please finish the current game before starting a new one.')

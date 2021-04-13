@@ -6,6 +6,7 @@ import sqlite3
 import urllib
 import numpy as np
 import cv2
+import os
 from AttackonWikia import fetchURL
 
 class State():
@@ -112,8 +113,11 @@ class State():
     def populate_crops(self, img):
         # 4 different sizes: 0.2, 0.4, 0.6, 1.0
         # Corresponds to 3 hints
-        filename = "image.jpg"
-        cv2.imwrite(filename, img)
+        folder_path = "AttackonWikia/images/{}".format(self.game_channel.id)
+        os.makedirs(folder_path, exist_ok=True)
+
+        filepath = os.path.join(folder_path, "image.jpg")
+        cv2.imwrite(filepath, img)
 
         starting_coords = (random.uniform(0,1), random.uniform(0,1))
         for i, scale in enumerate([0.1, 0.2, 0.3]):
@@ -134,12 +138,14 @@ class State():
 
             h, w = img.shape[0], img.shape[1]
             crop_img = img[int(y1*h):int(y2*h), int(x1*w):int(x2*w)]
-            filename = "image{}.jpg".format(i+1)
-            cv2.imwrite(filename, crop_img)
+            filepath = os.path.join(folder_path, "image{}.jpg".format(i+1))
+            cv2.imwrite(filepath, crop_img)
 
     def get_crop_image(self):
+        folder_path = "AttackonWikia/images/{}".format(self.game_channel.id)
         filename = "image{}.jpg".format(self.image_hint + 1) if self.image_hint < 3 else "image.jpg"
-        img_file = discord.File(filename)
+        filepath = os.path.join(folder_path, filename)
+        img_file = discord.File(filepath, filename=filename)
         return img_file
         
     def get_image(self, image_url):
@@ -1144,8 +1150,8 @@ class State():
                     conn.commit()
         else:
             cur_date = str(time.gmtime().tm_year) + '-' + str(time.gmtime().tm_mon) + '-' + str(time.gmtime().tm_mday)
-            insert_consecutive_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-            insert_consecutive_achievements_values = [player.id, 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0]
+            insert_consecutive_achievements_query = 'INSERT INTO achievements VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+            insert_consecutive_achievements_values = [player.id, 0, 0, cur_date, 1, 1, 0, 0, 0, 0, 0, 0]
             cursor.execute(insert_consecutive_achievements_query, insert_consecutive_achievements_values)
             conn.commit()
         
