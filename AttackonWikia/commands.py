@@ -349,7 +349,7 @@ class Game():
                 self.state.timer = 0
                 if self.state.hangman_challenge == True:
                     cur_question = self.state.question_no
-                    while cur_question == self.state.question_no:
+                    while cur_question == self.state.question_no and self.state.challenge == True:
                         await asyncio.sleep(1)
                         self.state.timer += 1
                         if self.state.timer >= 5:
@@ -381,7 +381,7 @@ class Game():
 
                 elif self.state.image_challenge == True:
                     cur_question = self.state.question_no
-                    while cur_question == self.state.question_no:
+                    while cur_question == self.state.question_no and self.state.challenge == True:
                         await asyncio.sleep(1)
                         self.state.timer += 1
                         if self.state.timer == 15 or self.state.timer == 30 or self.state.timer == 40:
@@ -414,7 +414,7 @@ class Game():
                 else:
                     # Standard challenge
                     cur_question = self.state.question_no
-                    while cur_question == self.state.question_no:
+                    while cur_question == self.state.question_no and self.state.challenge == True:
                         await asyncio.sleep(1)
                         self.state.timer += 1
 
