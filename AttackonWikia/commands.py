@@ -41,14 +41,41 @@ class Game():
 
             if message.content.startswith('~image'):
                 if not self.state.game_active():
-                    await message.channel.send('Generating new image!')
-                    for i in range(5):
-                        try:
-                            image_file, new_image = self.state.get_new_image(message.channel)
-                            break
-                        except Exception as e:
-                            print(e)
-                    await message.channel.send(file = image_file, embed = new_image)
+                    if len(message.content.split(' ')) == 1:
+                        await message.channel.send('Generating new image!')
+                        for i in range(5):
+                            try:
+                                image_file, new_image = self.state.get_new_image(message.channel)
+                                break
+                            except Exception as e:
+                                print(e)
+                        await message.channel.send(file = image_file, embed = new_image)
+                    else:
+                        if message.mentions and message.mentions[0] != message.author:
+                            if self.state.players == [] or message.author != self.state.players[1] or message.mentions[0] != self.state.players[0]:
+                                self.state.players = [message.author, message.mentions[0]]
+                                await message.channel.send('**' + self.state.players[0].name + '** has challenged **' + self.state.players[1].name + '** to a game of images!')
+                                await message.channel.send('**' + self.state.players[1].name + '**, type ~image <@mention> to accept.')
+
+                            elif message.author == self.state.players[1] and message.mentions[0] == self.state.players[0]:
+                                # Starts challenge
+                                await message.channel.send('**' + self.state.players[0].name + '** vs. **' + self.state.players[1].name + '**! First to 3 wins!')
+
+                                self.state.image_challenge = True
+                                self.state.new_challenge(message.channel)
+                                scoreboard = self.state.get_scoreboard()
+                                await message.channel.send(embed = scoreboard)
+                                await asyncio.sleep(2)
+
+                                # +1 to record of questions & challenge questions asked
+                                self.state.new_challenge_qn()
+                                await message.channel.send('-- **Round 1** --')
+                                await asyncio.sleep(1)
+                                self.state.timer = 0
+                                image_file, image_embed = self.state.get_new_image_challenge()
+                                await message.channel.send(file = image_file, embed = image_embed)
+                        else:
+                            await message.channel.send('Please specify a user to challenge!')
                 else:
                     await message.channel.send('There is already an active game being played! Please finish the current game before starting a new one.')
 
@@ -87,7 +114,9 @@ class Game():
 
                                 # +1 to record of questions & challenge questions asked
                                 self.state.new_challenge_qn()
-                                await message.channel.send('**Round 1**')
+                                await message.channel.send('-- **Round 1** --')
+                                await asyncio.sleep(1)
+                                self.state.timer = 0
                                 hangman_msg = self.state.get_new_hangman_challenge()
                                 await message.channel.send(embed = hangman_msg)
                         else:
@@ -147,6 +176,7 @@ class Game():
                             self.state.new_challenge_qn()
                             await message.channel.send('-- **Round 1** --')
                             await asyncio.sleep(1)
+                            self.state.timer = 0
                             clue_contents = self.state.question_set['clues'][0] 
                             clue_msg = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
                             clue_embed = discord.Embed(title = 'Clue 1', description = clue_msg, colour = 0xC0C0C0)
@@ -187,29 +217,32 @@ class Game():
 
                     # Check if any player has reached 3 points
                     if max(self.state.scores) < 3:
+                        self.state.question_no += 1
                         await asyncio.sleep(1)
                         scoreboard = self.state.get_scoreboard()
                         await message.channel.send(embed = scoreboard)
 
                         # Next question
-                        self.state.question_no += 1
                         self.state.new_challenge_qn()
                         await asyncio.sleep(2)
                         await message.channel.send('-- **Round ' + str(self.state.question_no) + '** --')
                         await asyncio.sleep(1)
 
                         self.state.next_question()
-                        if self.state.hangman_challenge == False:
+                        if self.state.hangman_challenge == True:
+                            hangman_msg = self.state.get_new_hangman_challenge()
+                            await message.channel.send(embed = hangman_msg)
+                        elif self.state.image_challenge == True:
+                            image_file, image_embed = self.state.get_new_image_challenge()
+                            await message.channel.send(file = image_file, embed = image_embed)
+                        else:
                             clue_contents = self.state.question_set['clues'][0] 
                             clue_msg = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
                             clue_embed = discord.Embed(title = 'Clue 1', description = clue_msg, colour = 0xC0C0C0)
-                            await message.channel.send(embed = clue_embed)    
-                        else:
-                            hangman_msg = self.state.get_new_hangman_challenge()
-                            await message.channel.send(embed = hangman_msg)
-
+                            await message.channel.send(embed = clue_embed) 
                     else:
                         # Reveal winner
+                        self.state.question_no = 0
                         scoreboard = self.state.get_winner()
                         await asyncio.sleep(1)
                         await message.channel.send(embed = scoreboard)
@@ -313,25 +346,90 @@ class Game():
         while not self.client.is_closed():
             await asyncio.sleep(1)
             if self.state.challenge == True:
-                if self.state.hangman_challenge == False:
+                self.state.timer = 0
+                if self.state.hangman_challenge == True:
+                    cur_question = self.state.question_no
+                    while cur_question == self.state.question_no:
+                        await asyncio.sleep(1)
+                        self.state.timer += 1
+                        if self.state.timer >= 5:
+                            # Reveal new letter
+                            self.state.hangman_reveal_letter()
+                            if '◯' in self.state.get_hangman_word():
+                                # Not completed
+                                self.state.timer = 0
+                                hangman_msg = self.state.get_hangman_challenge_word()
+                                await self.state.game_channel.send(embed = hangman_msg)
+                            else:
+                                if cur_question == self.state.question_no:
+                                    # Reveal answer, move to next question
+                                    await self.state.game_channel.send('Time\'s up! The page is **' + self.state.question_set['title'] + ' !**')
+                                    await self.state.game_channel.send(self.state.question_set['url'])
+                                    self.state.question_no += 1
+                                    self.state.new_challenge_qn()
+                                    self.state.next_question()
+
+                                    await asyncio.sleep(1)
+                                    scoreboard = self.state.get_scoreboard()
+                                    await self.state.game_channel.send(embed = scoreboard)
+
+                                    await asyncio.sleep(2)
+                                    await self.state.game_channel.send('-- **Round ' + str(self.state.question_no) + '** --')
+                                    await asyncio.sleep(1)
+                                    hangman_msg = self.state.get_new_hangman_challenge()
+                                    await self.state.game_channel.send(embed = hangman_msg)
+
+                elif self.state.image_challenge == True:
+                    cur_question = self.state.question_no
+                    while cur_question == self.state.question_no:
+                        await asyncio.sleep(1)
+                        self.state.timer += 1
+                        if self.state.timer == 15 or self.state.timer == 30 or self.state.timer == 40:
+                            self.state.image_hint += 1
+                            image_file, image_embed = self.state.get_image_challenge_image()
+                            await self.state.game_channel.send(file = image_file, embed = image_embed)
+                        
+                        elif self.state.timer == 50:
+                            await self.state.game_channel.send('**' + str(60 - self.state.timer) + '** seconds remaining!')
+
+                        elif self.state.timer >= 60:
+                            if cur_question == self.state.question_no:
+                                # Time's up, next question
+                                await self.state.game_channel.send('Time\'s up! The page is **' + self.state.question_set['title'] + ' !**')
+                                await self.state.game_channel.send(self.state.question_set['url'])
+                                self.state.question_no += 1
+                                self.state.new_challenge_qn()
+                                self.state.next_question()
+
+                                await asyncio.sleep(1)
+                                scoreboard = self.state.get_scoreboard()
+                                await self.state.game_channel.send(embed = scoreboard)
+
+                                await asyncio.sleep(2)
+                                await self.state.game_channel.send('-- **Round ' + str(self.state.question_no) + '** --')
+                                await asyncio.sleep(1)
+                                image_file, image_embed = self.state.get_new_image_challenge()
+                                await self.state.game_channel.send(file = image_file, embed = image_embed)
+
+                else:
                     # Standard challenge
                     cur_question = self.state.question_no
-                    self.state.timer += 10
-                    await asyncio.sleep(10)
-                    if cur_question == self.state.question_no:
-                        if self.state.clue_no < 5:
+                    while cur_question == self.state.question_no:
+                        await asyncio.sleep(1)
+                        self.state.timer += 1
+
+                        if self.state.timer > 0 and self.state.timer % 10 == 0 and self.state.timer < 50:
                             self.state.clue_no += 1
                             clue_contents = self.state.question_set['clues'][self.state.clue_no - 1]
                             clue_msg = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
                             clue_embed = discord.Embed(title = 'Clue ' + str(self.state.clue_no), description = clue_msg, colour = 0xC0C0C0)
                             await self.state.game_channel.send(embed = clue_embed)
 
-                        else:
-                            # Countdown
-                            if self.state.timer < 60:
-                                await self.state.game_channel.send('**' + str(60 - self.state.timer) + '** seconds remaining!')
+                        elif self.state.timer == 50:
+                            await self.state.game_channel.send('**' + str(60 - self.state.timer) + '** seconds remaining!')
 
-                            else:
+                        elif self.state.timer >= 60:
+                            if cur_question == self.state.question_no:
                                 # Time's up, next question
                                 await self.state.game_channel.send('Time\'s up! The page is **' + self.state.question_set['title'] + ' !**')
                                 await self.state.game_channel.send(self.state.question_set['url'])
@@ -351,45 +449,6 @@ class Game():
                                 clue_embed = discord.Embed(title = 'Clue 1', description = clue_msg, colour = 0xC0C0C0)
                                 await self.state.game_channel.send(embed = clue_embed)
 
-                    else:
-                        # Someone answered correctly
-                        continue
-
-                else:
-                    # Hangman challenge
-                    cur_question = self.state.question_no
-                    await asyncio.sleep(5)
-                    if cur_question == self.state.question_no:
-                        # Reveal new letter
-                        self.state.hangman_reveal_letter()
-                        if '◯' in self.state.get_hangman_word():
-                            # Not completed
-                            hangman_msg = self.state.get_hangman_challenge_word()
-                            await self.state.game_channel.send(embed = hangman_msg)
-                        else:
-                            await asyncio.sleep(5)
-                            if cur_question == self.state.question_no:
-                                # Reveal answer, move to next question
-                                await self.state.game_channel.send('Time\'s up! The page is **' + self.state.question_set['title'] + ' !**')
-                                await self.state.game_channel.send(self.state.question_set['url'])
-                                self.state.question_no += 1
-                                self.state.new_challenge_qn()
-                                self.state.next_question()
-
-                                await asyncio.sleep(1)
-                                scoreboard = self.state.get_scoreboard()
-                                await self.state.game_channel.send(embed = scoreboard)
-
-                                await asyncio.sleep(2)
-                                await self.state.game_channel.send('-- **Round ' + str(self.state.question_no) + '** --')
-                                await asyncio.sleep(1)
-                                hangman_msg = self.state.get_new_hangman_challenge()
-                                await self.state.game_channel.send(embed = hangman_msg)
-
-                    else:
-                        # Someone answered correctly
-                        continue
-            
     async def game_timeout(self):
         await self.client.wait_until_ready()
         while not self.client.is_closed():

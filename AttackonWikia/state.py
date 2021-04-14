@@ -20,6 +20,7 @@ class State():
         self.image_hint = 0
         self.challenge = False
         self.hangman_challenge = False
+        self.image_challenge = False
         self.players = []
         self.scores = [0,0]
         self.timer = 0
@@ -63,6 +64,7 @@ class State():
         self.image_hint = 0
         self.challenge = False
         self.hangman_challenge = False
+        self.image_challenge = False
         self.players = []
         self.scores = [0,0]
         self.timer = 0
@@ -73,7 +75,7 @@ class State():
 
     def game_active(self):
         return self.question_set != None or self.image != None or \
-            self.challenge == True or self.hangman_challenge == True
+            self.challenge == True or self.hangman_challenge == True or self.image_challenge == True
 
     def get_new_question(self, msg_channel):
         self.game_reset()
@@ -195,6 +197,18 @@ class State():
             image_embed = discord.Embed(title = 'Guess the image!', description = hint_msg + 'Type `~answer` to reveal the answer.', colour = 0xC0C0C0)
             image_embed.set_image(url = "attachment://{}".format(image_file.filename))
             return image_file, image_embed
+
+    def get_new_image_challenge(self):
+        image_file = self.get_image(self.question_set['image'])
+        image_embed = discord.Embed(title = 'Image Mode', colour = 0xC0C0C0)
+        image_embed.set_image(url = "attachment://image1.jpg")
+        return image_file, image_embed
+
+    def get_image_challenge_image(self):
+        image_file = self.get_crop_image()
+        image_embed = discord.Embed(title = 'Image Mode', colour = 0xC0C0C0)
+        image_embed.set_image(url = "attachment://{}".format(image_file.filename))
+        return image_file, image_embed
 
     def get_new_hangman(self, msg_channel):
         self.game_reset()
@@ -376,16 +390,29 @@ class State():
 
     def new_challenge(self, msg_channel):
         self.challenge = True
-        if self.hangman_challenge == False:
-            self.question_no = 1
+        self.game_channel = msg_channel
+        self.question_no = 1
+        if self.hangman_challenge == True:
+            # clue_no stays at 0
+            self.question_set = fetchURL.new_hangman()
+        elif self.image_challenge == True:
+            self.question_set = fetchURL.new_image()
+            self.image_hint = 0
+        else:
             self.question_set = fetchURL.new_question()
             self.clue_no = 1
-            self.game_channel = msg_channel
-        else:
-            # clue_no stays at 0
-            self.question_no = 1
+
+    def next_question(self):
+        if self.hangman_challenge == True:
             self.question_set = fetchURL.new_hangman()
-            self.game_channel = msg_channel
+        elif self.image_challenge == True:
+            self.question_set = fetchURL.new_image()
+            self.image_hint = 0
+        else:
+            self.question_set = fetchURL.new_question()
+            self.clue_no = 1
+        self.timer = 0
+        self.correct = False
 
     def new_question(self):
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
@@ -475,15 +502,17 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_challenge_query = 'SELECT questions_asked, challenge_questions, hangman_games_played FROM overall'
+        get_challenge_query = 'SELECT questions_asked, challenge_questions, hangman_games_played, images_generated FROM overall'
         cursor.execute(get_challenge_query)
         challenge_info = cursor.fetchone()
 
-        update_challenge_query = 'UPDATE overall SET questions_asked = ?, challenge_questions = ?, hangman_games_played = ?'
-        if self.hangman_challenge == False:
-            update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2]]
+        update_challenge_query = 'UPDATE overall SET questions_asked = ?, challenge_questions = ?, hangman_games_played = ?, images_generated = ?'
+        if self.hangman_challenge == True:
+            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2] + 1, challenge_info[3]]
+        elif self.image_challenge == True:
+            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2], challenge_info[3] + 1]
         else:
-            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2] + 1]
+            update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2], challenge_info[3]]
 
         cursor.execute(update_challenge_query, update_challenge_data)
 
@@ -494,15 +523,17 @@ class State():
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
         cursor = conn.cursor()
 
-        get_challenge_query = 'SELECT questions_correct, challenge_questions_correct, hangman_games_won FROM overall'
+        get_challenge_query = 'SELECT questions_correct, challenge_questions_correct, hangman_games_won, images_correct FROM overall'
         cursor.execute(get_challenge_query)
         challenge_info = cursor.fetchone()
 
-        update_challenge_query = 'UPDATE overall SET questions_correct = ?, challenge_questions_correct = ?, hangman_games_won = ?'
-        if self.hangman_challenge == False:
-            update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2]]
+        update_challenge_query = 'UPDATE overall SET questions_correct = ?, challenge_questions_correct = ?, hangman_games_won = ?, images_correct = ?'
+        if self.hangman_challenge == True:
+            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2] + 1, challenge_info[3]]
+        elif self.image_challenge == True:
+            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2], challenge_info[3] + 1]
         else:
-            update_challenge_data = [challenge_info[0], challenge_info[1] + 1, challenge_info[2] + 1]
+            update_challenge_data = [challenge_info[0] + 1, challenge_info[1] + 1, challenge_info[2], challenge_info[3]]
 
         cursor.execute(update_challenge_query, update_challenge_data)
 
@@ -609,15 +640,6 @@ class State():
         scoreboard.add_field(name = self.players[0].name, value = self.get_score(0)) 
         scoreboard.add_field(name = self.players[1].name, value = self.get_score(1)) 
         return scoreboard
-
-    def next_question(self):
-        if self.hangman_challenge == False:
-            self.question_set = fetchURL.new_question()
-            self.clue_no = 1
-        else:
-            self.question_set = fetchURL.new_hangman()
-        self.timer = 0
-        self.correct = False
 
     def get_winner(self):
         winner_index = 0 if self.scores[0] >= 3 else 1
@@ -1604,7 +1626,7 @@ class State():
         aow_commands = '`~new`\n Starts a new puzzle.\n' + \
         '`~clue`\n Gives another hint for the current puzzle. There is a maximum of 5 clues per puzzle.\n' + \
         '`~hangman <@person>`\n Starts a new Hangman game. Type `~hangman <@person>` to challenge someone to a Hangman game.\n' + \
-        '`~image`\n Starts image mode.\n' + \
+        '`~image`\n Starts image mode. Type `~image <@person>` to start an image challenge.\n' + \
         '`~answer`\n Reveals the answer of an active puzzle.\n' + \
         '`~challenge <@person>`\n Sends a challenge to another person, or accepts an incoming challenge.\n' + \
         '`~reset`\n Resets the game.\n' + \
