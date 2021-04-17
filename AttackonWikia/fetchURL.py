@@ -1,6 +1,11 @@
 import urllib.request
 import random
 
+def gettitle(fullstr):
+    front = fullstr.split('<title>', 1)[1]
+    back = front.split(' |', 1)[0]
+    return back
+
 def get_question():
 
     r =  urllib.request.urlopen('https://attackontitan.wikia.com/wiki/Special:Random')
@@ -8,13 +13,8 @@ def get_question():
     pagetext = r.read().decode('utf-8')
     page_url = r.geturl()
     page_url = page_url.replace('.fandom.', '.wikia.')
-
-    def gettitle(fullstr):
-        front = fullstr.split('<title>', 1)[1]
-        back = front.split(' |', 1)[0]
-        return back
-
     page_title = gettitle(pagetext)
+    
     if 'image gallery' in page_title.lower():
         return None
 
@@ -62,8 +62,11 @@ def get_question():
                     if i in cur_sentence[-4:]:
                         contains = True
                 if contains == False:
+                    if '&#93;' in cur_sentence:
+                        cur_sentence = cur_sentence.split('&#93;')[1]
                     sentences.append(cur_sentence)
                     cur_sentence = ''
+
         return sentences
 
     sentences = getsentences(filtertext)
@@ -119,12 +122,6 @@ def get_hangman():
     pagetext = r.read().decode('utf-8')
     page_url = r.geturl()
     page_url = page_url.replace('.fandom.', '.wikia.')
-
-    def gettitle(fullstr):
-        front = fullstr.split('<title>', 1)[1]
-        back = front.split(' |', 1)[0]
-        return back
-
     page_title = gettitle(pagetext)
 
     # Keep only alphabetical letters
@@ -159,12 +156,6 @@ def get_image():
     pagetext = r.read().decode('utf-8')
     page_url = r.geturl()
     page_url = page_url.replace('.fandom.', '.wikia.')
-
-    def gettitle(fullstr):
-        front = fullstr.split('<title>', 1)[1]
-        back = front.split(' |', 1)[0]
-        return back
-
     page_title = gettitle(pagetext)
 
     # Get URL of image
