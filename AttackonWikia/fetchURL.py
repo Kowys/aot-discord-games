@@ -1,13 +1,42 @@
 import urllib.request
 import random
+import unicodedata
 
-def gettitle(fullstr):
-    front = fullstr.split('<title>', 1)[1]
+cjk_ranges = [
+    {"from": ord(u"\u3300"), "to": ord(u"\u33ff")},         # compatibility ideographs
+    {"from": ord(u"\ufe30"), "to": ord(u"\ufe4f")},         # compatibility ideographs
+    {"from": ord(u"\uf900"), "to": ord(u"\ufaff")},         # compatibility ideographs
+    {"from": ord(u"\U0002F800"), "to": ord(u"\U0002fa1f")}, # compatibility ideographs
+    {'from': ord(u'\u3040'), 'to': ord(u'\u309f')},         # Japanese Hiragana
+    {"from": ord(u"\u30a0"), "to": ord(u"\u30ff")},         # Japanese Katakana
+    {"from": ord(u"\u2e80"), "to": ord(u"\u2eff")},         # cjk radicals supplement
+    {"from": ord(u"\u4e00"), "to": ord(u"\u9fff")},
+    {"from": ord(u"\u3400"), "to": ord(u"\u4dbf")},
+    {"from": ord(u"\U00020000"), "to": ord(u"\U0002a6df")},
+    {"from": ord(u"\U0002a700"), "to": ord(u"\U0002b73f")},
+    {"from": ord(u"\U0002b740"), "to": ord(u"\U0002b81f")},
+    {"from": ord(u"\U0002b820"), "to": ord(u"\U0002ceaf")}  # included as of Unicode 8.0
+]
+
+def is_cjk(char):
+    return any([r["from"] <= ord(char) <= r["to"] for r in cjk_ranges])
+
+def gettitle(s):
+    front = s.split('<title>', 1)[1]
     back = front.split(' |', 1)[0]
     return back
 
-def get_question():
+def hasJapanese(s):
+    for c in s:
+        if is_cjk(c):
+            return True
+    return False
 
+def removeAccents(s):
+    return unicodedata.normalize('NFD', s)\
+        .encode('ascii', 'ignore').decode("utf-8")
+
+def getPage():
     r =  urllib.request.urlopen('https://attackontitan.wikia.com/wiki/Special:Random')
 
     pagetext = r.read().decode('utf-8')
@@ -17,6 +46,15 @@ def get_question():
     
     if 'image gallery' in page_title.lower():
         return None
+    if hasJapanese(page_title):
+        return None
+
+    page_title = removeAccents(page_title)
+
+    return page_url, page_title, pagetext
+
+def get_question():
+    page_url, page_title, pagetext = getPage()
 
     # Keeps only the main content of the page
     cuttext = pagetext.split('<p>', 1)[1]
@@ -116,13 +154,7 @@ def new_question():
     return question_set
 
 def get_hangman():
-
-    r =  urllib.request.urlopen('https://attackontitan.wikia.com/wiki/Special:Random')
-
-    pagetext = r.read().decode('utf-8')
-    page_url = r.geturl()
-    page_url = page_url.replace('.fandom.', '.wikia.')
-    page_title = gettitle(pagetext)
+    page_url, page_title, pagetext = getPage()
 
     # Keep only alphabetical letters
     def check_for_symbols(title):
@@ -150,13 +182,7 @@ def new_hangman():
 
 
 def get_image():
-
-    r =  urllib.request.urlopen('https://attackontitan.fandom.com/wiki/Special:Random')
-
-    pagetext = r.read().decode('utf-8')
-    page_url = r.geturl()
-    page_url = page_url.replace('.fandom.', '.wikia.')
-    page_title = gettitle(pagetext)
+    page_url, page_title, pagetext = getPage()
 
     # Get URL of image
     def find_image_url(pagetext):
