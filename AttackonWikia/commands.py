@@ -1,5 +1,6 @@
 import discord
 import asyncio
+import time
 from AttackonWikia import state
 
 class Game():

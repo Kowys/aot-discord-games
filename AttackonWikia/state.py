@@ -149,23 +149,59 @@ class State():
         filepath = os.path.join(folder_path, filename)
         img_file = discord.File(filepath, filename=filename)
         return img_file
+
+    def blacklistUrl(self, image_url):
+        base_url = "AttackonWikia","blacklist"
+        shortened_image_url = image_url.split('/')[-1]
+        os.makedirs(os.path.join("AttackonWikia","blacklist", shortened_image_url), exist_ok=True)
+
+    def urlBlacklisted(self, image_url):
+        base_path = "AttackonWikia/blacklist"
+        os.makedirs(base_path, exist_ok=True)
+        shortened_image_url = image_url.split('/')[-1]
+        if shortened_image_url in os.listdir(base_path):
+            return True
+        else:
+            return False
         
     def get_image(self, image_url):
-        url_response = urllib.request.urlopen(image_url)
+        try:
+            url_response = urllib.request.urlopen(image_url)
+        except:
+            # Blacklist url
+            self.blacklistUrl(image_url)
+            return None
+
         img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
-        img = cv2.imdecode(img_array, -1)
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        if img is None:
+            self.blacklistUrl(image_url)
+            return None
 
         self.populate_crops(img)
 
         return self.get_crop_image()
 
+    def fetch_new_image(self):
+        self.question_set, image_file = None, None
+        for _ in range(10):
+            self.question_set = fetchURL.new_image()
+            image_url = self.question_set['image']
+            if self.urlBlacklisted(image_url):
+                continue
+
+            image_file = self.get_image(image_url)
+            if self.question_set and image_file:
+                break
+
+        return image_file
+
     def get_new_image(self, msg_channel):
         self.game_reset()
         self.game_channel = msg_channel
-        self.question_set = fetchURL.new_image()
-        self.new_image_update()
+        image_file = self.fetch_new_image()
 
-        image_file = self.get_image(self.question_set['image'])
+        self.new_image_update()
 
         if self.image_hint < 3:
             hint_msg = 'Type `~hint` to reveal more of the image.\n'

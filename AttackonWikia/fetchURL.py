@@ -38,6 +38,7 @@ def removeAccents(s):
 
 def getPage():
     r =  urllib.request.urlopen('https://attackontitan.wikia.com/wiki/Special:Random')
+    # r =  urllib.request.urlopen('https://attackontitan.fandom.com/wiki/Sasha_Braus_(Anime)')
 
     pagetext = r.read().decode('utf-8')
     page_url = r.geturl()
@@ -45,9 +46,9 @@ def getPage():
     page_title = gettitle(pagetext)
     
     if 'image gallery' in page_title.lower():
-        return None
+        return None, None, None
     if hasJapanese(page_title):
-        return None
+        return None, None, None
 
     page_title = removeAccents(page_title)
 
@@ -55,6 +56,8 @@ def getPage():
 
 def get_question():
     page_url, page_title, pagetext = getPage()
+    if page_url == None:
+        return None
 
     # Keeps only the main content of the page
     cuttext = pagetext.split('<p>', 1)[1]
@@ -155,6 +158,8 @@ def new_question():
 
 def get_hangman():
     page_url, page_title, pagetext = getPage()
+    if page_url == None:
+        return None
 
     # Keep only alphabetical letters
     def check_for_symbols(title):
@@ -183,6 +188,8 @@ def new_hangman():
 
 def get_image():
     page_url, page_title, pagetext = getPage()
+    if page_url == None:
+        return None
 
     # Get URL of image
     def find_image_url(pagetext):
