@@ -151,9 +151,8 @@ class State():
         return img_file
 
     def blacklistUrl(self, image_url):
-        base_url = "AttackonWikia","blacklist"
         shortened_image_url = image_url.split('/')[-1]
-        os.makedirs(os.path.join("AttackonWikia","blacklist", shortened_image_url), exist_ok=True)
+        os.makedirs(os.path.join("AttackonWikia", "blacklist", shortened_image_url), exist_ok=True)
 
     def urlBlacklisted(self, image_url):
         base_path = "AttackonWikia/blacklist"
@@ -163,20 +162,83 @@ class State():
             return True
         else:
             return False
-        
-    def get_image(self, image_url):
-        try:
-            url_response = urllib.request.urlopen(image_url)
-        except:
-            # Blacklist url
-            self.blacklistUrl(image_url)
+
+    def fromImageCache(self, image_url):
+        os.makedirs("AttackonWikia/image_cache", exist_ok=True)
+
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        image_cache_query = 'SELECT filename FROM cache WHERE url = ?'
+        cursor.execute(image_cache_query, (image_url,))
+        filename = cursor.fetchone()
+        conn.commit()
+        conn.close()
+
+        if filename:
+            filepath = os.path.join("AttackonWikia", "image_cache", filename[0])
+            img = cv2.imread(filepath)
+            return img
+        else:
             return None
 
-        img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
-        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-        if img is None:
-            self.blacklistUrl(image_url)
+    def saveToCache(self, img, image_url):
+        filename = image_url.split('/')[-1]
+        filepath = os.path.join("AttackonWikia", "image_cache", filename)
+        cv2.imwrite(filepath, img)
+
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        image_cache_query = 'INSERT INTO cache VALUES (?,?)'
+        image_values = [image_url, filename]
+        cursor.execute(image_cache_query, image_values)
+        conn.commit()
+        conn.close()
+
+    def populate_cache(self):
+        for _ in range(10):
+            self.question_set = fetchURL.new_image()
+            image_url = self.question_set['image']
+            if self.urlBlacklisted(image_url):
+                continue
+
+            img = self.fromImageCache(image_url)
+            if img is None:
+                try:
+                    url_response = urllib.request.urlopen(image_url)
+                except:
+                    # Blacklist url
+                    self.blacklistUrl(image_url)
+                    return None
+
+                img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
+                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                if img is None:
+                    self.blacklistUrl(image_url)
+                    return None
+                
+                self.saveToCache(img, image_url)
+
             return None
+        
+    def get_image(self, image_url):
+        img = self.fromImageCache(image_url)
+        if img is None:
+            try:
+                url_response = urllib.request.urlopen(image_url)
+            except:
+                # Blacklist url
+                self.blacklistUrl(image_url)
+                return None
+
+            img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
+            img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+            if img is None:
+                self.blacklistUrl(image_url)
+                return None
+
+            self.saveToCache(img, image_url)
 
         self.populate_crops(img)
 

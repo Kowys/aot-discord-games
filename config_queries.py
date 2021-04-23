@@ -11,7 +11,8 @@ def initialize_dbs():
             'one_clue_gm integer', 'challenges_gm integer', 'streak_gm integer', 'hangman_gm integer', 'no_hint_image integer']),
             ('dailies', ['player integer', 'last_play text', 'standard integer', 'hangman integer', 'challenge integer', 'image integer']),
             ('overall', ['questions_asked integer', 'questions_correct integer', 'challenges_completed integer', 'challenge_questions integer', 'challenge_questions_correct integer',
-            'hangman_games_played integer', 'hangman_games_won integer', 'images_generated integer', 'images_correct integer'])
+            'hangman_games_played integer', 'hangman_games_won integer', 'images_generated integer', 'images_correct integer']),
+            ('cache', ['url text', 'filename text'])
         ],
         'ChooseYourAdventure/cya_db.db': [
             ('endings', ['player integer', 'joining_the_garrison integer', 'an_ordinary_moment_of_happiness integer', 'jean_kirstein_of_the_survey_corps integer', 'a_narrow_victory integer',

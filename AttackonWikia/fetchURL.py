@@ -38,7 +38,6 @@ def removeAccents(s):
 
 def getPage():
     r =  urllib.request.urlopen('https://attackontitan.wikia.com/wiki/Special:Random')
-    # r =  urllib.request.urlopen('https://attackontitan.fandom.com/wiki/Sasha_Braus_(Anime)')
 
     pagetext = r.read().decode('utf-8')
     page_url = r.geturl()
