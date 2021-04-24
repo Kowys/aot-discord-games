@@ -40,6 +40,13 @@ class Game():
                 else:
                     await message.channel.send(embed = clue_msg)
 
+            if message.content.startswith('~bonus'):
+                clue_msg = self.state.get_bonus_clue(message.author)
+                if type(clue_msg) == str:
+                    await message.channel.send(clue_msg)
+                else:
+                    await message.channel.send(embed = clue_msg)
+
             if message.content.startswith('~image'):
                 if not self.state.game_active():
                     if len(message.content.split(' ')) == 1:
@@ -326,6 +333,10 @@ class Game():
                 await leaderboard_msg.edit(embed=leaderboard)
                 await rxn.remove(user)
                 await asyncio.sleep(0.1)
+
+        if message.content.startswith('~special'):
+            specials = self.state.get_specials()
+            await message.channel.send(embed = specials)
 
         if message.content.startswith('~help') or message.content.startswith('~commands'):
             commands = self.state.get_commands()

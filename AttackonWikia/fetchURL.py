@@ -129,11 +129,11 @@ def get_question():
     sentences = list(filter(lambda x: len(x) > 20, sentences))
     sentences = list(map(removebrac2, sentences))
 
-    if len(sentences) < 5:
+    if len(sentences) < 6:
         return None
     else:
         clueset = []
-        while len(clueset) < 5:
+        while len(clueset) < 6:
             n = random.randint(0, len(sentences)-1)
             if n not in clueset:
                 clueset.append(n)

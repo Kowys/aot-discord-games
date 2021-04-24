@@ -109,8 +109,56 @@ class State():
             elif self.clue_no == 5:
                 clue_msg = fixed_clue_contents + '\n\n' + 'Type `~answer` to reveal the answer.'
             clue_embed = discord.Embed(title = 'Clue ' + str(self.clue_no), description = clue_msg, colour = 0xC0C0C0)
+            return clue_embed
 
-        return clue_embed
+    def get_bonus_clue(self, player):
+        if self.question_set == None:
+            return 'No puzzle is currently active!'
+        elif len(self.question_set) == 2:
+            return 'You can\'t use that in a hangman game!'
+        elif 'clues' not in self.question_set:
+            return 'You can\'t use that when guessing the image!'
+        else:
+            cur_level = self.get_player_level(player)
+            if cur_level < 50:
+                return 'You need to be **Level 50** to use the bonus clue! (Type `~profile` to see your current level)'
+
+            clue_contents = self.question_set['clues'][5]
+            fixed_clue_contents = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
+            if self.clue_no < 5:
+                clue_msg = fixed_clue_contents + '\n\n' + 'Type `~clue` for the next hint. Type `~answer` to reveal the answer.'
+            elif self.clue_no == 5:
+                clue_msg = fixed_clue_contents + '\n\n' + 'Type `~answer` to reveal the answer.'
+            clue_embed = discord.Embed(title = 'Bonus Clue', description = clue_msg, colour = 0xC0C0C0)
+            return clue_embed
+
+    def get_player_level(self, player):
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        # Extract data
+        get_player_data = 'SELECT * FROM players WHERE player = ?'
+        cursor.execute(get_player_data, (player.id,))
+        player_info = cursor.fetchone()
+
+        if player_info is None:
+            insert_player_data = 'INSERT INTO players VALUES (?,?,?,?,?,?,?)'
+            player_data = [player.id, 0, 0, 0, 0, 0, 0]
+            cursor.execute(insert_player_data, player_data)
+            conn.commit()
+
+            player_info = [player.id, 0, 0, 0, 0, 0, 0]
+
+        conn.close()
+
+        # Put info into embed
+        for level in self.levelling_system:
+            if player_info[1] < level[1]:
+                next_exp = level[1] - player_info[1]
+                break
+            player_level = level[0]
+
+        return player_level
 
     def populate_crops(self, img):
         # 4 different sizes: 0.2, 0.4, 0.6, 1.0
@@ -1719,8 +1767,12 @@ class State():
 
         return leaderboard, page_no
 
+    def get_specials(self):
+        specials = '`~bonus`\nGet a bonus clue for the current puzzle! **(Level 50 to unlock)**'
+        specials_list = discord.Embed(title = 'Special Commands for Attack on Wikia', description = specials, colour = 0xC0C0C0)
+        return specials_list
+
     def get_commands(self):
-        # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Attack on Wikia', colour = 0xC0C0C0)
         general_commands = '`~credits` : Who made me/Get support\n' + \
             '`~patreon` : Support the creator!'
@@ -1737,6 +1789,7 @@ class State():
         '`~badges <@person>`\n Checks the badges of a given user.\n' + \
         '`~dailies`\n Checks the progress of your daily rewards.\n' + \
         '`~gamestats`\n Shows the overall game statistics.\n' + \
-        '`~leaderboard/~lb <page> <@person>`\n Shows the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).'
+        '`~leaderboard/~lb <page> <@person>`\n Shows the leaderboard, listing the top 10 players on the server. Add a number or tag to see subsequent pages (e.g. `~lb 2`).\n' + \
+        '`~special`\n Shows the list of special commands that require certain levels to access.'
         commands_list.add_field(name = 'Attack on Wikia', value = aow_commands)
         return commands_list
