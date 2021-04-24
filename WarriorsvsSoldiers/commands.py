@@ -848,7 +848,6 @@ class Game():
                     await message.channel.send('There is no open lobby at the moment!')
 
             if message.content.startswith('~profile') or message.content.startswith('~rank'):
-                messagebox = message.content.split(' ')
                 if message.mentions:
                     player_profile = message.mentions[0]
                 else:
@@ -857,7 +856,6 @@ class Game():
                 await message.channel.send(embed=profile)
 
             if message.content.startswith('~badges') or message.content.startswith('~achievements'):
-                messagebox = message.content.split(' ') 
                 if message.mentions:
                     player_profile = message.mentions[0]
                 else:

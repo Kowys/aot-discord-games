@@ -79,10 +79,8 @@ class Game():
 
         # Player profile
         if message.content.startswith('~profile') or message.content.startswith('~info'):
-            messagebox = message.content.split(' ')
-            if len(messagebox) == 1:
-                player_obj = message.author
-            elif message.mentions:
+            player_obj = message.author
+            if message.mentions:
                 player_obj = message.mentions[0]
             profile = self.state.get_profile(player_obj)
             await message.channel.send(embed = profile)

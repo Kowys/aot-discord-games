@@ -272,10 +272,8 @@ class Game():
 
         # Information
         if message.content.startswith('~profile') or message.content.startswith('~rank'):
-            messagebox = message.content.split(' ')
-            if len(messagebox) == 1:
-                player_obj = message.author
-            elif message.mentions:
+            player_obj = message.author
+            if message.mentions:
                 player_obj = message.mentions[0]
             profile = self.state.get_profile(player_obj, message.guild)
             await message.channel.send(embed = profile)
