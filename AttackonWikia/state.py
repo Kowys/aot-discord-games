@@ -1691,8 +1691,10 @@ class State():
         # Put names into embed
         all_names = ''
         all_levels_exp = ''
+        nums = {1:'🥇', 2:'🥈', 3:'🥉', 4:'4⃣', 5:'5⃣', 6:'6⃣', 7:'7⃣', 8:'8⃣', 9:'9⃣', 10:'🔟'}
         for rank in range((page_no - 1) * 10 + 1, min(len(player_rankings) + 1, page_no * 10 + 1)):
-            all_names += str(rank) + '. <@' + str(player_rankings[rank-1][0]) + '>\n'
+            rank_emoji = nums[rank] if rank <= 10 else str(rank) + '.'
+            all_names += rank_emoji + ' <@' + str(player_rankings[rank-1][0]) + '>\n'
             for level in self.levelling_system:
                 if player_rankings[rank-1][1] < level[1]:
                     next_level_exp = level[1]
