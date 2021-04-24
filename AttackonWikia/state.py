@@ -211,9 +211,12 @@ class State():
                     # Blacklist url
                     self.blacklistUrl(image_url)
                     return None
-
-                img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
-                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                try:
+                    img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
+                    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                except:
+                    self.blacklistUrl(image_url)
+                    return None
                 if img is None:
                     self.blacklistUrl(image_url)
                     return None
