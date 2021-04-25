@@ -15,6 +15,7 @@ class State():
         self.question_no = 0
         self.question_set = None
         self.clue_no = 0
+        self.used_bonus_clue = False
         self.game_channel = None
         self.image = None
         self.image_hint = 0
@@ -59,6 +60,7 @@ class State():
         self.question_no = 0
         self.question_set = None
         self.clue_no = 0
+        self.used_bonus_clue = False
         self.game_channel = None
         self.image = None
         self.image_hint = 0
@@ -123,6 +125,7 @@ class State():
             if cur_level < 50:
                 return 'You need to be **Level 50** to use the bonus clue! (Type `~profile` to see your current level)'
 
+            self.used_bonus_clue = True
             clue_contents = self.question_set['clues'][5]
             fixed_clue_contents = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
             if self.clue_no < 5:
@@ -1091,7 +1094,7 @@ class State():
 
         achievement_msgs = []
         # 1 clue
-        if self.clue_no == 1:
+        if self.clue_no == 1 and self.used_bonus_clue == False:
             if player_achievements:
                 new_clue_value = player_achievements[1] + 1
                 update_clue_achievements_query = 'UPDATE achievements SET one_clue = ? WHERE player = ?'
