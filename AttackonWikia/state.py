@@ -29,6 +29,7 @@ class State():
         self.letters_guessed = ''
         self.wrong_answers = 0
         self.wrong_letter = False
+        self.extra_life = False
 
         # Constants
         self.intro_msg = discord.Embed(title = 'Game Reset!', description = 'Type `~new` to start a new puzzle.\n' + \
@@ -74,6 +75,7 @@ class State():
         self.letters_guessed = ''
         self.wrong_answers = 0
         self.wrong_letter = False
+        self.extra_life = False
 
     def game_active(self):
         return self.question_set != None or self.image != None or \
@@ -122,7 +124,7 @@ class State():
             return 'You can\'t use that when guessing the image!'
         else:
             cur_level = self.get_player_level(player)
-            if cur_level < 50:
+            if cur_level < 50 and player.id != 238808836075421697:
                 return 'You need to be **Level 50** to use the bonus clue! (Type `~profile` to see your current level)'
 
             self.used_bonus_clue = True
@@ -443,7 +445,7 @@ class State():
             self.wrong_letter = True
             self.wrong_answers += 1
 
-            if self.wrong_answers < 6:
+            if self.wrong_answers < 6 + self.extra_life:
                 description = '❌ Letter `' + letter.upper() + '` does not exist. Please try again.'
             else:
                 description = '❌ Letter `' + letter.upper() + '` does not exist.'
@@ -453,6 +455,29 @@ class State():
             hangman_embed.set_footer(text = self.letters_guessed)
 
             return hangman_embed
+
+    def get_extra_life(self, player):
+        if self.question_set == None:
+            return 'No hangman game is currently active!', None
+        elif 'clues' in self.question_set:
+            return 'You can\'t use that in a puzzle game!', None
+        elif 'image' in self.question_set:
+            return 'You can\'t use that when guessing the image!', None
+        else:
+            cur_level = self.get_player_level(player)
+            if cur_level < 75 and player.id != 238808836075421697:
+                return 'You need to be **Level 75** to get an extra life! (Type `~profile` to see your current level)', None
+            elif self.extra_life:
+                return 'The current hangman game already has an extra life!', None
+
+        self.extra_life = True
+
+        current_word = self.get_hangman_word()
+        hangman_status = self.get_hangman_status()
+        hangman_embed = discord.Embed(title = 'Hangman Mode', description = current_word + '\n\n' + hangman_status, colour = 0xC0C0C0)
+        hangman_embed.set_footer(text = self.letters_guessed)
+
+        return 'An extra life has been added to the current hangman game!', hangman_embed
 
     def get_hangman_word(self):
         title = '`'
@@ -475,9 +500,16 @@ class State():
             3: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥🏠 🏰🏰',
             4: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 🏰🏰',
             5: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 💥🏰',
-            6: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 💥💥'
+            6: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 💥💥',
+            7: '⠀🇲 \u2001\u2004🇷 \u2001 🇸\n💥💥 💥💥 💥💥'
         }
-        return hangman_dict[self.wrong_answers]
+        hangman_status = hangman_dict[self.wrong_answers]
+        if self.extra_life:
+            if self.wrong_answers < 7:
+                hangman_status += ' 🏯'
+            else:
+                hangman_status += ' 💥'
+        return hangman_status
 
     def get_end_question_msg(self):
         if len(self.question_set) == 3:
@@ -1771,7 +1803,8 @@ class State():
         return leaderboard, page_no
 
     def get_specials(self):
-        specials = '`~bonus`\nGet a bonus clue for the current puzzle! **(Level 50 to unlock)**'
+        specials = '`~bonus`\nGet a bonus clue for the current puzzle! **(Level 50 to unlock)**\n' + \
+            '`~life`\nAdds an extra life to the current hangman game! **(Level 75 to unlock)**'
         specials_list = discord.Embed(title = 'Special Commands for Attack on Wikia', description = specials, colour = 0xC0C0C0)
         return specials_list
 

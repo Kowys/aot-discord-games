@@ -131,6 +131,12 @@ class Game():
                             await message.channel.send('Please specify a user to challenge!')
                 else:
                     await message.channel.send('There is already an active game being played! Please finish the current game before starting a new one.')
+            
+            if message.content.startswith('~life'):
+                extra_life_msg, hangman_embed = self.state.get_extra_life(message.author)
+                await message.channel.send(extra_life_msg)
+                if hangman_embed:
+                    await message.channel.send(embed = hangman_embed)
                 
             if message.content.startswith('~answer'):
                 answer_msgs = self.state.get_answer()
@@ -151,7 +157,7 @@ class Game():
                 if type(letter_guess_msgs) != list:
                     # Embed, hangman still in progress
                     await message.channel.send(embed = letter_guess_msgs)
-                    if self.state.wrong_answers >= 6:
+                    if self.state.wrong_answers >= 6 + self.state.extra_life:
                         answer_msgs = self.state.get_answer()
                         for answer_msg in answer_msgs:
                             await message.channel.send(answer_msg)
