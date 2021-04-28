@@ -335,9 +335,8 @@ class Game():
 
         if message.content.startswith('~badges') or message.content.startswith('~achievements'):
             messagebox = message.content.split(' ')
-            if len(messagebox) == 1:
-                player_obj = message.author
-            elif message.mentions:
+            player_obj = message.author
+            if message.mentions:
                 player_obj = message.mentions[0]
             badges = self.state.get_achievements(player_obj)
             await message.channel.send(embed = badges)
