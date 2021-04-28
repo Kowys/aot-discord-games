@@ -22,6 +22,9 @@ class State():
         self.challenge = False
         self.hangman_challenge = False
         self.image_challenge = False
+        self.super_invite = False
+        self.super_challenge = False
+        self.super_challenge_rotation = []
         self.players = []
         self.scores = [0,0]
         self.timer = 0
@@ -68,6 +71,9 @@ class State():
         self.challenge = False
         self.hangman_challenge = False
         self.image_challenge = False
+        self.super_invite = False
+        self.super_challenge = False
+        self.super_challenge_rotation = []
         self.players = []
         self.scores = [0,0]
         self.timer = 0
@@ -375,12 +381,6 @@ class State():
         hangman_embed = discord.Embed(title = 'Hangman Mode', description = current_word + '\n\n' + hangman_status, colour = 0xC0C0C0)
         return hangman_embed
 
-    def get_new_hangman_challenge(self):
-        self.letters_guessed = ''
-        current_word = self.get_hangman_word()
-        hangman_embed = discord.Embed(title = 'Hangman Mode', description = current_word, colour = 0xC0C0C0)
-        return hangman_embed
-
     def get_hangman_challenge_word(self):
         current_word = self.get_hangman_word()
         hangman_embed = discord.Embed(title = 'Hangman Mode', description = current_word, colour = 0xC0C0C0)
@@ -511,6 +511,12 @@ class State():
                 hangman_status += ' 💥'
         return hangman_status
 
+    def get_puzzle_challenge_clue(self):
+        clue_contents = self.question_set['clues'][self.clue_no - 1]
+        clue_msg = clue_contents[1:] if clue_contents.startswith(' ') else clue_contents
+        clue_embed = discord.Embed(title = 'Clue ' + str(self.clue_no), description = clue_msg, colour = 0xC0C0C0)
+        return clue_embed
+
     def get_end_question_msg(self):
         if len(self.question_set) == 3:
             if 'image' in self.question_set:
@@ -576,9 +582,13 @@ class State():
         self.challenge = True
         self.game_channel = msg_channel
         self.question_no = 1
+        if self.super_challenge == True:
+            self.super_challenge_rotation = sorted(['puzzle','hangman','image'], key = lambda x: random.randint(1, 100))
+            self.next_super_round()
+
         if self.hangman_challenge == True:
-            # clue_no stays at 0
             self.question_set = fetchURL.new_hangman()
+            self.letters_guessed = ''
         elif self.image_challenge == True:
             self.question_set = fetchURL.new_image()
             self.image_hint = 0
@@ -586,17 +596,39 @@ class State():
             self.question_set = fetchURL.new_question()
             self.clue_no = 1
 
+        self.timer = 0
+        self.correct = False
+
     def next_question(self):
+        if self.super_challenge == True:
+            self.next_super_round()
+
         if self.hangman_challenge == True:
             self.question_set = fetchURL.new_hangman()
+            self.letters_guessed = ''
         elif self.image_challenge == True:
             self.question_set = fetchURL.new_image()
             self.image_hint = 0
         else:
             self.question_set = fetchURL.new_question()
             self.clue_no = 1
+
         self.timer = 0
         self.correct = False
+
+    def next_super_round(self):
+        next_round = self.super_challenge_rotation.pop(0)
+        if next_round == 'puzzle':
+            self.hangman_challenge = False
+            self.image_challenge = False
+        elif next_round == 'hangman':
+            self.hangman_challenge = True
+            self.image_challenge = False
+        elif next_round == 'image':
+            self.hangman_challenge = False
+            self.image_challenge = True
+
+        self.super_challenge_rotation.append(next_round)
 
     def new_question(self):
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
@@ -810,14 +842,13 @@ class State():
 
     def get_score(self, num):
         score = self.scores[num]
-        if score == 0:
-            return '⬛ ⬛ ⬛'
-        elif score == 1:
-            return '✅ ⬛ ⬛'
-        elif score == 2:
-            return '✅ ✅ ⬛'
-        elif score == 3:
-            return '✅ ✅ ✅'
+        scoreboard_str = ''
+        for i in range(3 + 2 * self.super_challenge):
+            if score > i:
+                scoreboard_str += '✅ '
+            else:
+                scoreboard_str += '⬛ '
+        return scoreboard_str
 
     def get_scoreboard(self):
         scoreboard = discord.Embed(title='Scores\n', colour=0xB4B4B4)
@@ -826,8 +857,8 @@ class State():
         return scoreboard
 
     def get_winner(self):
-        winner_index = 0 if self.scores[0] >= 3 else 1
-        loser_index = 1 if self.scores[0] >= 3 else 0
+        winner_index = 0 if self.scores[0] >= 3 + 2 * self.super_challenge else 1
+        loser_index = 1 if self.scores[0] >= 3 + 2 * self.super_challenge else 0
         players = [self.players[winner_index], self.players[loser_index]]
 
         scoreboard = discord.Embed(title='🏆 The winner is **' + players[0].name + '**! 🏆', colour=0xB4B4B4)
@@ -837,8 +868,8 @@ class State():
         return scoreboard
 
     def challenge_update_player_records(self):
-        winner_index = 0 if self.scores[0] >= 3 else 1
-        loser_index = 1 if self.scores[0] >= 3 else 0
+        winner_index = 0 if self.scores[0] >= 3 + 2 * self.super_challenge else 1
+        loser_index = 1 if self.scores[0] >= 3 + 2 * self.super_challenge else 0
         players = [self.players[winner_index], self.players[loser_index]]
 
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
@@ -864,10 +895,10 @@ class State():
                 # Add to exp and challenge won/completed
                 update_challenge_stats_query = 'UPDATE players SET exp = ?, challenges_played = ?, challenges_won = ? WHERE player = ?'
                 if j == 1:
-                    new_exp = player_info[1] + 10
+                    new_exp = player_info[1] + 10 + 10 * self.super_challenge
                     update_challenge_stats = [new_exp, player_info[3] + 1, player_info[4] + 1, player.id]
                 elif j == 2:
-                    new_exp = player_info[1] + 5
+                    new_exp = player_info[1] + 5 + 5 * self.super_challenge
                     update_challenge_stats = [new_exp, player_info[3] + 1, player_info[4], player.id]
 
                 cursor.execute(update_challenge_stats_query, update_challenge_stats)
@@ -1366,8 +1397,8 @@ class State():
         return achievement_msgs
 
     def log_challenge_achievements(self):
-        winner_index = 0 if self.scores[0] >= 3 else 1
-        loser_index = 1 if self.scores[0] >= 3 else 0
+        winner_index = 0 if self.scores[0] >= 3 + 2 * self.super_challenge else 1
+        loser_index = 1 if self.scores[0] >= 3 + 2 * self.super_challenge else 0
         players = [self.players[winner_index], self.players[loser_index]]
 
         conn = sqlite3.connect('AttackonWikia/aow_db.db')
@@ -1804,7 +1835,8 @@ class State():
 
     def get_specials(self):
         specials = '`~bonus`\nGet a bonus clue for the current puzzle! **(Level 50 to unlock)**\n' + \
-            '`~life`\nAdds an extra life to the current hangman game! **(Level 75 to unlock)**'
+            '`~life`\nAdds an extra life to the current hangman game! **(Level 75 to unlock)**\n' + \
+            '`~super <@person>`\nSends a Super Challenge! **(Level 100 to unlock)**\n'
         specials_list = discord.Embed(title = 'Special Commands for Attack on Wikia', description = specials, colour = 0xC0C0C0)
         return specials_list
 
