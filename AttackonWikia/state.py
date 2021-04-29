@@ -90,7 +90,7 @@ class State():
     def get_new_question(self, msg_channel):
         self.game_reset()
         self.game_channel = msg_channel
-        self.question_set = fetchURL.new_question()
+        self.question_set = fetchURL.new_puzzle()
         self.clue_no = 1
         # +1 to record of questions asked
         self.new_question()
@@ -593,7 +593,7 @@ class State():
             self.question_set = fetchURL.new_image()
             self.image_hint = 0
         else:
-            self.question_set = fetchURL.new_question()
+            self.question_set = fetchURL.new_puzzle()
             self.clue_no = 1
 
         self.timer = 0
@@ -610,7 +610,7 @@ class State():
             self.question_set = fetchURL.new_image()
             self.image_hint = 0
         else:
-            self.question_set = fetchURL.new_question()
+            self.question_set = fetchURL.new_puzzle()
             self.clue_no = 1
 
         self.timer = 0

@@ -53,7 +53,7 @@ def getPage():
 
     return page_url, page_title, pagetext
 
-def get_question():
+def get_puzzle():
     page_url, page_title, pagetext = getPage()
     if page_url == None:
         return None
@@ -145,15 +145,8 @@ def get_question():
         question_set = {'url': page_url, 'title': page_title, 'clues': clues}
         return question_set
 
-def new_question():
-    question_set = None
-    while question_set == None:
-        try:
-            question_set = get_question()
-        except:
-            continue
-    
-    return question_set
+def new_puzzle():
+    return new_question(get_puzzle)
 
 def get_hangman():
     page_url, page_title, pagetext = getPage()
@@ -175,14 +168,7 @@ def get_hangman():
     return question_set
 
 def new_hangman():
-    question_set = None
-    while question_set == None:
-        try:
-            question_set = get_hangman()
-        except:
-            continue
-    
-    return question_set
+    return new_question(get_hangman)
 
 
 def get_image():
@@ -218,12 +204,15 @@ def get_image():
     question_set = {'url': page_url, 'title': page_title, 'image': page_image}
     return question_set
     
-
 def new_image():
+    return new_question(get_image)
+
+
+def new_question(get_info):
     question_set = None
     while question_set == None:
         try:
-            question_set = get_image()
+            question_set = get_info()
         except:
             continue
     
