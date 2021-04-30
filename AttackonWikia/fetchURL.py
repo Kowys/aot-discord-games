@@ -21,16 +21,16 @@ cjk_ranges = [
 def is_cjk(char):
     return any([r["from"] <= ord(char) <= r["to"] for r in cjk_ranges])
 
-def gettitle(s):
-    front = s.split('<title>', 1)[1]
-    back = front.split(' |', 1)[0]
-    return back
-
 def hasJapanese(s):
     for c in s:
         if is_cjk(c):
             return True
     return False
+
+def gettitle(s):
+    front = s.split('<title>', 1)[1]
+    back = front.split(' |', 1)[0]
+    return back
 
 def removeAccents(s):
     return unicodedata.normalize('NFD', s)\
@@ -190,15 +190,18 @@ def get_image():
 
         # If not present, means there's only 1 tab, then use <figure class="pi-item pi-image">
         else:
-            current_str = pagetext.split('<figure class="pi-item pi-image">', 1)[1]
-            front_removed = current_str.split('<img src=', 1)[1]
-            back_removed = front_removed.split('/revision/', 1)[0]
-            quotes_removed = back_removed[1:]
+            current_str = pagetext.split('<figure class="pi-item pi-image">', 1)
+            if len(current_str) > 1:
+                front_removed = current_str[1].split('<img src=', 1)[1]
+                back_removed = front_removed.split('/revision/', 1)[0]
+                quotes_removed = back_removed[1:]
+            else:
+                return None
 
         return quotes_removed
 
     page_image = find_image_url(pagetext)
-    if len(page_image) >= 1000:
+    if not page_image or len(page_image) >= 1000:
         return None
 
     question_set = {'url': page_url, 'title': page_title, 'image': page_image}
@@ -213,7 +216,7 @@ def new_question(get_info):
     while question_set == None:
         try:
             question_set = get_info()
-        except:
+        except Exception as e:
             continue
     
     return question_set
