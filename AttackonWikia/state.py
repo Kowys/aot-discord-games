@@ -266,14 +266,14 @@ class State():
             if img is None:
                 try:
                     url_response = urllib.request.urlopen(image_url)
-                except:
+                except Exception:
                     # Blacklist url
                     self.blacklistUrl(image_url)
                     return None
                 try:
                     img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
                     img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
-                except:
+                except Exception:
                     self.blacklistUrl(image_url)
                     return None
                 if img is None:
@@ -289,13 +289,17 @@ class State():
         if img is None:
             try:
                 url_response = urllib.request.urlopen(image_url)
-            except:
+            except Exception:
                 # Blacklist url
                 self.blacklistUrl(image_url)
                 return None
 
-            img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
-            img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+            try:
+                img_array = np.array(bytearray(url_response.read()), dtype=np.uint8)
+                img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+            except Exception:
+                self.blacklistUrl(image_url)
+                return None
             if img is None:
                 self.blacklistUrl(image_url)
                 return None
@@ -1832,6 +1836,42 @@ class State():
         leaderboard.set_footer(text = 'Page ' + str(page_no) + '/' + str(total_pages))
 
         return leaderboard, page_no
+
+    def get_pagestats(self):
+        conn = sqlite3.connect('AttackonWikia/aow_db.db')
+        cursor = conn.cursor()
+
+        puzzles_query = 'SELECT url FROM urls WHERE puzzle = 1'
+        cursor.execute(puzzles_query)
+        puzzle_pages = cursor.fetchall()
+        num_puzzles = len(puzzle_pages)
+
+        hangman_query = 'SELECT url FROM urls WHERE hangman = 1'
+        cursor.execute(hangman_query)
+        hangman_pages = cursor.fetchall()
+        num_hangman = len(hangman_pages)
+
+        images_query = 'SELECT url FROM urls WHERE image = 1'
+        cursor.execute(images_query)
+        image_pages = cursor.fetchall()
+        num_images = len(image_pages)
+
+        invalid_query = 'SELECT url FROM urls WHERE puzzle = 0 AND hangman = 0 AND image = 0'
+        cursor.execute(invalid_query)
+        invalid_pages = cursor.fetchall()
+        num_invalid = len(invalid_pages)
+
+        total_query = 'SELECT url FROM urls'
+        cursor.execute(total_query)
+        total_pages = cursor.fetchall()
+        num_total = len(total_pages)
+
+        conn.close()
+
+        pagestats = f'Total pages: {num_total}\nPuzzle pages: {num_puzzles}\nHangman pages: {num_hangman}\nImage pages: {num_images}\nInvalid pages: {num_invalid}'
+        pagestats_embed = discord.Embed(title = 'Pagestats for Attack on Wikia', description = pagestats, colour=0xC0C0C0)
+
+        return pagestats_embed
 
     def get_specials(self):
         specials = '`~bonus`\nGet a bonus clue for the current puzzle! **(Level 50 to unlock)**\n' + \
