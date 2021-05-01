@@ -55,9 +55,12 @@ def getPage():
 
 def get_puzzle(page_url, page_title, pagetext):
     # Keeps only the main content of the page
-    cuttext = pagetext.split('<p>', 1)[1]
-    cuttext2 = cuttext.rsplit('</p>', 1)[0]
-    cuttext3 = cuttext2.split('Characters in Order of Appearance', 1)[0]
+    try:
+        cuttext = pagetext.split('<p>', 1)[1]
+        cuttext2 = cuttext.rsplit('</p>', 1)[0]
+        cuttext3 = cuttext2.split('Characters in Order of Appearance', 1)[0]
+    except Exception:
+        return None
 
     def removebrac(test_str):
         # Removes html brackets <...>

@@ -34,6 +34,7 @@ def load_token():
 intents = discord.Intents.default()
 intents.members = True
 client = MyClient(intents=intents)
+client.populate_urls = False
 bot_token = load_token()
 
 while True:

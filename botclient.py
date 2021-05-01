@@ -5,9 +5,11 @@ import config_queries
 import db_backup
 import admin
 from WarriorsvsSoldiers import game
+from AttackonWikia import populateURLs
 
 class MyClient(discord.Client):
     backup = None
+    populate_urls = False
 
     async def on_ready(self):
         print('Logged in as')
@@ -20,6 +22,10 @@ class MyClient(discord.Client):
         # Begin DB backup loop
         if self.backup:
             db_backup.DBbackup(self)
+        
+        # Start indexing wikia pages
+        if self.populate_urls:
+            populateURLs.PopulateURLsObj(self)
 
         # Set default status for public bot
         bot_status = discord.Game(name = '~help | ~config')

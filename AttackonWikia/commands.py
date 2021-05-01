@@ -389,6 +389,10 @@ class Game():
             commands = self.state.get_commands()
             await message.channel.send(embed = commands)
 
+        if message.content.startswith('~pagestats') and message.author.id == 238808836075421697:
+            pagestats = self.state.get_pagestats()
+            await message.channel.send(embed = pagestats)
+
         if message.content.startswith('~test'):
             hangman = '`🔄` Letter `A` does not exist. You can guess again in 2 seconds.\n\n'
             hangman += '| \u2004 🇲 \u2001\u2000 🇷 \u2001\u2000 🇸\n'
