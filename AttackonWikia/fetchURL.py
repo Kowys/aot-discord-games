@@ -44,7 +44,7 @@ def getPage():
     page_url = page_url.replace('.fandom.', '.wikia.')
     page_title = gettitle(pagetext)
     
-    if 'image gallery' in page_title.lower():
+    if 'image gallery' in page_title.lower() or 'disambiguation' in page_title.lower():
         return page_url, None, None
     if hasJapanese(page_title):
         return page_url, None, None
