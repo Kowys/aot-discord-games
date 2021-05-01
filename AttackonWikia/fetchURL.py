@@ -45,19 +45,15 @@ def getPage():
     page_title = gettitle(pagetext)
     
     if 'image gallery' in page_title.lower():
-        return None, None, None
+        return page_url, None, None
     if hasJapanese(page_title):
-        return None, None, None
+        return page_url, None, None
 
     page_title = removeAccents(page_title)
 
     return page_url, page_title, pagetext
 
-def get_puzzle():
-    page_url, page_title, pagetext = getPage()
-    if page_url == None:
-        return None
-
+def get_puzzle(page_url, page_title, pagetext):
     # Keeps only the main content of the page
     cuttext = pagetext.split('<p>', 1)[1]
     cuttext2 = cuttext.rsplit('</p>', 1)[0]
@@ -148,11 +144,7 @@ def get_puzzle():
 def new_puzzle():
     return new_question(get_puzzle)
 
-def get_hangman():
-    page_url, page_title, pagetext = getPage()
-    if page_url == None:
-        return None
-
+def get_hangman(page_url, page_title, pagetext):
     # Keep only alphabetical letters
     def check_for_symbols(title):
         valid_letters = ' abcdefghijklmnopqrstuvwxyz'
@@ -171,11 +163,7 @@ def new_hangman():
     return new_question(get_hangman)
 
 
-def get_image():
-    page_url, page_title, pagetext = getPage()
-    if page_url == None:
-        return None
-
+def get_image(page_url, page_title, pagetext):
     # Get URL of image
     def find_image_url(pagetext):
         # Find <div class="pi-image-collection-tab-content current" id="pi-tab-0"> (include pi-tab-1, pi-tab-2 etc. as well to give more variety)
@@ -190,7 +178,7 @@ def get_image():
 
         # If not present, means there's only 1 tab, then use <figure class="pi-item pi-image">
         else:
-            current_str = pagetext.split('<figure class="pi-item pi-image">', 1)
+            current_str = pagetext.split('<figure class="pi-item pi-image"', 1)
             if len(current_str) > 1:
                 front_removed = current_str[1].split('<img src=', 1)[1]
                 back_removed = front_removed.split('/revision/', 1)[0]
@@ -215,7 +203,10 @@ def new_question(get_info):
     question_set = None
     while question_set == None:
         try:
-            question_set = get_info()
+            page_url, page_title, pagetext = getPage()
+            if page_title == None:
+                continue
+            question_set = get_info(page_url, page_title, pagetext)
         except Exception as e:
             continue
     
