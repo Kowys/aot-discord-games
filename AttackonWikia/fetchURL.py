@@ -1,3 +1,4 @@
+import re
 import sqlite3
 import urllib.request
 import random
@@ -63,6 +64,15 @@ def get_puzzle(page_url, page_title, pagetext):
     except Exception:
         return None
 
+    def removeheaders(cur_str):
+        start = ['<h2 class="pi-item pi-item-spacing pi-title">', '<li class="toclevel', '<span class="mw-headline"', '<div id="toc" class="toc">', '<p class="caption">']
+        end = ['</aside>', '</a>', '</span>', '</h2>', '</figcaption>']
+        for i in range(len(start)):
+            cur_str = re.sub(f'{start[i]}.*?{end[i]}', '', cur_str, flags=re.DOTALL)
+        return cur_str
+
+    header_removed_text = removeheaders(cuttext3)
+
     def removebrac(test_str):
         # Removes html brackets <...>
         ret = ''
@@ -76,7 +86,7 @@ def get_puzzle(page_url, page_title, pagetext):
                 ret += i
         return ret
 
-    filtertext = removebrac(cuttext3)
+    filtertext = removebrac(header_removed_text)
 
     def getsentences(fullstr):
         # Returns all sentences as a list of strings, removes /n, /t and large spaces
