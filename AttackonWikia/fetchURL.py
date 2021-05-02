@@ -1,3 +1,4 @@
+import sqlite3
 import urllib.request
 import random
 import unicodedata
@@ -36,8 +37,8 @@ def removeAccents(s):
     return unicodedata.normalize('NFD', s)\
         .encode('ascii', 'ignore').decode("utf-8")
 
-def getPage():
-    r =  urllib.request.urlopen('https://attackontitan.wikia.com/wiki/Special:Random')
+def getPage(url):
+    r =  urllib.request.urlopen(url)
 
     pagetext = r.read().decode('utf-8')
     page_url = r.geturl()
@@ -145,7 +146,7 @@ def get_puzzle(page_url, page_title, pagetext):
         return question_set
 
 def new_puzzle():
-    return new_question(get_puzzle)
+    return new_question('puzzle')
 
 def get_hangman(page_url, page_title, pagetext):
     # Keep only alphabetical letters
@@ -163,7 +164,7 @@ def get_hangman(page_url, page_title, pagetext):
     return question_set
 
 def new_hangman():
-    return new_question(get_hangman)
+    return new_question('hangman')
 
 
 def get_image(page_url, page_title, pagetext):
@@ -199,18 +200,84 @@ def get_image(page_url, page_title, pagetext):
     return question_set
     
 def new_image():
-    return new_question(get_image)
+    return new_question('image')
 
+def urls_indexed():
+    conn = sqlite3.connect('AttackonWikia/aow_db.db')
+    cursor = conn.cursor()
 
-def new_question(get_info):
+    query = 'SELECT url FROM urls'
+    cursor.execute(query)
+    pages = cursor.fetchall()
+    conn.close()
+
+    return len(pages) >= 1000
+
+def random_url_question(get_info):
     question_set = None
     while question_set == None:
+        url = 'https://attackontitan.wikia.com/wiki/Special:Random'
         try:
-            page_url, page_title, pagetext = getPage()
+            page_url, page_title, pagetext = getPage(url)
             if page_title == None:
                 continue
             question_set = get_info(page_url, page_title, pagetext)
         except Exception as e:
+            print(e)
+    
+    return question_set
+
+def get_mode_url(mode):
+    conn = sqlite3.connect('AttackonWikia/aow_db.db')
+    cursor = conn.cursor()
+
+    query = 'SELECT url FROM urls WHERE {} = 1'.format(mode)
+    cursor.execute(query)
+    pages = cursor.fetchall()
+    url = random.choice(pages)[0]
+
+    conn.close()
+
+    return url
+
+def delete_mode_url(url):
+    conn = sqlite3.connect('AttackonWikia/aow_db.db')
+    cursor = conn.cursor()
+
+    delete_query = 'DELETE FROM urls WHERE url = ?'
+    cursor.execute(delete_query, (url,))
+    conn.commit()
+    conn.close()
+
+def new_question(mode):
+    mode_map = {
+        'puzzle': get_puzzle,
+        'hangman': get_hangman,
+        'image': get_image
+    }
+    question_set = None
+
+    if not urls_indexed():
+        return random_url_question(mode_map[mode])
+
+    while question_set == None:
+        url = get_mode_url(mode)
+        try:
+            page_url, page_title, pagetext = getPage(url)
+        except Exception as e:
+            print(url, 'invalid, deleting...')
+            delete_mode_url(url)
             continue
+
+        if page_title == None:
+            print(url, 'invalid, deleting...')
+            delete_mode_url(url)
+            continue
+
+        get_info = mode_map[mode]
+        question_set = get_info(page_url, page_title, pagetext)
+        if question_set == None:
+            print(url, 'invalid, deleting...')
+            delete_mode_url(url)
     
     return question_set

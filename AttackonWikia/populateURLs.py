@@ -18,7 +18,8 @@ class PopulateURLsObj:
             await asyncio.sleep(0.1)
             valid_modes = [0,0,0]
             try:
-                page_url, page_title, pagetext = fetchURL.getPage()
+                url = 'https://attackontitan.wikia.com/wiki/Special:Random'
+                page_url, page_title, pagetext = fetchURL.getPage(url)
             except Exception as e:
                 print(e)
                 continue
