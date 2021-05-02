@@ -219,9 +219,13 @@ async def message_handler(client, message, instances):
                 client_obj = server_obj.get_member(client.user.id)
                 permissions = client_obj.guild_permissions
                 if permissions.create_instant_invite:
-                    default_channel = server_obj.channels[0]
-                    invite = await default_channel.create_invite(max_age = 600)
-                    await message.channel.send(invite)
+                    for channel in server_obj.channels:
+                        try:
+                            invite = await channel.create_invite(max_age = 600)
+                            await message.channel.send(invite)
+                            break
+                        except Exception:
+                            continue
                 else:
                     await message.channel.send('I do not have the permissions to create an invite in **' + server_obj.name + '**!')
             else:
