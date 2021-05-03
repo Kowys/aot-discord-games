@@ -101,8 +101,9 @@ class MyClient(discord.Client):
             await message.channel.send('My prefix is `~`! E.g. type `~help` to see my list of commands.')
 
         elif message.content.startswith('~credits'):
-            credits_msg = 'I was made by Entropi#3441. For any suggestions/bug reports, please go to the official Warriors vs Soldiers server: [Click here](https://discord.gg/sBjKwBp)'
-            credits_embed =  discord.Embed(title = 'Credits', description = credits_msg, colour=0xE5D2BB)
+            credits_msg = 'This bot was made by Entropi#3441. Please DM me if you have any suggestions or bug reports.\n\n'
+            patreon_msg = 'If you liked my games, do consider supporting me on [Patreon](https://www.patreon.com/entropi)!'
+            credits_embed =  discord.Embed(title = 'Credits', description = credits_msg + patreon_msg, colour=0xE5D2BB)
             await message.channel.send(embed=credits_embed)
 
         elif message.content.startswith('~invite'):
@@ -111,11 +112,6 @@ class MyClient(discord.Client):
             invite_embed =  discord.Embed(title = 'Invite link', description = invite_msg, colour=0xE5D2BB)
             invite_embed.set_thumbnail(url=str(self.user.avatar_url))
             await message.channel.send(embed=invite_embed)
-
-        elif message.content.startswith('~patreon'):
-            patreon_msg = 'If you liked my games, considering supporting me on [Patreon](https://www.patreon.com/entropi)!'
-            patreon_embed =  discord.Embed(description = patreon_msg, colour=0xE5D2BB)
-            await message.channel.send(embed=patreon_embed)
 
         elif message.channel.id == 751466308079583262:
             if message.content.startswith('~pings') and message.author.id == 238808836075421697:
@@ -149,7 +145,7 @@ class MyClient(discord.Client):
             commands = discord.Embed(title = 'List of commands', description = 'Here is the list of available commands.', colour=0xE5D2BB)
             general_commands = '`~config` : Lets you select the game for each channel\n' + \
                 '`~credits` : Who made me/Get support\n' + \
-                '`~invite` : Link to invite me'
+                '`~invite` : Link to invite me to your server'
             commands.add_field(name = 'General', value = general_commands)
             await message.channel.send(embed=commands)
 

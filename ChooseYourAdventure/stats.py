@@ -630,8 +630,7 @@ class State():
     def get_commands(self):
         # Returns the list of commands
         commands_list = discord.Embed(title = 'List of commands for Choose Your Adventure', colour=0xE5D2BB)
-        general_commands = '`~credits` : Who made me/Get support\n' + \
-            '`~patreon` : Support the creator!'
+        general_commands = '`~credits` : Who made me/Get support'
         commands_list.add_field(name = 'General', value = general_commands, inline = False)
 
         cya_commands = '`~start`\n Starts a new game.\n' + \
