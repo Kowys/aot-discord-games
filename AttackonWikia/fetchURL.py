@@ -178,7 +178,16 @@ def new_hangman():
 
 
 def get_image(page_url, page_title, pagetext):
-    # Get URL of image
+    def has_symbols(page_title):
+        valid_chars = ' abcdefghijklmnopqrstuvwxyz0123456789()'
+        for letter in page_title:
+            if letter.lower() not in valid_chars:
+                return True
+        return False
+
+    if '/wiki/Template:MusicNav' in pagetext and has_symbols(page_title):
+        return None
+
     def find_image_url(pagetext):
         # Find <div class="pi-image-collection-tab-content current" id="pi-tab-0"> (include pi-tab-1, pi-tab-2 etc. as well to give more variety)
         test_str = pagetext.split('<div class="pi-image-collection-tab-content current" id="pi-tab-0">', 1)
@@ -275,11 +284,13 @@ def new_question(mode):
         try:
             page_url, page_title, pagetext = getPage(url)
         except Exception as e:
+            print(f'{mode} Error', e)
             print(url, 'invalid, deleting...')
             delete_mode_url(url)
             continue
 
         if page_title == None:
+            print(f'{mode} Page title error')
             print(url, 'invalid, deleting...')
             delete_mode_url(url)
             continue
@@ -287,6 +298,7 @@ def new_question(mode):
         get_info = mode_map[mode]
         question_set = get_info(page_url, page_title, pagetext)
         if question_set == None:
+            print(f'{mode} Question set error')
             print(url, 'invalid, deleting...')
             delete_mode_url(url)
     
