@@ -15,7 +15,7 @@ class PopulateURLsObj:
         ]
         await self.client.wait_until_ready()
         while not self.client.is_closed():
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.5)
             valid_modes = [0,0,0]
             try:
                 url = 'https://attackontitan.wikia.com/wiki/Special:Random'
