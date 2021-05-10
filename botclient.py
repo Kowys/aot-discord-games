@@ -71,7 +71,9 @@ class MyClient(discord.Client):
 
         # Config
         elif message.content.startswith('~config'):
-            if message.author.guild_permissions.manage_guild or message.author.id == 238808836075421697:
+            if str(message.channel.type) == 'private':
+                await message.channel.send('You can only enable games in a public channel!')
+            elif message.author.guild_permissions.manage_guild or message.author.id == 238808836075421697:
                 current_author_id = message.author.id
                 current_channel_id = message.channel.id
                 config_embed = botconfig.get_config_msg(cur_games)
